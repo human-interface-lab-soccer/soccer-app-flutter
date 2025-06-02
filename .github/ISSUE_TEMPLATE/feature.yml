@@ -1,0 +1,41 @@
+name: Feature
+description: 新機能の提案
+title: "[Feature]: "
+labels: ["feature"]
+assignees: []
+
+type: Feature
+body:
+  - type: textarea
+    id: abstract
+    attributes:
+      label: 概要
+      description: 機能の概要
+      placeholder: |
+        ユーザー登録機能の追加
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: 要件
+      description: どんな機能が必要なのか
+      placeholder: |
+        - 名前を登録できる
+        - LINEと連携してアカウント登録ができる
+    validations:
+      required: true
+  - type: textarea
+    id: user-story
+    attributes:
+      label: ユーザーストーリー
+      description: 誰がどんな時にこの機能を必要とするのか
+      placeholder: |
+        - ユーザーがアカウントを作成したい時
+  - type: textarea
+    id: reference
+    attributes:
+      label: 参考資料
+      description: 機能に関連する資料があればリンクを貼る
+      placeholder: |
+        - ユーザーテーブルの設計書
