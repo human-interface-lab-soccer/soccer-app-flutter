@@ -37,4 +37,4 @@ body:
       label: 参考資料
       description: タスクに関連する資料やリンク
       placeholder: |
-        - [README.md](https://expample.com)
+        - [README.md](https://example.com)
