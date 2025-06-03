@@ -1,0 +1,40 @@
+name: Task
+description: 特定の機能実装やバグ修正のための具体的な作業を定義する
+title: "[Task]: "
+labels: ["Task"]
+assignees: []
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 概要
+      description: タスクの概要
+      placeholder: |
+        ユーザー登録機能の実装
+    validations:
+      required: true
+  - type: textarea
+    id: specifications
+    attributes:
+      label: 仕様
+      description: タスクの具体的な仕様や要件
+      placeholder: |
+        - ユーザー名とパスワードを登録できる
+        - LINEと連携してアカウント登録ができる
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: 依存関係
+      description: このタスクが依存している他のタスクや機能
+      placeholder: |
+        - #[issue番号]
+  - type: textarea
+    id: reference
+    attributes:
+      label: 参考資料
+      description: タスクに関連する資料やリンク
+      placeholder: |
+        - [README.md](https://example.com)
