@@ -4,6 +4,7 @@ title: "[Task]: "
 labels: ["Task"]
 assignees: []
 
+type: Task
 body:
   - type: textarea
     id: description
