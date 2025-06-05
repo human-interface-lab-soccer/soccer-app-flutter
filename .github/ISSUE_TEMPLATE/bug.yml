@@ -1,0 +1,61 @@
+name: Bug
+description: バグの報告
+title: "[Bug]: "
+labels: ["Bug"]
+assignees: []
+
+type: Bug
+body:
+  - type: textarea
+    id: abstract
+    attributes:
+      label: 概要
+      description: バグの概要
+      placeholder: |
+        ユーザー登録ができない
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 再現手順
+      description: バグを再現するための手順
+      placeholder: |
+        1. ユーザー登録画面にアクセスする
+        2. 必要な情報を入力する
+        3. 登録ボタンをクリックする
+    validations:
+      required: true
+  - type: textarea
+    id: expected-result
+    attributes: 
+      label: 期待される結果
+      description: 正常に動作した場合の期待される結果
+      placeholder: |
+        ユーザーが正常に登録される
+    validations:
+      required: true
+  - type: textarea
+    id: actual-result
+    attributes:
+      label: 実際の結果
+      description: 実際に発生した結果
+      placeholder: |
+        ユーザー登録が失敗し、エラーメッセージが表示される
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境
+      description: バグが発生した環境（ブラウザ、OSなど）
+      placeholder: |
+        Chrome 92, Windows 10
+  - type: textarea
+    id: reference
+    attributes:
+      label: 参考資料
+      description: バグに関連するスクリーンショットやログファイルなど
+      placeholder: |
+        - スクリーンショットのリンク
+        - エラーログの内容
