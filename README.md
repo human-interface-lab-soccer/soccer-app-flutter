@@ -30,7 +30,7 @@ flutter pub get
 ```bash
 flutter run
 ```
-特定のデバイスIDで実行したい場合は `flutter run -d <devie_id>` を使ってください
+特定のデバイスIDで実行したい場合は `flutter run -d <device_id>` を使ってください
 
 ### テストの実行
 コードの品質保持のため，定期的にテストを実行しましょう．
