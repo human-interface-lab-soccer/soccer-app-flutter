@@ -17,6 +17,7 @@ Coming soon...
 1. **Flutter SDKのインストール**
 2. **Gitのインストール**
 3. **推奨IDE**: **VS Code** または **Android Studio** の使用を推奨します．それぞれのIDEでFlutter/Dartの拡張機能をインストールしてください
+4. **シミュレータのインストール**: iOSアプリの動作確認には**Xcode**でiOSシミュレータを、Androidアプリの動作確認には**Android Studio**でAndroidエミュレータをインストールしてください。
 
 ### プロジェクトのクローンと初期設定
 ```bash
