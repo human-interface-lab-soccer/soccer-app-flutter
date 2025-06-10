@@ -2,7 +2,8 @@
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+    show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -16,18 +17,11 @@ import 'package:flutter/foundation.dart'
 /// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
-    if (kIsWeb) {
-      return web;
-    }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
         return ios;
-      case TargetPlatform.macOS:
-        return macos;
-      case TargetPlatform.windows:
-        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -40,47 +34,20 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCiDuGOSpX6SNEA27no5JkaekS1a1GtNC8',
-    appId: '1:691939898543:web:b3183d0cbe59394d1b505a',
-    messagingSenderId: '691939898543',
-    projectId: 'soccer-app-flutter',
-    authDomain: 'soccer-app-flutter.firebaseapp.com',
-    storageBucket: 'soccer-app-flutter.firebasestorage.app',
+  static final FirebaseOptions android = FirebaseOptions(
+    apiKey: dotenv.get('FIREBASE_ANDROID_API_KEY'),
+    appId: dotenv.get('FIREBASE_ANDROID_APP_ID'),
+    messagingSenderId: dotenv.get('FIREBASE_MESSAGING_SENDER_ID'),
+    projectId: dotenv.get('FIREBASE_PROJECT_ID'),
+    storageBucket: dotenv.get('FIREBASE_STORAGE_BUCKET'),
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCg_Ex83x3GVzpvEn3QMVRuhgbSngslYHs',
-    appId: '1:691939898543:android:3f556af2479fc6e11b505a',
-    messagingSenderId: '691939898543',
-    projectId: 'soccer-app-flutter',
-    storageBucket: 'soccer-app-flutter.firebasestorage.app',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCU7hiV5b_mo4KFzJCROHYcQzAuPD2jx9k',
-    appId: '1:691939898543:ios:45839fd07e3e23141b505a',
-    messagingSenderId: '691939898543',
-    projectId: 'soccer-app-flutter',
-    storageBucket: 'soccer-app-flutter.firebasestorage.app',
-    iosBundleId: 'com.example.soccerAppFlutter.RunnerTests',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCU7hiV5b_mo4KFzJCROHYcQzAuPD2jx9k',
-    appId: '1:691939898543:ios:4ff270b340aa354a1b505a',
-    messagingSenderId: '691939898543',
-    projectId: 'soccer-app-flutter',
-    storageBucket: 'soccer-app-flutter.firebasestorage.app',
-    iosBundleId: 'com.example.soccerAppFlutter',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCiDuGOSpX6SNEA27no5JkaekS1a1GtNC8',
-    appId: '1:691939898543:web:f2e0f4be12594fd51b505a',
-    messagingSenderId: '691939898543',
-    projectId: 'soccer-app-flutter',
-    authDomain: 'soccer-app-flutter.firebaseapp.com',
-    storageBucket: 'soccer-app-flutter.firebasestorage.app',
+  static final FirebaseOptions ios = FirebaseOptions(
+    apiKey: dotenv.get('FIREBASE_IOS_API_KEY'),
+    appId: dotenv.get('FIREBASE_IOS_APP_ID'),
+    messagingSenderId: dotenv.get('FIREBASE_MESSAGING_SENDER_ID'),
+    projectId: dotenv.get('FIREBASE_PROJECT_ID'),
+    storageBucket: dotenv.get('FIREBASE_STORAGE_BUCKET'),
+    iosBundleId: 'jp.ac.saitama-u.mech.human.soccerAppFlutter',
   );
 }
