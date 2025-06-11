@@ -1,20 +1,44 @@
-# soccer_app_flutter
+# Soccer App Flutter
 
-A new Flutter project.
+[![Flutter CI](https://github.com/human-interface-lab-soccer/soccer-app-flutter/actions/workflows/code_quality.yml/badge.svg)](https://github.com/human-interface-lab-soccer/soccer-app-flutter/actions/workflows/code_quality.yml)
 
-## Getting Started
+## 主要機能
+Coming soon...
 
-This project is a starting point for a Flutter application.
+## 技術スタック
+- Flutter 3.29.3
+- Dart 3.7.2
+- Bluetooth Mesh Network
+- Firebase App Distribution
 
-A few resources to get you started if this is your first Flutter project:
+## 環境構築手順
+開発を始める前に，手元の環境をセットアップしてください．
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. **Flutter SDKのインストール**
+2. **Gitのインストール**
+3. **推奨IDE**: **VS Code** または **Android Studio** の使用を推奨します．それぞれのIDEでFlutter/Dartの拡張機能をインストールしてください
+4. **シミュレータのインストール**: iOSアプリの動作確認には**Xcode**でiOSシミュレータを、Androidアプリの動作確認には**Android Studio**でAndroidエミュレータをインストールしてください。
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### プロジェクトのクローンと初期設定
+```bash
+git clone git@github.com:human-interface-lab-soccer/soccer-app-flutter.git
+cd soccer-app-flutter
+flutter pub get
+```
 
-<!-- 足立参上 -->
+### アプリケーションの実行
+プロジェクトのルートディレクトリで以下のコマンドを実行してください
+```bash
+flutter run
+```
+特定のデバイスIDで実行したい場合は `flutter run -d <device_id>` を使ってください
 
-<!-- I'm Hideyuki Nagashio. Nice to meet you. -->
+### テストの実行
+コードの品質保持のため，定期的にテストを実行しましょう．
+プロジェクト内のすべてのテストを実行するには，以下のコマンドを使用します
+```bash
+flutter test
+```
+
+## 貢献について
+効果的なチーム開発のために，[CONTRIBUTING.md](https://github.com/human-interface-lab-soccer/soccer-app-flutter/blob/main/CONTRIBUTING.md) に記載されている開発ルール，ブランチ戦略などのガイドラインを必ず確認してください．
