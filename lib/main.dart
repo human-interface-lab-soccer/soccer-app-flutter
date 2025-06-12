@@ -125,32 +125,36 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             const Text('テスト10'),
             Text(
-              '$buttonOutput',
+              buttonOutput,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
 
-            if(hasCheckedDevice)
+            if (hasCheckedDevice)
               Expanded(
-                child: deviceList.isNotEmpty
-                  ? ListView.builder(
-                    itemCount: deviceList.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
-                        child: Text(
-                          deviceList[index],
-                          style: const TextStyle(fontSize: 18),
-                        ),  
-                      );
-                    },
-                  )
-                  : const Center(
-                      child: Text(
-                        "接続デバイスなし",
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                ),
+                child:
+                    deviceList.isNotEmpty
+                        ? ListView.builder(
+                          itemCount: deviceList.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4.0,
+                                horizontal: 16.0,
+                              ),
+                              child: Text(
+                                deviceList[index],
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                            );
+                          },
+                        )
+                        : const Center(
+                          child: Text(
+                            "接続デバイスなし",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+              ),
           ],
         ),
       ),
