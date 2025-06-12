@@ -1,6 +1,7 @@
 # Soccer App Flutter
 
 [![Flutter CI](https://github.com/human-interface-lab-soccer/soccer-app-flutter/actions/workflows/code_quality.yml/badge.svg)](https://github.com/human-interface-lab-soccer/soccer-app-flutter/actions/workflows/code_quality.yml)
+[![Codemagic build status](https://api.codemagic.io/apps/6849443f0e1f7afe9a5b94c9/6849443f0e1f7afe9a5b94c8/status_badge.svg)](https://codemagic.io/app/6849443f0e1f7afe9a5b94c9/6849443f0e1f7afe9a5b94c8/latest_build)
 
 ## 主要機能
 Coming soon...
