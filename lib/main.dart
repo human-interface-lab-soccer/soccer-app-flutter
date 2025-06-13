@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+// 外部Widget（別ファイルで定義したボタン部品）をインポート
+import 'package:soccer_app_flutter/widgets/circle_button.dart';
+import 'package:soccer_app_flutter/widgets/box_button.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,15 +10,14 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Conection Demo',
+      title: 'Connection Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: const MyHomePage(title: 'conection Demo Page'),
+      home: const MyHomePage(title: 'Connection Demo Page'),
     );
   }
 }
@@ -27,108 +29,88 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+// ボタンの押下アクションを定義する列挙型
+enum ButtonPress {
+  pressRed,
+  pressBlue,
+  pressGreen,
+  clearAction,
+  connectDevice,
+  decideGroupAction,
+  checkDeviceStatus,
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   // ボタンの処理を表示
-  String buttonOutput = "";
-  // デバイス名リスト
+  String actionFeedback = "";
+  // 接続デバイス名リスト
   List<String> deviceList = [];
+  // デバイス確認済みフラグ
   bool hasCheckedDevice = false;
 
-  // 赤を表示
-  void showRed() {
+  // アクションを更新して画面に反映する関数
+  void updateAction(String message) {
     setState(() {
-      hasCheckedDevice = false;
-      buttonOutput = "赤だよー";
+      hasCheckedDevice = false; // デバイス確認済みフラグをリセット
+      actionFeedback = message;
     });
   }
 
-  // 青を表示
-  void showBlue() {
+  // デバイスリストを更新して画面に反映する関数
+  void updateDeviceList(List<String> devices, String message) {
     setState(() {
-      hasCheckedDevice = false;
-      buttonOutput = "青だよー";
+      hasCheckedDevice = true; // デバイス確認済みフラグをセット
+      deviceList = devices;
+      actionFeedback = message;
     });
   }
 
-  // 緑を表示
-  void showGreen() {
-    setState(() {
-      hasCheckedDevice = false;
-      buttonOutput = "緑だよー";
-    });
-  }
-
-  // 色をリセット
-  void clearColor() {
-    setState(() {
-      hasCheckedDevice = false;
-      buttonOutput = "";
-    });
-  }
-
-  // 接続ボタン
-  void connectDevice() {
-    setState(() {
-      hasCheckedDevice = false;
-      buttonOutput = "デバイス接続";
-    });
-  }
-
-  // グループ作成
-  void decideGroup() {
-    setState(() {
-      hasCheckedDevice = false;
-      buttonOutput = "グループ確定！！";
-    });
-  }
-
-  // 接続デバイス確認ボタン
-  void checkDevice() {
-    setState(() {
-      hasCheckedDevice = true;
-      deviceList = ["デバイスA", "デバイスB", "デバイスC"];
-      buttonOutput = "デバイス確認";
-    });
-  }
-
-  // 丸ボタンの作成
-  Widget _buildCircleButton(String label, VoidCallback onPressed, Color color) {
-    return ElevatedButton(
-      onPressed: onPressed, //押された時の処理
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color, // 背景色を指定
-        foregroundColor: Colors.white, //文字色
-        shape: const CircleBorder(
-          //丸型
-          side: BorderSide(color: Colors.black, width: 1),
-        ),
-        padding: const EdgeInsets.all(36),
-      ),
-      child: Text(label),
-    );
-  }
-
-  Widget _buildBoxButton(String label, VoidCallback onPressed) {
-    return ElevatedButton(onPressed: onPressed, child: Text(label));
+  // ボタンの押下アクションに応じて処理を実行する関数
+  void handleButtonPress(ButtonPress action) {
+    switch (action) {
+      case ButtonPress.pressRed:
+        updateAction("赤だよー");
+        break;
+      case ButtonPress.pressBlue:
+        updateAction("青だよー");
+        break;
+      case ButtonPress.pressGreen:
+        updateAction("緑だよー");
+        break;
+      case ButtonPress.clearAction:
+        updateAction("");
+        break;
+      case ButtonPress.connectDevice:
+        updateAction("デバイス接続");
+        break;
+      case ButtonPress.decideGroupAction:
+        updateAction("グループ確定！！");
+        break;
+      case ButtonPress.checkDeviceStatus:
+        updateDeviceList(["デバイスA", "デバイスB", "デバイスC"], "デバイス確認");
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // アプリバーの設定
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
+      // メインコンテンツの設定
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text('テスト10'),
             Text(
-              buttonOutput,
+              actionFeedback, // ボタンの押下アクションのフィードバックを表示
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-
+            // 接続デバイスのリストを表示
             if (hasCheckedDevice)
               Expanded(
                 child:
@@ -158,31 +140,60 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+      // ボタンの配置（下部中央）
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // 円形ボタン：赤、青、緑、クリア
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildCircleButton("", showRed, Colors.red),
+              CircleButton(
+                label: "赤",
+                onPressed: () => handleButtonPress(ButtonPress.pressRed),
+                color: Colors.red,
+              ),
               const SizedBox(width: 24),
-              _buildCircleButton("", showBlue, Colors.blue),
+              CircleButton(
+                label: "青",
+                onPressed: () => handleButtonPress(ButtonPress.pressBlue),
+                color: Colors.blue,
+              ),
               const SizedBox(width: 24),
-              _buildCircleButton("", showGreen, Colors.green),
+              CircleButton(
+                label: "緑",
+                onPressed: () => handleButtonPress(ButtonPress.pressGreen),
+                color: Colors.green,
+              ),
               const SizedBox(width: 24),
-              _buildCircleButton("", clearColor, Colors.grey),
+              CircleButton(
+                label: "クリア",
+                onPressed: () => handleButtonPress(ButtonPress.clearAction),
+                color: Colors.grey,
+              ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 66),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildBoxButton("接続", connectDevice),
+              BoxButton(
+                label: "接続",
+                onPressed: () => handleButtonPress(ButtonPress.connectDevice),
+              ),
               const SizedBox(width: 24),
-              _buildBoxButton("グループの決定", decideGroup),
+              BoxButton(
+                label: "グループの決定",
+                onPressed:
+                    () => handleButtonPress(ButtonPress.decideGroupAction),
+              ),
               const SizedBox(width: 24),
-              _buildBoxButton("接続確認", checkDevice),
+              BoxButton(
+                label: "接続確認",
+                onPressed:
+                    () => handleButtonPress(ButtonPress.checkDeviceStatus),
+              ),
             ],
           ),
         ],
