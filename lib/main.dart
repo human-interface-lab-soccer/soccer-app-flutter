@@ -150,24 +150,28 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircleButton(
+                key: const Key("redButton"),
                 label: "赤",
                 onPressed: () => handleButtonPress(ButtonPress.pressRed),
                 color: Colors.red,
               ),
               const SizedBox(width: 24),
               CircleButton(
+                key: const Key("blueButton"),
                 label: "青",
                 onPressed: () => handleButtonPress(ButtonPress.pressBlue),
                 color: Colors.blue,
               ),
               const SizedBox(width: 24),
               CircleButton(
+                key: const Key("greenButton"),
                 label: "緑",
                 onPressed: () => handleButtonPress(ButtonPress.pressGreen),
                 color: Colors.green,
               ),
               const SizedBox(width: 24),
               CircleButton(
+                key: const Key("clearButton"),
                 label: "クリア",
                 onPressed: () => handleButtonPress(ButtonPress.clearAction),
                 color: Colors.grey,
@@ -179,17 +183,20 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               BoxButton(
+                key: const Key("connectButton"),
                 label: "接続",
                 onPressed: () => handleButtonPress(ButtonPress.connectDevice),
               ),
               const SizedBox(width: 24),
               BoxButton(
+                key: const Key("decideGroupButton"),
                 label: "グループの決定",
                 onPressed:
                     () => handleButtonPress(ButtonPress.decideGroupAction),
               ),
               const SizedBox(width: 24),
               BoxButton(
+                key: const Key("checkDeviceButton"),
                 label: "接続確認",
                 onPressed:
                     () => handleButtonPress(ButtonPress.checkDeviceStatus),
