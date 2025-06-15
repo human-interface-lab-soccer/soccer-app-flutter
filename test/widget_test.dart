@@ -5,6 +5,7 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:soccer_app_flutter/main.dart';
@@ -18,7 +19,7 @@ void main() {
     expect(find.text('赤だよー'), findsNothing);
 
     // 赤ボタンをタップ
-    await tester.tap(find.text('赤'));
+    await tester.tap(find.byKey(const Key("redButton")));
     await tester.pump();
 
     // メッセージが表示されていることを確認
@@ -32,7 +33,7 @@ void main() {
     expect(find.text('青だよー'), findsNothing);
 
     // 青ボタンをタップ
-    await tester.tap(find.text('青'));
+    await tester.tap(find.byKey(const Key("blueButton")));
     await tester.pump();
 
     // メッセージが表示されていることを確認
@@ -46,7 +47,7 @@ void main() {
     expect(find.text('緑だよー'), findsNothing);
 
     // 緑ボタンをタップ
-    await tester.tap(find.text('緑'));
+    await tester.tap(find.byKey(const Key("greenButton")));
     await tester.pump();
 
     // メッセージが表示されていることを確認
@@ -57,12 +58,12 @@ void main() {
     await tester.pumpWidget(const MyApp());
 
     // 赤ボタンをタップしてメッセージを表示
-    await tester.tap(find.text('赤'));
+    await tester.tap(find.byKey(const Key("redButton")));
     await tester.pump();
     expect(find.text('赤だよー'), findsOneWidget);
 
     // クリアボタンをタップ
-    await tester.tap(find.text('クリア'));
+    await tester.tap(find.byKey(const Key("clearButton")));
     await tester.pump();
 
     // メッセージが消えていることを確認
@@ -76,7 +77,7 @@ void main() {
     expect(find.text('デバイス接続'), findsNothing);
 
     // 接続ボタンをタップ
-    await tester.tap(find.text('接続'));
+    await tester.tap(find.byKey(const Key("connectButton")));
     await tester.pump();
 
     // デバイスリストが更新されていることを確認
@@ -90,7 +91,7 @@ void main() {
     expect(find.text('グループ決定！！'), findsNothing);
 
     // グループ決定ボタンをタップ
-    await tester.tap(find.text('グループの決定'));
+    await tester.tap(find.byKey(const Key("decideGroupButton")));
     await tester.pump();
 
     // メッセージが表示されていることを確認
@@ -106,7 +107,7 @@ void main() {
     expect(find.text('デバイスC'), findsNothing);
 
     // デバイス確認ボタンをタップ
-    await tester.tap(find.text('接続確認'));
+    await tester.tap(find.byKey(const Key("checkDeviceButton")));
     await tester.pump();
 
     // デバイスリストが更新されていることを確認
