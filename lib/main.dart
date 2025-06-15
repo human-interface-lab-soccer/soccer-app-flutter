@@ -105,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('テスト10'),
+            const Text('ボタンを押してね！'),
             Text(
               actionFeedback, // ボタンの押下アクションのフィードバックを表示
               style: Theme.of(context).textTheme.headlineMedium,
