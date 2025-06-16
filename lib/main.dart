@@ -175,36 +175,89 @@ class MyHomePageState extends State<MyHomePage> {
         updateAction("グループ決定!!");
         break;
       case ButtonPress.checkDeviceStatus:
-        updateDeviceList([
-          "デバイスA",
-          "デバイスB",
-          "デバイスC",
-          "デバイスD",
-          "デバイスE",
-          "デバイスF",
-          "デバイスG",
-          "デバイスH",
-          "デバイスI",
-          "デバイスJ",
-          "デバイスK",
-          "デバイスL",
-          "デバイスM",
-          "デバイスN",
-          "デバイスO",
-          "デバイスP",
-          "デバイスQ",
-          "デバイスR",
-          "デバイスS",
-          "デバイスT",
-          "デバイスU",
-          "デバイスV",
-          "デバイスW",
-          "デバイスX",
-          "デバイスY",
-          "デバイスZ",
-        ], "デバイス確認");
+        updateDeviceList(
+          List.generate(26, (i) => "デバイス${String.fromCharCode(65 + i)}"),
+          "デバイス確認",
+        );
         break;
     }
+  }
+
+  List<Widget> buildCircleButtons(ButtonThemeExtension theme) {
+    final data = [
+      {
+        "label": "赤",
+        "color": Colors.red,
+        "action": ButtonPress.pressRed,
+        "key": "redButton",
+      },
+      {
+        "label": "青",
+        "color": Colors.blue,
+        "action": ButtonPress.pressBlue,
+        "key": "blueButton",
+      },
+      {
+        "label": "緑",
+        "color": Colors.green,
+        "action": ButtonPress.pressGreen,
+        "key": "greenButton",
+      },
+      {
+        "label": "クリア",
+        "color": Colors.grey,
+        "action": ButtonPress.clearAction,
+        "key": "clearButton",
+      },
+    ];
+
+    final circleButtons = <Widget>[];
+    for (var item in data) {
+      circleButtons.add(
+        CircleButton(
+          key: Key(item["key"] as String),
+          label: item["label"] as String,
+          onPressed: () => handleButtonPress(item["action"] as ButtonPress),
+          color: item["color"] as Color,
+          size: theme.circleButtonSize,
+        ),
+      );
+      circleButtons.add(SizedBox(width: theme.buttonSpacing));
+    }
+    circleButtons.removeLast(); // 最後のスペーサーを削除
+    return circleButtons;
+  }
+
+  List<Widget> buildBoxButtons(ButtonThemeExtension theme) {
+    final data = [
+      {"label": "接続", "action": ButtonPress.pressRed, "key": "connectButton"},
+      {
+        "label": "グループ決定",
+        "action": ButtonPress.pressBlue,
+        "key": "decideGroupButton",
+      },
+      {
+        "label": "接続確認",
+        "action": ButtonPress.pressGreen,
+        "key": "checkDeviceButton",
+      },
+    ];
+
+    final boxButtons = <Widget>[];
+    for (var item in data) {
+      boxButtons.add(
+        BoxButton(
+          key: Key(item["key"] as String),
+          label: item["label"] as String,
+          onPressed: () => handleButtonPress(item["action"] as ButtonPress),
+          minWidth: theme.boxButtonMinWidth,
+          height: theme.boxButtonHeight,
+        ),
+      );
+      boxButtons.add(SizedBox(width: theme.buttonSpacing));
+    }
+    boxButtons.removeLast(); // 最後のスペーサーを削除
+    return boxButtons;
   }
 
   @override
@@ -308,83 +361,13 @@ class MyHomePageState extends State<MyHomePage> {
                       // 円形ボタン：赤，青，緑，クリア
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleButton(
-                            key: const Key("redButton"),
-                            label: "赤",
-                            onPressed:
-                                () => handleButtonPress(ButtonPress.pressRed),
-                            color: Colors.red,
-                            size: buttonTheme.circleButtonSize,
-                          ),
-                          SizedBox(width: buttonTheme.buttonSpacing),
-                          CircleButton(
-                            key: const Key("blueButton"),
-                            label: "青",
-                            onPressed:
-                                () => handleButtonPress(ButtonPress.pressBlue),
-                            color: Colors.blue,
-                            size: buttonTheme.circleButtonSize,
-                          ),
-                          SizedBox(width: buttonTheme.buttonSpacing),
-                          CircleButton(
-                            key: const Key("greenButton"),
-                            label: "緑",
-                            onPressed:
-                                () => handleButtonPress(ButtonPress.pressGreen),
-                            color: Colors.green,
-                            size: buttonTheme.circleButtonSize,
-                          ),
-                          SizedBox(width: buttonTheme.buttonSpacing),
-                          CircleButton(
-                            key: const Key("clearButton"),
-                            label: "クリア",
-                            onPressed:
-                                () =>
-                                    handleButtonPress(ButtonPress.clearAction),
-                            color: Colors.grey,
-                            size: buttonTheme.circleButtonSize,
-                          ),
-                        ],
+                        children: buildCircleButtons(buttonTheme),
                       ),
                       SizedBox(height: buttonTheme.sectionSpacing),
                       // 四角いボタン：接続，グループの決定，接続確認
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          BoxButton(
-                            key: const Key("connectButton"),
-                            label: "接続",
-                            onPressed:
-                                () => handleButtonPress(
-                                  ButtonPress.connectDevice,
-                                ),
-                            minWidth: buttonTheme.boxButtonMinWidth,
-                            height: buttonTheme.boxButtonHeight,
-                          ),
-                          SizedBox(width: buttonTheme.buttonSpacing),
-                          BoxButton(
-                            key: const Key("decideGroupButton"),
-                            label: "グループの決定",
-                            onPressed:
-                                () => handleButtonPress(
-                                  ButtonPress.decideGroupAction,
-                                ),
-                            minWidth: buttonTheme.boxButtonMinWidth,
-                            height: buttonTheme.boxButtonHeight,
-                          ),
-                          SizedBox(width: buttonTheme.buttonSpacing),
-                          BoxButton(
-                            key: const Key("checkDeviceButton"),
-                            label: "接続確認",
-                            onPressed:
-                                () => handleButtonPress(
-                                  ButtonPress.checkDeviceStatus,
-                                ),
-                            minWidth: buttonTheme.boxButtonMinWidth,
-                            height: buttonTheme.boxButtonHeight,
-                          ),
-                        ],
+                        children: buildBoxButtons(buttonTheme),
                       ),
                     ],
                   ),
