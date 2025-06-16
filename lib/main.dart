@@ -172,7 +172,7 @@ class MyHomePageState extends State<MyHomePage> {
         updateAction("デバイス接続");
         break;
       case ButtonPress.decideGroupAction:
-        updateAction("グループ確定！！");
+        updateAction("グループ決定!!");
         break;
       case ButtonPress.checkDeviceStatus:
         updateDeviceList([
