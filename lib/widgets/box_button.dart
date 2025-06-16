@@ -45,6 +45,5 @@ class BoxButton extends StatelessWidget {
         child: Text(label), // ボタンに表示するテキストを設定
       ),
     );
-    
   }
 }
