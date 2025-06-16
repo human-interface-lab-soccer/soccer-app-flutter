@@ -230,15 +230,19 @@ class MyHomePageState extends State<MyHomePage> {
 
   List<Widget> buildBoxButtons(ButtonThemeExtension theme) {
     final data = [
-      {"label": "接続", "action": ButtonPress.pressRed, "key": "connectButton"},
+      {
+        "label": "接続",
+        "action": ButtonPress.connectDevice,
+        "key": "connectButton",
+      },
       {
         "label": "グループ決定",
-        "action": ButtonPress.pressBlue,
+        "action": ButtonPress.decideGroupAction,
         "key": "decideGroupButton",
       },
       {
         "label": "接続確認",
-        "action": ButtonPress.pressGreen,
+        "action": ButtonPress.checkDeviceStatus,
         "key": "checkDeviceButton",
       },
     ];
