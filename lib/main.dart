@@ -155,21 +155,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () => handleButtonPress(ButtonPress.pressRed),
                 color: Colors.red,
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 24), // 円形ボタン同士の間隔(マジックナンバー修正する)
               CircleButton(
                 key: const Key("blueButton"),
                 label: "青",
                 onPressed: () => handleButtonPress(ButtonPress.pressBlue),
                 color: Colors.blue,
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 24), // 円形ボタン同士の間隔(マジックナンバー修正する)
               CircleButton(
                 key: const Key("greenButton"),
                 label: "緑",
                 onPressed: () => handleButtonPress(ButtonPress.pressGreen),
                 color: Colors.green,
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 24),  // 円形ボタン同士の間隔(マジックナンバー修正する)
               CircleButton(
                 key: const Key("clearButton"),
                 label: "クリア",
@@ -178,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 10), // 円形ボタンと四角いボタンの間のスペース(マジックナンバー修正する)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -187,14 +187,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 label: "接続",
                 onPressed: () => handleButtonPress(ButtonPress.connectDevice),
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 24),  // 四角いボタン同士の間隔(マジックナンバー修正する)
               BoxButton(
                 key: const Key("decideGroupButton"),
                 label: "グループの決定",
                 onPressed:
                     () => handleButtonPress(ButtonPress.decideGroupAction),
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 24),  // 四角いボタン同士の間隔(マジックナンバー修正する)
               BoxButton(
                 key: const Key("checkDeviceButton"),
                 label: "接続確認",
