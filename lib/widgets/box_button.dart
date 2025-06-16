@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 // 四角いボタン用のカスタムウィジェット
 class BoxButton extends StatelessWidget {
   // ボタンのデフォルトサイズ、内側余白、外枠の太さを定義
-  static const double _defaultPadding = 16.0; // ボタンのデフォルト内側余白
-  static const double _defaultMinWidth = 120.0;  // ボタンのデフォルト最小幅
+  static const double _defaultPadding = 1.0; // ボタンのデフォルト内側余白
+  static const double _defaultMinWidth = 100.0;  // ボタンのデフォルト最小幅
   static const double _defaultHeight = 48.0; // ボタンのデフォルト最小高さ
   // ボタンのラベルと押されたときのコールバック関数
   final String label;
@@ -36,7 +36,7 @@ class BoxButton extends StatelessWidget {
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0), // ボタンの角を丸くする
-            side: const BorderSide(color: Colors.black, width: 1.0), // ボタンの外枠の色と太さを設定
+            side: const BorderSide(color: Colors.black, width: 1), // ボタンの外枠の色と太さを設定
           ),
         ),
         child: Text(label), // ボタンに表示するテキストを設定
