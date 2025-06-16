@@ -88,14 +88,14 @@ void main() {
     await tester.pumpWidget(const MyApp());
 
     // 初期状態ではメッセージが表示されていないことを確認
-    expect(find.text('グループ決定！！'), findsNothing);
+    expect(find.text('グループ決定!!'), findsNothing);
 
     // グループ決定ボタンをタップ
     await tester.tap(find.byKey(const Key("decideGroupButton")));
     await tester.pump();
 
     // メッセージが表示されていることを確認
-    expect(find.text('グループ確定！！'), findsOneWidget);
+    expect(find.text('グループ決定!!'), findsOneWidget);
   });
   testWidgets('デバイス確認ボタンをタップするとデバイスリストが更新される', (WidgetTester tester) async {
     // アプリをビルドしてフレームを描画
