@@ -169,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () => handleButtonPress(ButtonPress.pressGreen),
                 color: Colors.green,
               ),
-              const SizedBox(width: 24),  // 円形ボタン同士の間隔(マジックナンバー修正する)
+              const SizedBox(width: 24), // 円形ボタン同士の間隔(マジックナンバー修正する)
               CircleButton(
                 key: const Key("clearButton"),
                 label: "クリア",
@@ -187,14 +187,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 label: "接続",
                 onPressed: () => handleButtonPress(ButtonPress.connectDevice),
               ),
-              const SizedBox(width: 24),  // 四角いボタン同士の間隔(マジックナンバー修正する)
+              const SizedBox(width: 24), // 四角いボタン同士の間隔(マジックナンバー修正する)
               BoxButton(
                 key: const Key("decideGroupButton"),
                 label: "グループの決定",
                 onPressed:
                     () => handleButtonPress(ButtonPress.decideGroupAction),
               ),
-              const SizedBox(width: 24),  // 四角いボタン同士の間隔(マジックナンバー修正する)
+              const SizedBox(width: 24), // 四角いボタン同士の間隔(マジックナンバー修正する)
               BoxButton(
                 key: const Key("checkDeviceButton"),
                 label: "接続確認",

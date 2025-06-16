@@ -25,7 +25,8 @@ class CircleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // サイズが指定されていない場合はデフォルトサイズを使用
-    final double buttonSize = size ?? _defaultSize; // サイズが指定されていない場合はデフォルトサイズを使用
+    final double buttonSize =
+        size ?? _defaultSize; // サイズが指定されていない場合はデフォルトサイズを使用
     return SizedBox(
       width: buttonSize, // ボタンの幅を設定
       height: buttonSize, // ボタンの高さを設定
@@ -36,7 +37,10 @@ class CircleButton extends StatelessWidget {
           foregroundColor: Colors.black, // ボタンの文字色を設定
           shape: const CircleBorder(
             // ボタンの形状を丸型に設定
-            side: BorderSide(color: Colors.black, width: _defaultBorderWidth), // ボタンの外枠の色と太さを設定
+            side: BorderSide(
+              color: Colors.black,
+              width: _defaultBorderWidth,
+            ), // ボタンの外枠の色と太さを設定
           ),
           padding: const EdgeInsets.all(_defaultPadding), // ボタンの内側の余白を設定
         ),
