@@ -25,8 +25,13 @@ class CircleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // サイズが指定されていない場合はデフォルトサイズを使用
-    final double buttonSize =
-        size ?? _defaultSize; // サイズが指定されていない場合はデフォルトサイズを使用
+    final double buttonSize = size ?? _defaultSize;
+    // ボタンの内側余白をサイズに応じてスケーリング
+    final double scaleFactor = buttonSize / _defaultSize;
+    final double scaledPadding = _defaultPadding * scaleFactor;
+    final double scaledBorderWidth = _defaultBorderWidth * scaleFactor;
+    final double fontSize = 16.0 * scaleFactor; // 基準フォントサイズ16.0のスケーリング
+
     return SizedBox(
       width: buttonSize, // ボタンの幅を設定
       height: buttonSize, // ボタンの高さを設定
@@ -35,16 +40,19 @@ class CircleButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: color, // ボタンの背景色を設定
           foregroundColor: Colors.black, // ボタンの文字色を設定
-          shape: const CircleBorder(
+          shape: CircleBorder(
             // ボタンの形状を丸型に設定
             side: BorderSide(
               color: Colors.black,
-              width: _defaultBorderWidth,
+              width: scaledBorderWidth,
             ), // ボタンの外枠の色と太さを設定
           ),
-          padding: const EdgeInsets.all(_defaultPadding), // ボタンの内側の余白を設定
+          padding: EdgeInsets.all(scaledPadding), // ボタンの内側の余白を設定
         ),
-        child: Text(label), // ボタンに表示するテキストを設定
+        child: Text(
+          label,
+          style: TextStyle(fontSize: fontSize), // ボタンのテキストサイズを設定
+        ),
       ),
     );
   }
