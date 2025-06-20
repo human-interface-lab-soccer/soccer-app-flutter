@@ -69,25 +69,19 @@ void main() {
     // メッセージが消えていることを確認
     expect(find.text('赤だよー'), findsNothing);
   });
-  testWidgets('接続ボタンをタップするとデバイスリストが更新される', (WidgetTester tester) async {
+  testWidgets('接続ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
     // アプリをビルドしてフレームを描画
     await tester.pumpWidget(const MyApp());
 
     // 初期状態ではメッセージが表示されていないことを確認
     expect(find.text('デバイス接続'), findsNothing);
-    expect(find.text('デバイスA'), findsNothing);
-    expect(find.text('デバイスB'), findsNothing);
-    expect(find.text('デバイスC'), findsNothing);
 
     // 接続ボタンをタップ
     await tester.tap(find.byKey(const Key("connectButton")));
     await tester.pump();
 
-    // デバイスリストが更新されていることを確認
+    // メッセージが表示されていることを確認
     expect(find.text('デバイス接続'), findsOneWidget);
-    expect(find.text('デバイスA'), findsOneWidget);
-    expect(find.text('デバイスB'), findsOneWidget);
-    expect(find.text('デバイスC'), findsOneWidget);
   });
   testWidgets('グループ決定ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
     // アプリをビルドしてフレームを描画
@@ -103,11 +97,12 @@ void main() {
     // メッセージが表示されていることを確認
     expect(find.text('グループ決定!!'), findsOneWidget);
   });
-  testWidgets('デバイス確認ボタンをタップするとデバイスリストが更新される', (WidgetTester tester) async {
+  testWidgets('接続確認ボタンをタップするとデバイスリストが表示される', (WidgetTester tester) async {
     // アプリをビルドしてフレームを描画
     await tester.pumpWidget(const MyApp());
 
     // 初期状態ではデバイス名は表示されていない
+    expect(find.text('デバイス確認'), findsNothing);
     expect(find.text('デバイスA'), findsNothing);
     expect(find.text('デバイスB'), findsNothing);
     expect(find.text('デバイスC'), findsNothing);
