@@ -75,6 +75,9 @@ void main() {
 
     // 初期状態ではメッセージが表示されていないことを確認
     expect(find.text('デバイス接続'), findsNothing);
+    expect(find.text('デバイスA'), findsNothing);
+    expect(find.text('デバイスB'), findsNothing);
+    expect(find.text('デバイスC'), findsNothing);
 
     // 接続ボタンをタップ
     await tester.tap(find.byKey(const Key("connectButton")));
@@ -82,6 +85,9 @@ void main() {
 
     // デバイスリストが更新されていることを確認
     expect(find.text('デバイス接続'), findsOneWidget);
+    expect(find.text('デバイスA'), findsOneWidget);
+    expect(find.text('デバイスB'), findsOneWidget);
+    expect(find.text('デバイスC'), findsOneWidget);
   });
   testWidgets('グループ決定ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
     // アプリをビルドしてフレームを描画
