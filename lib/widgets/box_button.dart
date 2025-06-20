@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class BoxButton extends StatelessWidget {
   // ボタンのデフォルトサイズ、内側余白、外枠の太さを定義
   static const double _defaultPadding = 1.0; // ボタンのデフォルト内側余白
+  static const double _defaultBorderWidth = 1.0; // ボタンのデフォルト外枠の太さ
   static const double _defaultMinWidth = 100.0; // ボタンのデフォルト最小幅
   static const double _defaultHeight = 48.0; // ボタンのデフォルト最小高さ
   // ボタンのラベルと押されたときのコールバック関数
@@ -34,7 +35,7 @@ class BoxButton extends StatelessWidget {
         2; // サイズスケーリングの計算
     final double scaledPadding = _defaultPadding * scaleFactor; // 内側余白のスケーリング
     final double scaledBorderWidth =
-        _defaultPadding * scaleFactor; // 外枠の太さのスケーリング
+        _defaultBorderWidth * scaleFactor; // 外枠の太さのスケーリング
     final double fontSize = 14.0 * scaleFactor; // 基準フォントサイズ14.0のスケーリング
 
     return SizedBox(
