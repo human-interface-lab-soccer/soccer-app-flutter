@@ -11,20 +11,112 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:soccer_app_flutter/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('赤ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
+    // アプリをビルドしてフレームを描画
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // 初期状態ではメッセージが表示されていないことを確認
+    expect(find.text('赤だよー'), findsNothing);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // 赤ボタンをタップ
+    await tester.tap(find.byKey(const Key("redButton")));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // メッセージが表示されていることを確認
+    expect(find.text('赤だよー'), findsOneWidget);
+  });
+  testWidgets('青ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
+    // アプリをビルドしてフレームを描画
+    await tester.pumpWidget(const MyApp());
+
+    // 初期状態ではメッセージが表示されていないことを確認
+    expect(find.text('青だよー'), findsNothing);
+
+    // 青ボタンをタップ
+    await tester.tap(find.byKey(const Key("blueButton")));
+    await tester.pump();
+
+    // メッセージが表示されていることを確認
+    expect(find.text('青だよー'), findsOneWidget);
+  });
+  testWidgets('緑ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
+    // アプリをビルドしてフレームを描画
+    await tester.pumpWidget(const MyApp());
+
+    // 初期状態ではメッセージが表示されていないことを確認
+    expect(find.text('緑だよー'), findsNothing);
+
+    // 緑ボタンをタップ
+    await tester.tap(find.byKey(const Key("greenButton")));
+    await tester.pump();
+
+    // メッセージが表示されていることを確認
+    expect(find.text('緑だよー'), findsOneWidget);
+  });
+  testWidgets('クリアボタンをタップするとメッセージが消える', (WidgetTester tester) async {
+    // アプリをビルドしてフレームを描画
+    await tester.pumpWidget(const MyApp());
+
+    // 赤ボタンをタップしてメッセージを表示
+    await tester.tap(find.byKey(const Key("redButton")));
+    await tester.pump();
+    expect(find.text('赤だよー'), findsOneWidget);
+
+    // クリアボタンをタップ
+    await tester.tap(find.byKey(const Key("clearButton")));
+    await tester.pump();
+
+    // メッセージが消えていることを確認
+    expect(find.text('赤だよー'), findsNothing);
+  });
+  testWidgets('接続ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
+    // アプリをビルドしてフレームを描画
+    await tester.pumpWidget(const MyApp());
+
+    // 初期状態ではメッセージが表示されていないことを確認
+    expect(find.text('デバイス接続'), findsNothing);
+
+    // 接続ボタンをタップ
+    await tester.tap(find.byKey(const Key("connectButton")));
+    await tester.pump();
+
+    // メッセージが表示されていることを確認
+    expect(find.text('デバイス接続'), findsOneWidget);
+  });
+  testWidgets('グループ決定ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
+    // アプリをビルドしてフレームを描画
+    await tester.pumpWidget(const MyApp());
+
+    // 初期状態ではメッセージが表示されていないことを確認
+    expect(find.text('グループ決定!!'), findsNothing);
+
+    // グループ決定ボタンをタップ
+    await tester.tap(find.byKey(const Key("decideGroupButton")));
+    await tester.pump();
+
+    // メッセージが表示されていることを確認
+    expect(find.text('グループ決定!!'), findsOneWidget);
+  });
+  testWidgets('接続確認ボタンをタップするとデバイスリストが表示される', (WidgetTester tester) async {
+    // アプリをビルドしてフレームを描画
+    await tester.pumpWidget(const MyApp());
+
+    // 初期状態ではデバイス名は表示されていない
+    expect(find.text('デバイス確認'), findsNothing);
+    expect(find.text('デバイスA'), findsNothing);
+    expect(find.text('デバイスB'), findsNothing);
+    expect(find.text('デバイスC'), findsNothing);
+
+    // デバイス確認ボタンをタップ
+    await tester.tap(find.byKey(const Key("checkDeviceButton")));
+    await tester.pump();
+
+    // デバイスリストが更新されていることを確認
+    expect(find.text('デバイスA'), findsOneWidget);
+    expect(find.text('デバイスB'), findsOneWidget);
+    expect(find.text('デバイスC'), findsOneWidget);
+
+    // メッセージが表示されていることを確認
+    expect(find.text('デバイス確認'), findsOneWidget);
   });
 }
