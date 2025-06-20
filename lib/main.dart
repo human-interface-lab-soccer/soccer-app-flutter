@@ -284,7 +284,10 @@ class MyHomePageState extends State<MyHomePage> {
     final buttonAreaHeight = calculateButtonAreaHeight(context, buttonTheme);
 
     // 固定コンテンツエリアの高さを計算
-    final fixedContentHeight = calculateFixedContentHeight(context, buttonTheme);
+    final fixedContentHeight = calculateFixedContentHeight(
+      context,
+      buttonTheme,
+    );
 
     return Scaffold(
       // アプリバーの設定
@@ -296,7 +299,8 @@ class MyHomePageState extends State<MyHomePage> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           // 画面の高さからボタンエリアと固定コンテンツの高さを引いた値を最大高さとして設定
-          final availableHeight = constraints.maxHeight - buttonAreaHeight - fixedContentHeight;
+          final availableHeight =
+              constraints.maxHeight - buttonAreaHeight - fixedContentHeight;
 
           return Column(
             children: [
@@ -419,12 +423,12 @@ double calculateFixedContentHeight(
   // テキストの高さを推定（実際の計算はより複雑になる場合があります）
   final textStyle = Theme.of(context).textTheme.headlineMedium;
   final fontSize = textStyle?.fontSize ?? 24.0; // デフォルト値
-  
+
   // 固定コンテンツの構成要素
   final firstTextHeight = 16.0 * 1.5; // 'ボタンを押してね！'の推定高さ
   final firstSpacing = buttonTheme.sectionSpacing;
   final actionFeedbackHeight = fontSize * 1.5; // 推定高さ
   final secondSpacing = buttonTheme.sectionSpacing;
-  
+
   return firstTextHeight + firstSpacing + actionFeedbackHeight + secondSpacing;
 }
