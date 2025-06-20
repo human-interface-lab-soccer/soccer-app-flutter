@@ -18,12 +18,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         extensions: const [
           ButtonThemeExtension(
-            circleButtonSize: 70.0, // 円形ボタンのデフォルトサイズ
+            circleButtonSize: 64.0, // 円形ボタンのデフォルトサイズ
             boxButtonMinWidth: 100.0, // 四角いボタンのデフォルト最小幅
             boxButtonHeight: 48.0, // 四角いボタンのデフォルト高さ
             buttonSpacing: 20.0, // ボタン同士の間隔
-            sectionSpacing: 10.0, // ボタンとボタンの間のスペース
-            contentPadding: 10.0, // コンテンツの内側余白
+            sectionSpacing: 16.0, // ボタンとボタンの間のスペース
+            contentPadding: 16.0, // コンテンツの内側余白
           ),
         ],
       ),
@@ -272,12 +272,12 @@ class MyHomePageState extends State<MyHomePage> {
           context,
         ).extension<ButtonThemeExtension>()?.scaleForScreenSize(screenSize) ??
         const ButtonThemeExtension(
-          circleButtonSize: 70.0, // 円形ボタンのデフォルトサイズ
+          circleButtonSize: 64.0, // 円形ボタンのデフォルトサイズ
           boxButtonMinWidth: 100.0, // 四角いボタンのデフォルト最小幅
           boxButtonHeight: 48.0, // 四角いボタンのデフォルト高さ
           buttonSpacing: 20.0, // ボタン同士の間隔
-          sectionSpacing: 10.0, // ボタンとボタンの間のスペース
-          contentPadding: 10.0, // コンテンツの内側余白
+          sectionSpacing: 16.0, // ボタンとボタンの間のスペース
+          contentPadding: 16.0, // コンテンツの内側余白
         );
 
     // ボタンエリアの高さを計算
