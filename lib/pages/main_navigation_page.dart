@@ -31,7 +31,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'メニュー'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'メニュー'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bluetooth_connected),
             label: '接続',
