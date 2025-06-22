@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
           ),
         ],
       ),
-      home: const MyHomePage(title: 'Connection Demo Page'),
+      home: const MainNavigationPage(title: 'Connection Demo Page'),
     );
   }
 }
@@ -109,12 +109,83 @@ class ButtonThemeExtension extends ThemeExtension<ButtonThemeExtension> {
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class MainNavigationPage extends StatefulWidget {
+  const MainNavigationPage({super.key, required this.title});
   final String title;
 
   @override
-  State<MyHomePage> createState() => MyHomePageState();
+  State<MainNavigationPage> createState() => MainNavigationPageState();
+}
+
+class MainNavigationPageState extends State<MainNavigationPage> {
+  int _selectedIndex = 1; // デフォルは接続画面（インデックス1）
+
+  // 各画面のリスト
+  final List<Widget> _pages = [
+    const MenuPage(),
+    const ConnectionPage(),
+    const NotePage(),
+  ];
+
+  void onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index; // 選択されたインデックスを更新
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex], // 選択されたページを表示
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu),
+            label: 'メニュー',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bluetooth_connected),
+            label: '接続',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: '自由帳',
+          ),
+        ],
+        currentIndex: _selectedIndex, // 現在のインデックスを設定
+        onTap: onItemTapped, // アイテムがタップされたときの処理
+      ),
+    );
+  }
+} 
+
+// メニューページ（空ページ）
+class MenuPage extends StatelessWidget {
+  const MenuPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('メニュー デモページ'),
+      ),
+      body: const Center(
+        child: Text(
+          '練習メニューの内容を記載予定',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+
+// 接続ページ
+class ConnectionPage extends StatefulWidget {
+  const ConnectionPage({super.key});
+
+  @override
+  State<ConnectionPage> createState() => ConnectionPageState();
 }
 
 // ボタンの押下アクションを定義する列挙型
@@ -128,7 +199,7 @@ enum ButtonPress {
   checkDeviceStatus,
 }
 
-class MyHomePageState extends State<MyHomePage> {
+class ConnectionPageState extends State<ConnectionPage> {
   // ボタンの処理を表示
   String actionFeedback = "";
   // 接続デバイス名リスト
@@ -293,7 +364,7 @@ class MyHomePageState extends State<MyHomePage> {
       // アプリバーの設定
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: const Text("接続"),
       ),
       // メインコンテンツの設定
       body: LayoutBuilder(
@@ -365,28 +436,47 @@ class MyHomePageState extends State<MyHomePage> {
                     ),
                   ],
                 ),
-                child: SafeArea(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 円形ボタン：赤，青，緑，クリア
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: buildCircleButtons(buttonTheme),
-                      ),
-                      SizedBox(height: buttonTheme.sectionSpacing),
-                      // 四角いボタン：接続，グループの決定，接続確認
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: buildBoxButtons(buttonTheme),
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 円形ボタン：赤，青，緑，クリア
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: buildCircleButtons(buttonTheme),
+                    ),
+                    SizedBox(height: buttonTheme.sectionSpacing),
+                    // 四角いボタン：接続，グループの決定，接続確認
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: buildBoxButtons(buttonTheme),
+                    ),
+                  ],
                 ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+// NotePage（自由帳ページ）
+class NotePage extends StatelessWidget {
+  const NotePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('自由帳 デモページ'),
+      ),
+      body: const Center(
+        child: Text(
+          'このページに自由帳の内容を記載予定',
+          style: TextStyle(fontSize: 24),
+        ),
       ),
     );
   }
@@ -399,8 +489,8 @@ double calculateButtonAreaHeight(
 ) {
   final mediaQuery = MediaQuery.of(context);
 
-  // SafeAreaの下部パディング
-  final bottomSafeArea = mediaQuery.padding.bottom;
+  // bottomContainerの下部パディング
+  final bottomContainer = mediaQuery.padding.bottom;
 
   // ボタンエリアの構成要素の高さを計算
   final containerPadding = buttonTheme.contentPadding * 2; // 上下のパディング
@@ -412,7 +502,7 @@ double calculateButtonAreaHeight(
       circleButtonHeight +
       sectionSpacing +
       boxButtonHeight +
-      bottomSafeArea;
+      bottomContainer;
 }
 
 // 固定コンテンツエリアの高さを計算するヘルパーメソッド
