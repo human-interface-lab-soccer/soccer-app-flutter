@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/theme/button_theme_extension.dart';
-// 外部Widget（別ファイルで定義したボタン部品）をインポート
+import 'package:soccer_app_flutter/utils/layout_helpers.dart';
 import 'package:soccer_app_flutter/widgets/circle_button.dart';
 import 'package:soccer_app_flutter/widgets/box_button.dart';
 
@@ -267,10 +267,13 @@ class ConnectionPageState extends State<ConnectionPage> {
         );
 
     // ボタンエリアの高さを計算
-    final buttonAreaHeight = calculateButtonAreaHeight(context, buttonTheme);
+    final buttonAreaHeight = LayoutHelpers.calculateButtonAreaHeight(
+      context,
+      buttonTheme,
+    );
 
     // 固定コンテンツエリアの高さを計算
-    final fixedContentHeight = calculateFixedContentHeight(
+    final fixedContentHeight = LayoutHelpers.calculateFixedContentHeight(
       context,
       buttonTheme,
     );
@@ -392,45 +395,4 @@ class NotePage extends StatelessWidget {
       ),
     );
   }
-}
-
-// ボタンエリアの高さを計算するヘルパーメソッド
-double calculateButtonAreaHeight(
-  BuildContext context,
-  ButtonThemeExtension buttonTheme,
-) {
-  final mediaQuery = MediaQuery.of(context);
-
-  // bottomContainerの下部パディング
-  final bottomContainer = mediaQuery.padding.bottom;
-
-  // ボタンエリアの構成要素の高さを計算
-  final containerPadding = buttonTheme.contentPadding * 2; // 上下のパディング
-  final circleButtonHeight = buttonTheme.circleButtonSize;
-  final sectionSpacing = buttonTheme.sectionSpacing;
-  final boxButtonHeight = buttonTheme.boxButtonHeight;
-
-  return containerPadding +
-      circleButtonHeight +
-      sectionSpacing +
-      boxButtonHeight +
-      bottomContainer;
-}
-
-// 固定コンテンツエリアの高さを計算するヘルパーメソッド
-double calculateFixedContentHeight(
-  BuildContext context,
-  ButtonThemeExtension buttonTheme,
-) {
-  // テキストの高さを推定（実際の計算はより複雑になる場合があります）
-  final textStyle = Theme.of(context).textTheme.headlineMedium;
-  final fontSize = textStyle?.fontSize ?? 24.0; // デフォルト値
-
-  // 固定コンテンツの構成要素
-  final firstTextHeight = 16.0 * 1.5; // 'ボタンを押してね！'の推定高さ
-  final firstSpacing = buttonTheme.sectionSpacing;
-  final actionFeedbackHeight = fontSize * 1.5; // 推定高さ
-  final secondSpacing = buttonTheme.sectionSpacing;
-
-  return firstTextHeight + firstSpacing + actionFeedbackHeight + secondSpacing;
 }
