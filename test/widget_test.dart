@@ -17,7 +17,7 @@ void main() {
   testWidgets('BottomNavigationBarで各ページへ遷移', (WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: MainNavigationPage()));
 
-    await tester.tap(find.byIcon(Icons.menu));
+    await tester.tap(find.byIcon(Icons.menu_book));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('menuPage')), findsOneWidget);
 
