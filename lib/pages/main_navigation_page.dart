@@ -4,8 +4,7 @@ import 'package:soccer_app_flutter/pages/connection_page.dart';
 import 'package:soccer_app_flutter/pages/note_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
-  const MainNavigationPage({super.key, required this.title});
-  final String title;
+  const MainNavigationPage({super.key});
 
   @override
   State<MainNavigationPage> createState() => MainNavigationPageState();

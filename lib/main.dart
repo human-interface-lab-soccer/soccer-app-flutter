@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Connection Demo',
+      title: 'Soccer App Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         extensions: const [
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
           ),
         ],
       ),
-      home: const MainNavigationPage(title: 'Connection Demo Page'),
+      home: const MainNavigationPage(),
     );
   }
 }
