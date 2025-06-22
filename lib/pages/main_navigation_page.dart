@@ -1,0 +1,47 @@
+import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/pages/menu_page.dart';
+import 'package:soccer_app_flutter/pages/connection_page.dart';
+import 'package:soccer_app_flutter/pages/note_page.dart';
+
+class MainNavigationPage extends StatefulWidget {
+  const MainNavigationPage({super.key, required this.title});
+  final String title;
+
+  @override
+  State<MainNavigationPage> createState() => MainNavigationPageState();
+}
+
+class MainNavigationPageState extends State<MainNavigationPage> {
+  int _selectedIndex = 1; // デフォルトは接続画面（インデックス1）
+
+  final List<Widget> _pages = [
+    const MenuPage(),
+    const ConnectionPage(),
+    const NotePage(),
+  ];
+
+  void onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'メニュー'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bluetooth_connected),
+            label: '接続',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '自由帳'),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: onItemTapped,
+      ),
+    );
+  }
+}
