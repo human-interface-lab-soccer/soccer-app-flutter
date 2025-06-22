@@ -188,6 +188,7 @@ class ConnectionPageState extends State<ConnectionPage> {
     );
 
     return Scaffold(
+      key: const Key('connectionPage'),
       // アプリバーの設定
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
