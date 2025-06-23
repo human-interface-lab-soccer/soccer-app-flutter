@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/pages/menu_page.dart';
 import 'package:soccer_app_flutter/pages/connection_page.dart';
@@ -22,6 +21,6 @@ enum NavigationItems {
         return ConnectionPage();
       case NavigationItems.note:
         return NotePage();
-    }     
+    }
   }
 }
