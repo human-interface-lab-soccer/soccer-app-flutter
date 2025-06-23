@@ -14,6 +14,7 @@ enum NavigationItems {
 
   const NavigationItems(this.icon, this.label, this.page);
 }
+
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
 
@@ -35,12 +36,13 @@ class MainNavigationPageState extends State<MainNavigationPage> {
     return Scaffold(
       body: NavigationItems.values[_selectedIndex].page,
       bottomNavigationBar: BottomNavigationBar(
-        items: NavigationItems.values.map((item) {
-          return BottomNavigationBarItem(
-            icon: Icon(item.icon),
-            label: item.label,
-          );
-        }).toList(),
+        items:
+            NavigationItems.values.map((item) {
+              return BottomNavigationBarItem(
+                icon: Icon(item.icon),
+                label: item.label,
+              );
+            }).toList(),
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
