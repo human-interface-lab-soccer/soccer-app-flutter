@@ -12,7 +12,9 @@ class BatteryChannel {
     try {
       result = await _channel.invokeMethod<int>('getBatteryLevel') ?? -1;
     } on PlatformException catch (e) {
-      print(e.message);
+      throw Exception(
+        'Failed to get battery level: ${e.message ?? 'Unknown error'}',
+      );
     }
     return result;
   }
