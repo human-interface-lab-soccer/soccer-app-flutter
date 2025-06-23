@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soccer_app_flutter/theme/button_theme_extension.dart'; // ボタンテーマの拡張をインポート
+import 'package:soccer_app_flutter/themes/button_theme_extension.dart'; // ボタンテーマの拡張をインポート
 
 class LayoutHelpers {
   /// ボタンエリアの高さを計算するヘルパーメソッド
