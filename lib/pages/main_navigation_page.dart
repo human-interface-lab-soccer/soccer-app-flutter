@@ -19,7 +19,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
     const NotePage(),
   ];
 
-  void onItemTapped(int index) {
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -39,7 +39,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: '自由帳'),
         ],
         currentIndex: _selectedIndex,
-        onTap: onItemTapped,
+        onTap: _onItemTapped,
       ),
     );
   }
