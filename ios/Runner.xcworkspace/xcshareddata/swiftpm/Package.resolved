@@ -1,5 +1,5 @@
 {
-  "originHash" : "c63c63846d9c539229e96de38d6af51417e28c0ee9a0bc48bd0f0f19d923c329",
+  "originHash" : "a3787df6bf200e8ae4a3e697f73099a806ce0de52a69f0093ce68cbc25d19040",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -20,6 +20,15 @@
       }
     },
     {
+      "identity" : "cryptoswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzyzanowskim/CryptoSwift",
+      "state" : {
+        "revision" : "729e01bc9b9dab466ac85f21fb9ee2bc1c61b258",
+        "version" : "1.8.4"
+      }
+    },
+    {
       "identity" : "firebase-ios-sdk",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/firebase-ios-sdk",
@@ -33,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/googleads/google-ads-on-device-conversion-ios-sdk",
       "state" : {
-        "revision" : "70a7857886f065a40486a7607268781c49db04ae",
-        "version" : "2.0.0"
+        "revision" : "428d8bb138e00f9a3f4f61cc6cd8863607524f65",
+        "version" : "2.1.0"
       }
     },
     {
@@ -89,6 +98,15 @@
       "state" : {
         "revision" : "040d087ac2267d2ddd4cca36c757d1c6a05fdbfe",
         "version" : "101.0.0"
+      }
+    },
+    {
+      "identity" : "ios-nrf-mesh-library",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NordicSemiconductor/IOS-nRF-Mesh-Library",
+      "state" : {
+        "revision" : "aaaa4a6334a474fd20cdebe4cf459b0162af4011",
+        "version" : "4.4.0"
       }
     },
     {
