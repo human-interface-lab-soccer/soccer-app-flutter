@@ -65,15 +65,19 @@ class ConnectionPageState extends State<ConnectionPage> {
         updateAction("");
         break;
       case ButtonPress.connectDevice:
-        updateAction("デバイス接続");
+        // nRF Mesh Managerを使ってデバイスをスキャン
+        final devices = await NrfMeshManager().scanMeshNodes();
+        updateDeviceList(
+          devices.isNotEmpty ? devices : ["接続デバイスなし"],
+          "デバイス接続",
+        );
         break;
       case ButtonPress.decideGroupAction:
         updateAction("グループ決定!!");
         break;
       case ButtonPress.checkDeviceStatus:
-        final devices = await NrfMeshManager().scanMeshNodes();
         updateDeviceList(
-          devices.isNotEmpty ? devices : ["接続デバイスなし"],
+          List.generate(26, (i) => "デバイス${String.fromCharCode(65 + i)}"),
           "デバイス確認",
         );
         break;
