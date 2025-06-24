@@ -7,12 +7,16 @@ class NrfMeshManager {
   );
 
   Future<List<String>> scanMeshNodes() async {
-    List<String> result = [];
+    List<String> result = [""];
     try {
       var nodes = await _channel.invokeMethod('scanMeshNodes');
-      result = (nodes as List<dynamic>?)?.map((e) => e.toString()).toList() ?? ["No devices found"];
+      result =
+          (nodes as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          ["No devices found"];
     } on PlatformException catch (e) {
-      throw Exception('Failed to initialize NRF Mesh Manager: ${e.message ?? 'Unknown error'}');
+      throw Exception(
+        'Failed to initialize NRF Mesh Manager: ${e.message ?? 'Unknown error'}',
+      );
     }
     return result;
   }
