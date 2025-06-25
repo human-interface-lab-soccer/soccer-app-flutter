@@ -80,18 +80,16 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
 
-    code_signing:
-      ios:
-        provisioning_profile_type: ad_hoc
-        certificate_private_key: $IOS_CERTIFICATE_PRIVATE_KEY
-        certificate: $IOS_CERTIFICATE
-        provisioning_profiles:
-          - $IOS_PROVISIONING_PROFILE
-
+    integrations:
+      app_store_connect: codemagic
+      
     publishing:
       firebase:
         firebase_service_account: $FIREBASE_SERVICE_ACCOUNT
-        app_id: 1:754858244182:ios:dfaa8c64f69ddcfa58e3f7
+        android:
+          app_id: $FIREBASE_ANDROID_APP_ID
+        ios:
+          app_id: 1:754858244182:ios:dfaa8c64f69ddcfa58e3f7
         groups:
           - developer
           - Developer
