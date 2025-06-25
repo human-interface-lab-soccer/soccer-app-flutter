@@ -1,9 +1,65 @@
 workflows:
+  app-distribution:
+    name: App Distribution
+    max_build_duration: 60
+    instance_type: mac_mini_m2
 
-    sample-workflow:
+    environment:
+      flutter: 3.29.3
+      xcode: 16.3
+      vars:
+        FIREBASE_STORAGE_BUCKET: $FIREBASE_STORAGE_BUCKET
+        GOOGLE_SERVICE_INFO_PLIST: $GOOGLE_SERVICE_INFO_PLIST
+        FIREBASE_PROJECT_ID: $FIREBASE_PROJECT_ID
+        FIREBASE_MESSAGING_SENDER_ID: $FIREBASE_MESSAGING_SENDER_ID
+        FIREBASE_ANDROID_APP_ID: $FIREBASE_ANDROID_APP_ID
+        FIREBASE_ANDROID_API_KEY: $FIREBASE_ANDROID_API_KEY
+        FIREBASE_IOS_APP_ID: $FIREBASE_IOS_APP_ID
+        FIREBASE_IOS_API_KEY: $FIREBASE_IOS_API_KEY
+      cache:
+        cache_paths:
+          - $FLUTTER_ROOT/.pub-cache
+          - build/
 
-        name: Codemagic Sample Workflow
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
 
-        max_build_duration: 120
+    scripts:
+      - name: Install dependencies
+        script: |
+          flutter pub get
+      - name: Static code analysis
+        script: |
+          flutter analyze
+      - name: Run unit & widget tests
+        script: |
+          flutter test
+      - name: Build iOS app with automatic code signing
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
 
-        instance_type: mac_mini_m2
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    code_signing:
+      provisioning_profile_type: ad_hoc
+      certificate_url: Encrypted(Codemagic)
+      certificate_password: Encrypted(UPLOAD_IN_CLI_OR_GUI)
+      provisioning_profiles:
+        jp.ac.saitama-u.mech.human.soccerAppFlutter: Encrypted(Ad Hoc Soccer App Flutter)
+      keychain_path: $CM_KEYCHAIN_PATH
+      keychain_password: $CM_KEYCHAIN_PASSWORD
+
+    publishing:
+      firebase:
+        credentials: encrypted/human-lab-soccer-firebase-adminsdk-fbsvc-38ddb1994a.json
+        app_id: 1:754858244182:ios:dfaa8c64f69ddcfa58e3f7
+        groups:
+          - developer
+          - Developer
