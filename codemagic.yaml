@@ -16,7 +16,8 @@ workflows:
         FIREBASE_ANDROID_API_KEY: $FIREBASE_ANDROID_API_KEY
         FIREBASE_IOS_APP_ID: $FIREBASE_IOS_APP_ID
         FIREBASE_IOS_API_KEY: $FIREBASE_IOS_API_KEY
-      cache:
+    
+    cache:
         cache_paths:
           - $FLUTTER_ROOT/.pub-cache
           - build/
@@ -80,17 +81,16 @@ workflows:
       - build/ios/ipa/*.ipa
 
     code_signing:
-      provisioning_profile_type: ad_hoc
-      certificate_url: Encrypted(Codemagic)
-      certificate_password: Encrypted(UPLOAD_IN_CLI_OR_GUI)
-      provisioning_profiles:
-        jp.ac.saitama-u.mech.human.soccerAppFlutter: Encrypted(Ad Hoc Soccer App Flutter)
-      keychain_path: $CM_KEYCHAIN_PATH
-      keychain_password: $CM_KEYCHAIN_PASSWORD
+      ios:
+        provisioning_profile_type: ad_hoc
+        certificate_private_key: $IOS_CERTIFICATE_PRIVATE_KEY
+        certificate: $IOS_CERTIFICATE
+        provisioning_profiles:
+          - $IOS_PROVISIONING_PROFILE
 
     publishing:
       firebase:
-        credentials: encrypted/human-lab-soccer-firebase-adminsdk-fbsvc-38ddb1994a.json
+        firebase_service_account: $FIREBASE_SERVICE_ACCOUNT
         app_id: 1:754858244182:ios:dfaa8c64f69ddcfa58e3f7
         groups:
           - developer
