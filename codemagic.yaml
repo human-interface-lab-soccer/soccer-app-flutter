@@ -89,7 +89,7 @@ workflows:
         android:
           app_id: $FIREBASE_ANDROID_APP_ID
         ios:
-          app_id: 1:754858244182:ios:dfaa8c64f69ddcfa58e3f7
+          app_id: $FIREBASE_IOS_APP_ID
           groups:
             - developer
             - Developer
