@@ -76,7 +76,7 @@ workflows:
           flutter test
       - name: Build iOS app with automatic code signing
         script: |
-          flutter build ipa --release -- --allowProvisioningUpdates
+          flutter build ipa --release --export-method=ad-hoc
 
     artifacts:
       - build/ios/ipa/*.ipa
