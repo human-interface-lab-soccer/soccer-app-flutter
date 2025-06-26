@@ -43,7 +43,7 @@ import CoreBluetooth
         connection = NetworkConnection(to: meshNetwork)
         
         nRFMeshChannel.setMethodCallHandler({
-            [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
+            [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
             
             guard call.method == "scanMeshNodes" else {
                 result(FlutterMethodNotImplemented)
@@ -90,15 +90,17 @@ import CoreBluetooth
         return network
     }
     
-    private func _scanMeshNodes(result: FlutterResult) {
+    private func _scanMeshNodes(result: @escaping FlutterResult) {
         generalScanner = GeneralBleScanner()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+            
+            print(self?.generalScanner?.devices)
+            
+            result(self?.generalScanner?.devices ?? ["Null"])
             self?.generalScanner?.stopScan()
             self?.generalScanner = nil
         }
-        
-        result(["テスト完了"])
     }
 }
 
@@ -106,45 +108,38 @@ import CoreBluetooth
 class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
     
     private var centralManager: CBCentralManager!
+    var devices: [String] = []
     
     override init() {
         super.init()
-        // CBCentralManagerを初期化し、イベントの通知先をこのクラスに設定
         centralManager = CBCentralManager(delegate: self, queue: nil)
     }
     
-    // スキャンを開始するメソッド
     func startScan() {
         print("汎用スキャンを開始します...")
-        // BluetoothがONになっていればスキャンを開始する
         if centralManager.state == .poweredOn {
-            // withServices: nil にすることで、全てのBLEデバイスをスキャン対象にする
             centralManager.scanForPeripherals(withServices: nil, options: nil)
         } else {
             print("BluetoothがONになっていません。state: \(centralManager.state.rawValue)")
         }
     }
     
-    // スキャンを停止するメソッド
     func stopScan() {
         print("汎用スキャンを停止します。")
         centralManager.stopScan()
     }
     
-    // Bluetoothの状態が変化したときに呼ばれるメソッド
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         print("汎用スキャナ: Bluetoothの状態が変化 -> \(central.state.rawValue)")
         if central.state == .poweredOn {
-            // BluetoothがONになったら、スキャンを再試行する
             startScan()
         }
     }
     
-    // デバイスを発見するたびに呼ばれるメソッド
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        // peripheral.nameがnilでなければ、その名前を出力する
         if let deviceName = peripheral.name {
             print("デバイス発見！ -> Name: \(deviceName), RSSI: \(RSSI)")
+            devices.append(deviceName)
         }
     }
 }
