@@ -1,12 +1,15 @@
 import Flutter
 import UIKit
 import NordicMesh
+import CoreBluetooth
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
     
     private var meshNetworkManager: MeshNetworkManager!
     private var connection: NetworkConnection!
+    
+    private var generalScanner: GeneralBleScanner?
     
     override func application(
         _ application: UIApplication,
@@ -46,7 +49,7 @@ import NordicMesh
                 result(FlutterMethodNotImplemented)
                 return
             }
-            self?.scanMeshNodes(result: result)
+            self?._scanMeshNodes(result: result)
         })
         
         GeneratedPluginRegistrant.register(with: self)
@@ -87,73 +90,61 @@ import NordicMesh
         return network
     }
     
-    /// Sets up the local Elements and reinitializes the ``NetworkConnection``
-    /// so that it starts scanning for devices advertising the new Network ID.
-//    func meshNetworkDidChange() {
-//        connection?.close()
-//        
-//        let meshNetwork = meshNetworkManager.meshNetwork!
-//
-//        // Generic Default Transition Time Server model:
-//        let defaultTransitionTimeServerDelegate = GenericDefaultTransitionTimeServerDelegate(meshNetwork)
-//        // Scene Server and Scene Setup Server models:
-//        let sceneServer = SceneServerDelegate(meshNetwork,
-//                                              defaultTransitionTimeServer: defaultTransitionTimeServerDelegate)
-//        let sceneSetupServer = SceneSetupServerDelegate(server: sceneServer)
-//        
-//        // Set up local Elements on the phone.
-//        let element0 = Element(name: "Primary Element", location: .first, models: [
-//            // Scene Server and Scene Setup Server models (client is added automatically):
-//            Model(sigModelId: .sceneServerModelId, delegate: sceneServer),
-//            Model(sigModelId: .sceneSetupServerModelId, delegate: sceneSetupServer),
-//            // Sensor Client model:
-//            Model(sigModelId: .sensorClientModelId, delegate: SensorClientDelegate()),
-//            // Generic Power OnOff Client model:
-//            Model(sigModelId: .genericPowerOnOffClientModelId, delegate: GenericPowerOnOffClientDelegate()),
-//            // Generic Default Transition Time Server model:
-//            Model(sigModelId: .genericDefaultTransitionTimeServerModelId,
-//                  delegate: defaultTransitionTimeServerDelegate),
-//            Model(sigModelId: .genericDefaultTransitionTimeClientModelId,
-//                  delegate: GenericDefaultTransitionTimeClientDelegate()),
-//            // 4 generic models defined by Bluetooth SIG:
-//            Model(sigModelId: .genericOnOffServerModelId,
-//                  delegate: GenericOnOffServerDelegate(meshNetwork,
-//                                                       defaultTransitionTimeServer: defaultTransitionTimeServerDelegate,
-//                                                       elementIndex: 0)),
-//            Model(sigModelId: .genericLevelServerModelId,
-//                  delegate: GenericLevelServerDelegate(meshNetwork,
-//                                                       defaultTransitionTimeServer: defaultTransitionTimeServerDelegate,
-//                                                       elementIndex: 0)),
-//            Model(sigModelId: .genericOnOffClientModelId, delegate: GenericOnOffClientDelegate()),
-//            Model(sigModelId: .genericLevelClientModelId, delegate: GenericLevelClientDelegate()),
-//            Model(sigModelId: .lightLCClientModelId, delegate: LightLCClientDelegate()),
-//            // Nordic Pairing Initiator model:
-//            Model(vendorModelId: .lePairingInitiator,
-//                  companyId: .nordicSemiconductorCompanyId,
-//                  delegate: PairingInitiatorDelegate()),
-//            // A simple vendor model:
-//            Model(vendorModelId: .simpleOnOffClientModelId,
-//                  companyId: .nordicSemiconductorCompanyId,
-//                  delegate: SimpleOnOffClientDelegate())
-//        ])
-//        let element1 = Element(name: "Secondary Element", location: .second, models: [
-//            Model(sigModelId: .genericOnOffServerModelId,
-//                  delegate: GenericOnOffServerDelegate(meshNetwork,
-//                                                       defaultTransitionTimeServer: defaultTransitionTimeServerDelegate,
-//                                                       elementIndex: 1)),
-//            Model(sigModelId: .genericLevelServerModelId,
-//                  delegate: GenericLevelServerDelegate(meshNetwork,
-//                                                       defaultTransitionTimeServer: defaultTransitionTimeServerDelegate,
-//                                                       elementIndex: 1)),
-//            Model(sigModelId: .genericOnOffClientModelId, delegate: GenericOnOffClientDelegate()),
-//            Model(sigModelId: .genericLevelClientModelId, delegate: GenericLevelClientDelegate())
-//        ])
-//        meshNetworkManager.localElements = [element0, element1]
-//        
-//        connection = NetworkConnection(to: meshNetwork)
-//        connection!.dataDelegate = meshNetworkManager
-//        connection!.logger = self
-//        meshNetworkManager.transmitter = connection
-//        connection!.open()
-//    }
+    private func _scanMeshNodes(result: FlutterResult) {
+        generalScanner = GeneralBleScanner()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+            self?.generalScanner?.stopScan()
+            self?.generalScanner = nil
+        }
+        
+        result(["テスト完了"])
+    }
+}
+
+/// テスト用の汎用Bluetoothスキャナクラス
+class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
+    
+    private var centralManager: CBCentralManager!
+    
+    override init() {
+        super.init()
+        // CBCentralManagerを初期化し、イベントの通知先をこのクラスに設定
+        centralManager = CBCentralManager(delegate: self, queue: nil)
+    }
+    
+    // スキャンを開始するメソッド
+    func startScan() {
+        print("汎用スキャンを開始します...")
+        // BluetoothがONになっていればスキャンを開始する
+        if centralManager.state == .poweredOn {
+            // withServices: nil にすることで、全てのBLEデバイスをスキャン対象にする
+            centralManager.scanForPeripherals(withServices: nil, options: nil)
+        } else {
+            print("BluetoothがONになっていません。state: \(centralManager.state.rawValue)")
+        }
+    }
+    
+    // スキャンを停止するメソッド
+    func stopScan() {
+        print("汎用スキャンを停止します。")
+        centralManager.stopScan()
+    }
+    
+    // Bluetoothの状態が変化したときに呼ばれるメソッド
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        print("汎用スキャナ: Bluetoothの状態が変化 -> \(central.state.rawValue)")
+        if central.state == .poweredOn {
+            // BluetoothがONになったら、スキャンを再試行する
+            startScan()
+        }
+    }
+    
+    // デバイスを発見するたびに呼ばれるメソッド
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        // peripheral.nameがnilでなければ、その名前を出力する
+        if let deviceName = peripheral.name {
+            print("デバイス発見！ -> Name: \(deviceName), RSSI: \(RSSI)")
+        }
+    }
 }
