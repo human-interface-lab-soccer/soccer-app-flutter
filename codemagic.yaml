@@ -76,8 +76,7 @@ workflows:
           flutter test
       - name: Build iOS app with automatic code signing
         script: |
-          flutter build ipa --release \
-            --export-options-plist=/Users/builder/export_options.plist
+          flutter build ipa --release
 
     artifacts:
       - build/ios/ipa/*.ipa
