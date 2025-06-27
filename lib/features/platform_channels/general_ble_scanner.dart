@@ -2,7 +2,29 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 
-/// A class to manage Bluetooth Low Energy (BLE) scanning using platform channels.
+/// このクラスは、BLE（Bluetooth Low Energy）デバイスのスキャン機能を提供します。
+///
+/// ### 主な目的:
+/// - BLEデバイスの検出およびリストアップを行い、アプリケーションで利用可能なデバイス情報を取得します。
+///
+/// ### 引数・戻り値:
+/// - コンストラクタやメソッドの引数には、スキャン条件やコールバック関数などが含まれる場合があります。
+/// - 戻り値として、検出されたBLEデバイスのリストやスキャン状態を返すことがあります。
+///
+/// ### 使用例:
+/// ```dart
+/// final scanner = GeneralBleScanner();
+/// // ストリームを購読して、検出されたデバイスを取得
+/// scanner.discoveredDevicesStream.listen((devices) {
+///   for (var device in devices) {
+///     print('Discovered device: ${device.name}, UUID: ${device.uuid}');
+///   }
+/// });
+/// ```
+///
+/// ### 注意点:
+/// - 実機での動作にはBluetoothの権限が必要です。
+/// - スキャン中はバッテリー消費が増加する場合があります。
 class GeneralBleScanner {
   static const EventChannel _channel = EventChannel(
     'human.mech.saitama-u.ac.jp/generalBleScanner',
@@ -24,17 +46,20 @@ class GeneralBleScanner {
     _startCleanupTimer();
   }
 
+  /// スキャン中のデバイスを破棄し、ストリームを閉じる
   void dispose() {
     _subscription?.cancel();
     _devicesController.close();
   }
 
-  void stop() {
+  /// スキャンを一時停止
+  void pauseScanning() {
     _subscription?.cancel();
     _subscription = null;
     _cleanupTimer?.cancel();
   }
 
+  /// スキャンを再開
   void restart() {
     _startStream();
     _startCleanupTimer();
@@ -46,21 +71,24 @@ class GeneralBleScanner {
     });
   }
 
+  /// 一定時間内に検出されなかったデバイスをリストから削除
   void _cleanupDevices() {
+    // ストリームが閉じられている場合はタイマーをキャンセル
     if (_devicesController.isClosed) {
-      // ストリームが閉じられている場合はタイマーをキャンセル
       _cleanupTimer?.cancel();
       return;
     }
-    if (_discoveredDevices.isEmpty) {
-      return; // 既にデバイスがない場合は何もしない
-    }
+    // 既にデバイスがない場合は何もしない
+    if (_discoveredDevices.isEmpty) return;
 
     final DateTime now = DateTime.now();
-    final updatedDevices = _discoveredDevices
-      .where((device) => now.difference(device.lastSeen) <= _deviceTimeout)
-      .toList();
-    
+    final updatedDevices =
+        _discoveredDevices
+            .where(
+              (device) => now.difference(device.lastSeen) <= _deviceTimeout,
+            )
+            .toList();
+
     if (updatedDevices.length != _discoveredDevices.length) {
       discoveredDevices
         ..clear()
@@ -69,6 +97,7 @@ class GeneralBleScanner {
     }
   }
 
+  /// スキャンを開始し、デバイスの検出をリッスン
   void _startStream() {
     _subscription = _channel.receiveBroadcastStream().listen(
       _onDeviceDiscovered,
@@ -76,10 +105,10 @@ class GeneralBleScanner {
     );
   }
 
+  /// デバイスが検出されたときのコールバック
   void _onDeviceDiscovered(dynamic device) {
     // ストリームが閉じられている場合は何もしない
     if (_devicesController.isClosed) return;
-
     // デバイスがMapでない場合は何もしない
     if (device is! Map) return;
 
@@ -89,9 +118,7 @@ class GeneralBleScanner {
       int index = _discoveredDevices.indexWhere(
         (d) => d.uuid == bleDevice.uuid,
       );
-      _discoveredDevices[index] = bleDevice.copyWith(
-        lastSeen: DateTime.now(),
-      );
+      _discoveredDevices[index] = bleDevice.copyWith(lastSeen: DateTime.now());
     } else {
       // 新しいデバイスをリストに追加
       _discoveredDevices.add(bleDevice);
@@ -99,8 +126,8 @@ class GeneralBleScanner {
     _devicesController.add(List<BleDevice>.from(_discoveredDevices));
   }
 
+  /// スキャン中にエラーが発生したときの処理
   void _onScanError(dynamic error) {
-    // スキャン中にエラーが発生したときの処理
     // ignore: avoid_print
     print("Scan error: $error");
   }

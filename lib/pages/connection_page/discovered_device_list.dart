@@ -2,6 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanner.dart';
 import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 
+/// 検出されたBLEデバイスのリストを表示するウィジェット
+/// 
+/// ### 主な目的:
+/// - BLEデバイスのスキャンを開始し、検出されたデバイスの情報をリスト表示
+/// 
+/// ### 引数・戻り値:
+/// - 特に引数はなく、ウィジェットの状態を管理するためのStatefulWidget
+/// - スキャンボタンを押すことでスキャンの開始/停止が可能
+/// 
+/// ### 使用例:
+/// ```dart
+/// DiscoveredDeviceList();
+/// ```
+/// ### 注意点:
+/// - スキャン中はデバイスの検出情報がリアルタイムで更新されます。
+/// - スキャンを停止すると、検出されたデバイスのリストが更新されなくなります。
+/// - デバイス名が"Unknown device"の場合は表示されません。
+/// - スキャン中はバッテリー消費が増加する可能性があります。
+/// - 実機での動作にはBluetoothの権限が必要です。
+/// - スキャン中にエラーが発生した場合は、エラーメッセージがコンソールに出力されます。
 class DiscoveredDeviceList extends StatefulWidget {
   const DiscoveredDeviceList({super.key});
 
@@ -18,7 +38,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
       setState(() {
         isScanning = false;
       });
-      generalBleScanner.stop();
+      generalBleScanner.pauseScanning();
     } else {
       generalBleScanner.restart();
       setState(() {
@@ -41,9 +61,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
         children: [
           ElevatedButton(
             onPressed: handleScanButtonPressed,
-            child: Icon(
-              isScanning ? Icons.stop : Icons.play_arrow,
-            ),
+            child: Icon(isScanning ? Icons.stop : Icons.play_arrow),
           ),
           StreamBuilder<List<BleDevice>>(
             stream: generalBleScanner.discoveredDevicesStream,
@@ -61,7 +79,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
                         return ListTile(
                           title: Text(device.name),
                           subtitle: Text(
-                            'UUID: ${device.uuid}, RSSI: ${device.rssi}, Last Seen: ${device.lastSeen}',  
+                            'UUID: ${device.uuid}, RSSI: ${device.rssi}, Last Seen: ${device.lastSeen}',
                           ),
                         );
                       }).toList(),

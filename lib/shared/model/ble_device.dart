@@ -20,7 +20,8 @@ class BleDevice {
   final DateTime lastSeen;
 
   BleDevice({
-    required this.name, required this.uuid, 
+    required this.name,
+    required this.uuid,
     required this.rssi,
     required this.lastSeen,
   });
