@@ -2,15 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanner.dart';
 import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 
-class BleDeviceList extends StatefulWidget {
-  const BleDeviceList({super.key});
+class DiscoveredDeviceList extends StatefulWidget {
+  const DiscoveredDeviceList({super.key});
 
   @override
-  State<BleDeviceList> createState() => _BleDeviceListState();
+  State<DiscoveredDeviceList> createState() => _DiscoveredDeviceListState();
 }
 
-class _BleDeviceListState extends State<BleDeviceList> {
+class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   final GeneralBleScanner generalBleScanner = GeneralBleScanner();
+  bool isScanning = true;
+
+  void handleScanButtonPressed() {
+    if (isScanning) {
+      setState(() {
+        isScanning = false;
+      });
+      generalBleScanner.stop();
+    } else {
+      generalBleScanner.restart();
+      setState(() {
+        isScanning = true;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -25,10 +40,10 @@ class _BleDeviceListState extends State<BleDeviceList> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           ElevatedButton(
-            onPressed: () {
-              print("Button pressed");
-            },
-            child: const Text("Scan for BLE Devices"),
+            onPressed: handleScanButtonPressed,
+            child: Icon(
+              isScanning ? Icons.stop : Icons.play_arrow,
+            ),
           ),
           StreamBuilder<List<BleDevice>>(
             stream: generalBleScanner.discoveredDevicesStream,
@@ -46,7 +61,7 @@ class _BleDeviceListState extends State<BleDeviceList> {
                         return ListTile(
                           title: Text(device.name),
                           subtitle: Text(
-                            'UUID: ${device.uuid}, RSSI: ${device.rssi}',
+                            'UUID: ${device.uuid}, RSSI: ${device.rssi}, Last Seen: ${device.lastSeen}',  
                           ),
                         );
                       }).toList(),
