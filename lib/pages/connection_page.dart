@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 import 'package:soccer_app_flutter/themes/button_theme_extension.dart';
 import 'package:soccer_app_flutter/utils/layout_helpers.dart';
 import 'package:soccer_app_flutter/widgets/circle_button.dart';
 import 'package:soccer_app_flutter/widgets/box_button.dart';
-import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanner.dart';
+import 'package:soccer_app_flutter/pages/connection_page/ble_device_list.dart';
 
 // ボタンの押下アクションを定義する列挙型
 enum ButtonPress {
@@ -28,22 +29,26 @@ class ConnectionPageState extends State<ConnectionPage> {
   // ボタンの処理を表示
   String actionFeedback = "";
   // 接続デバイス名リスト
-  List<String> deviceList = [];
+  List<BleDevice> deviceList = [];
   // デバイス確認済みフラグ
   bool hasCheckedDevice = false;
+
+  bool showScanner = false;
 
   // アクションを更新して画面に反映する関数
   void updateAction(String message) {
     setState(() {
       hasCheckedDevice = false; // デバイス確認済みフラグをリセット
       actionFeedback = message;
+      showScanner = false; // スキャナーを非表示にする
     });
   }
 
   // デバイスリストを更新して画面に反映する関数
-  void updateDeviceList(List<String> devices, String message) {
+  void updateDeviceList(List<BleDevice> devices, String message) {
     setState(() {
       hasCheckedDevice = true; // デバイス確認済みフラグをセット
+      showScanner = false; // スキャナーを非表示にする
       deviceList = devices;
       actionFeedback = message;
     });
@@ -65,18 +70,22 @@ class ConnectionPageState extends State<ConnectionPage> {
         updateAction("");
         break;
       case ButtonPress.connectDevice:
-        // nRF Mesh Managerを使ってデバイスをスキャン
-        // final devices = await NrfMeshManager().scanMeshNodes();
-        // updateDeviceList(devices.isNotEmpty ? devices : ["接続デバイスなし"], "デバイス接続");
         updateAction("デバイスのスキャン");
-        GeneralBleScanner();
+        showScanner = true;
         break;
       case ButtonPress.decideGroupAction:
         updateAction("グループ決定!!");
         break;
       case ButtonPress.checkDeviceStatus:
         updateDeviceList(
-          List.generate(26, (i) => "デバイス${String.fromCharCode(65 + i)}"),
+          List.generate(
+            26,
+            (i) => BleDevice(
+              name: "デバイス${String.fromCharCode(65 + i)}",
+              uuid: "UUID-${i + 1}",
+              rssi: -70 - i,
+            ),
+          ),
           "デバイス確認",
         );
         break;
@@ -239,7 +248,7 @@ class ConnectionPageState extends State<ConnectionPage> {
                                               buttonTheme.contentPadding,
                                         ),
                                         child: Text(
-                                          deviceList[index],
+                                          deviceList[index].name,
                                           style: const TextStyle(fontSize: 18),
                                         ),
                                       );
@@ -251,6 +260,11 @@ class ConnectionPageState extends State<ConnectionPage> {
                                       style: TextStyle(color: Colors.grey),
                                     ),
                                   ),
+                        ),
+                      if (showScanner)
+                        SizedBox(
+                          height: availableHeight, // スキャナーの高さ
+                          child: const BleDeviceList(),
                         ),
                     ],
                   ),

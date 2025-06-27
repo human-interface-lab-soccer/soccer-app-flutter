@@ -1,47 +1,18 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
-
-/// Bluetoothデバイスの情報を表すクラス
-///
-/// このクラスは、BLEデバイスの名前、UUID、およびRSSIを保持します。
-///
-/// example:
-/// ```dart
-/// var device = BleDevice.fromMap({
-///   'name': 'My Device',
-///   'uuid': 'XXXX-XXXX',
-///   'rssi': -70,
-/// });
-/// print(device); // BleDevice(name: My Device, uuid: XXXx-XXXX, rssi: -70)
-/// ```
-///
-class BleDevice {
-  final String name;
-  final String uuid;
-  final int rssi;
-
-  BleDevice({required this.name, required this.uuid, required this.rssi});
-
-  factory BleDevice.fromMap(Map<String, dynamic> map) {
-    return BleDevice(
-      name: map['name'] as String? ?? 'Unknown Device',
-      uuid: map['uuid'] as String? ?? 'Unknown Address',
-      rssi: map['rssi'] as int? ?? 0,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'BleDevice(name: $name, uuid: $uuid, rssi: $rssi)';
-  }
-}
+import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 
 /// A class to manage Bluetooth Low Energy (BLE) scanning using platform channels.
 class GeneralBleScanner {
   static const EventChannel _channel = EventChannel(
     'human.mech.saitama-u.ac.jp/generalBleScanner',
   );
-  List<BleDevice> discoveredDevices = [];
+  final List<BleDevice> _discoveredDevices = [];
+  final _devicesController = StreamController<List<BleDevice>>.broadcast();
+
+  Stream<List<BleDevice>> get discoveredDevicesStream =>
+      _devicesController.stream;
+  List<BleDevice> get discoveredDevices => _discoveredDevices;
   StreamSubscription? _subscription;
 
   GeneralBleScanner() {
@@ -50,6 +21,7 @@ class GeneralBleScanner {
 
   void dispose() {
     _subscription?.cancel();
+    _devicesController.close();
   }
 
   void _startStream() {
@@ -64,13 +36,16 @@ class GeneralBleScanner {
       return;
     }
     BleDevice bleDevice = BleDevice.fromMap(Map<String, dynamic>.from(device));
-    if (discoveredDevices.any((d) => d.uuid == bleDevice.uuid)) {
+    if (_discoveredDevices.any((d) => d.uuid == bleDevice.uuid)) {
       // 既に同じUUIDのデバイスがリストに存在する場合は上書き
-      int index = discoveredDevices.indexWhere((d) => d.uuid == bleDevice.uuid);
-      discoveredDevices[index] = bleDevice;
+      int index = _discoveredDevices.indexWhere(
+        (d) => d.uuid == bleDevice.uuid,
+      );
+      _discoveredDevices[index] = bleDevice;
     } else {
-      discoveredDevices.add(bleDevice);
+      _discoveredDevices.add(bleDevice);
     }
+    _devicesController.add(List<BleDevice>.from(_discoveredDevices));
   }
 
   void _onScanError(dynamic error) {
