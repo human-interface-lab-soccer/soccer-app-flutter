@@ -10,15 +10,10 @@ workflows:
       groups:
         - Firebase
       vars:
-        FIREBASE_STORAGE_BUCKET: $FIREBASE_STORAGE_BUCKET
-        GOOGLE_SERVICE_INFO_PLIST: $GOOGLE_SERVICE_INFO_PLIST
-        FIREBASE_PROJECT_ID: $FIREBASE_PROJECT_ID
-        FIREBASE_MESSAGING_SENDER_ID: $FIREBASE_MESSAGING_SENDER_ID
+        FIREBASE_SERVICE_ACCOUNT: $FIREBASE_SERVICE_ACCOUNT
         FIREBASE_ANDROID_APP_ID: $FIREBASE_ANDROID_APP_ID
-        FIREBASE_ANDROID_API_KEY: $FIREBASE_ANDROID_API_KEY
         FIREBASE_IOS_APP_ID: $FIREBASE_IOS_APP_ID
-        FIREBASE_IOS_API_KEY: $FIREBASE_IOS_API_KEY
-    
+        GOOGLE_SERVICE_INFO_PLIST: $GOOGLE_SERVICE_INFO_PLIST
     cache:
         cache_paths:
           - $FLUTTER_ROOT/.pub-cache
@@ -31,6 +26,14 @@ workflows:
         - pattern: main
           include: true
           source: true
+
+    scripts:
+      - name: Setup Firebase configuration
+        script: |
+          echo "Decoding GoogleService-Info.plist from environment variable..."
+          printf "%s" $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
+          echo "GoogleService-Info.plist created at: $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist"
+          ls -la $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
 
     scripts:
       - name: Install dependencies
