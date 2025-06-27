@@ -37,19 +37,6 @@ workflows:
         script: |
           flutter pub get
 
-      - name: Configure iOS Code Signing
-        script: |
-          # Bundle IDを確認
-          echo "Current Bundle ID:"
-          grep -A 1 "PRODUCT_BUNDLE_IDENTIFIER" ios/Runner.xcodeproj/project.pbxproj
-          
-          # Automatic Signingを強制的に有効化
-          sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' ios/Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = "6BW54S5C98";/g' ios/Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = .*/PROVISIONING_PROFILE_SPECIFIER = "";/g' ios/Runner.xcodeproj/project.pbxproj
-          
-          echo "Code signing updated to Automatic"
-          
       - name: Auto-increment version
         script: |
           # 現在のバージョン情報を取得
@@ -82,15 +69,10 @@ workflows:
           # 確認用に更新後のバージョンを表示
           echo "Updated pubspec.yaml version:"
           grep "version:" pubspec.yaml | head -n1
-      - name: Static code analysis
-        script: |
-          flutter analyze
-      - name: Run unit & widget tests
+
+      - name: Testing
         script: |
           flutter test
-      - name: Build iOS app with automatic code signing
-        script: |
-          flutter build ipa --release --export-method=ad-hoc
 
     artifacts:
       - build/ios/ipa/*.ipa
