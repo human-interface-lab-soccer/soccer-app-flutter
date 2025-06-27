@@ -3,7 +3,7 @@ import 'package:soccer_app_flutter/themes/button_theme_extension.dart';
 import 'package:soccer_app_flutter/utils/layout_helpers.dart';
 import 'package:soccer_app_flutter/widgets/circle_button.dart';
 import 'package:soccer_app_flutter/widgets/box_button.dart';
-import 'package:soccer_app_flutter/platform_channels/nrf_mesh_manager.dart';
+import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanner.dart';
 
 // ボタンの押下アクションを定義する列挙型
 enum ButtonPress {
@@ -66,8 +66,10 @@ class ConnectionPageState extends State<ConnectionPage> {
         break;
       case ButtonPress.connectDevice:
         // nRF Mesh Managerを使ってデバイスをスキャン
-        final devices = await NrfMeshManager().scanMeshNodes();
-        updateDeviceList(devices.isNotEmpty ? devices : ["接続デバイスなし"], "デバイス接続");
+        // final devices = await NrfMeshManager().scanMeshNodes();
+        // updateDeviceList(devices.isNotEmpty ? devices : ["接続デバイスなし"], "デバイス接続");
+        updateAction("デバイスのスキャン");
+        GeneralBleScanner();
         break;
       case ButtonPress.decideGroupAction:
         updateAction("グループ決定!!");

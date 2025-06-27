@@ -19,6 +19,10 @@ import NordicMesh
             name: "human.mech.saitama-u.ac.jp/nRFMesh",
             binaryMessenger: controller.binaryMessenger
         )
+        let generalBleScanner = FlutterEventChannel(
+            name: "human.mech.saitama-u.ac.jp/generalBleScanner",
+            binaryMessenger: controller.binaryMessenger
+        )
         
         meshNetworkManager = MeshNetworkManager()
         meshNetworkManager.networkParameters = .default
@@ -51,6 +55,11 @@ import NordicMesh
             self?.scanMeshNodes(result: result)
         })
         
+        let scanner = GeneralBleScanner()
+        generalBleScanner.setStreamHandler(
+            scanner
+        )
+        
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -72,7 +81,7 @@ import NordicMesh
     private func scanMeshNodes(result: @escaping FlutterResult) {
         
         let durationScan = 5.0
-        generalScanner = GeneralBleScanner()
+//        generalScanner = GeneralBleScanner()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + durationScan) { [weak self] in
             result(self?.generalScanner?.devices ?? ["Null"])

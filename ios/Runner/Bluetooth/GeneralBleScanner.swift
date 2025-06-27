@@ -4,12 +4,14 @@
 //
 //  Created by naokeyn on 2025/06/26.
 //
+import Flutter
 import CoreBluetooth
 
 /// テスト用の汎用Bluetoothスキャナクラス
-class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
+class GeneralBleScanner: NSObject, CBCentralManagerDelegate  {
     
     private var centralManager: CBCentralManager!
+    private var eventSink: FlutterEventSink?
     var devices: [String] = []
     
     override init() {
@@ -39,9 +41,31 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        if let deviceName = peripheral.name {
-            print("デバイス発見！ -> Name: \(deviceName), RSSI: \(RSSI)")
-            devices.append(deviceName)
+        let deviceName = peripheral.name ?? "Unknown device"
+        let deviceId = peripheral.identifier.uuidString
+        print("[DEBUG] Found device -> Device: \(deviceName), UUID: \(deviceId), RSSI: \(RSSI.intValue)")
+        if let sink = eventSink {
+            let deviceData: [String: Any] = [
+                "name": deviceName,
+                "uuid": deviceId,
+                "rssi": RSSI.intValue
+            ]
+            sink(deviceData)
         }
+    }
+}
+
+extension GeneralBleScanner: FlutterStreamHandler {
+    
+    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.eventSink = events
+        startScan()
+        return nil
+    }
+    
+    func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        stopScan()
+        self.eventSink = nil
+        return nil
     }
 }
