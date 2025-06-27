@@ -1,0 +1,100 @@
+workflows:
+  app-distribution:
+    name: App Distribution
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      flutter: 3.29.3
+      xcode: 16.3
+      groups:
+        - Firebase
+      vars:
+        GOOGLE_SERVICE_INFO_PLIST: $GOOGLE_SERVICE_INFO_PLIST
+        FIREBASE_SERVICE_ACCOUNT: $FIREBASE_SERVICE_ACCOUNT
+        FIREBASE_ANDROID_APP_ID: $FIREBASE_ANDROID_APP_ID
+        FIREBASE_IOS_APP_ID: $FIREBASE_IOS_APP_ID
+
+    cache:
+        cache_paths:
+          - $FLUTTER_ROOT/.pub-cache
+          - build/
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+
+    scripts:
+      - name: Setup Firebase configuration
+        script: |
+          echo "GOOGLE_SERVICE_INFO_PLIST length: ${#GOOGLE_SERVICE_INFO_PLIST}"
+          echo "Decoding GoogleService-Info.plist from environment variable..."
+          echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
+          echo "GoogleService-Info.plist created at: $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist"
+          ls -la $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
+
+      - name: Install dependencies
+        script: |
+          flutter pub get
+
+      - name: Auto-increment version
+        script: |
+          # 現在のバージョン情報を取得
+          CURRENT_VERSION_LINE=$(grep "version:" pubspec.yaml | head -n1)
+          CURRENT_VERSION=$(echo $CURRENT_VERSION_LINE | awk '{print $2}' | cut -d'+' -f1)
+          
+          echo "Current version: $CURRENT_VERSION"
+          
+          # バージョン番号を分解
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}  
+          PATCH=${VERSION_PARTS[2]}
+          
+          # パッチバージョンを自動インクリメント
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          
+          # 新しいビルド番号を生成（数値のみ）
+          NEW_BUILD_NUMBER=$(date +%Y%m%d%H%M)
+          
+          # 新しいバージョン文字列
+          NEW_VERSION_STRING="$NEW_VERSION+$NEW_BUILD_NUMBER"
+          
+          # pubspec.yamlを更新
+          sed -i '' "s/version: .*/version: $NEW_VERSION_STRING/" pubspec.yaml
+          
+          echo "Updated version to: $NEW_VERSION_STRING"
+          
+          # 確認用に更新後のバージョンを表示
+          echo "Updated pubspec.yaml version:"
+          grep "version:" pubspec.yaml | head -n1
+
+      - name: Static code analysis
+        script: |
+          flutter analyze
+      - name: Testing
+        script: |
+          flutter test
+
+      - name: Build iOS app with automatic code signing
+        script: |
+          flutter build ipa --release --export-method=ad-hoc
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    publishing:
+      firebase:
+        firebase_service_account: $FIREBASE_SERVICE_ACCOUNT
+        android:
+          app_id: $FIREBASE_ANDROID_APP_ID
+        ios:
+          app_id: $FIREBASE_IOS_APP_ID
+          groups:
+            - developer
+            - Developer
