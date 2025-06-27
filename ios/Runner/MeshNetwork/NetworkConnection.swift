@@ -119,6 +119,7 @@ class NetworkConnection: NSObject, Bearer {
     
     func open() {
         if !isStarted && isConnectionModeAutomatic && centralManager.state == .poweredOn {
+//            centralManager.scanForPeripherals(withServices: nil, options: nil)
             centralManager.scanForPeripherals(withServices: [MeshProxyService.uuid], options: nil)
         }
         isStarted = true
@@ -211,7 +212,9 @@ extension NetworkConnection: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
                         advertisementData: [String : Any], rssi RSSI: NSNumber) {
         
-        print("DEBUG: ", peripheral)
+        if let deviceName = peripheral.name {
+            print("Device: \(deviceName), RSSI: \(RSSI)")
+        }
         
         // Is it a Network ID or Private Network Identity beacon?
         if let networkIdentity = advertisementData.networkIdentity {

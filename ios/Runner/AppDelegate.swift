@@ -48,31 +48,11 @@ import NordicMesh
                 result(FlutterMethodNotImplemented)
                 return
             }
-            self?._scanMeshNodes(result: result)
+            self?.scanMeshNodes(result: result)
         })
         
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    }
-    
-    private func scanMeshNodes(result: FlutterResult) {
-        let devices: Array<String> = ["Device-A", "Device-B", "Device-C"]
-        let scanDuration: TimeInterval = 5.0
-        
-        connection.open()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + scanDuration) {
-            [weak self] in
-            guard let self = self else {return}
-            
-            print(self.connection.proxies)
-            self.connection.close()
-            print("Proxies: ", self.connection.proxies)
-            print("IsConnected: ", self.connection.isConnected)
-            
-        }
-        
-        result(devices)
     }
     
     func createNewMeshNetwork() -> MeshNetwork {
@@ -89,13 +69,12 @@ import NordicMesh
         return network
     }
     
-    private func _scanMeshNodes(result: @escaping FlutterResult) {
+    private func scanMeshNodes(result: @escaping FlutterResult) {
+        
+        let durationScan = 5.0
         generalScanner = GeneralBleScanner()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
-            
-            print(self?.generalScanner?.devices)
-            
+        DispatchQueue.main.asyncAfter(deadline: .now() + durationScan) { [weak self] in
             result(self?.generalScanner?.devices ?? ["Null"])
             self?.generalScanner?.stopScan()
             self?.generalScanner = nil
