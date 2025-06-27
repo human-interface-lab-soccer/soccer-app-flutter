@@ -31,6 +31,7 @@ workflows:
     scripts:
       - name: Setup Firebase configuration
         script: |
+          echo "GOOGLE_SERVICE_INFO_PLIST length: ${#GOOGLE_SERVICE_INFO_PLIST}"
           echo "Decoding GoogleService-Info.plist from environment variable..."
           echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
           echo "GoogleService-Info.plist created at: $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist"
@@ -39,7 +40,7 @@ workflows:
       - name: Install dependencies
         script: |
           flutter pub get
-          
+
       - name: Auto-increment version
         script: |
           # 現在のバージョン情報を取得
