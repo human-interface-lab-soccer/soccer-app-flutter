@@ -36,7 +36,6 @@ workflows:
       - name: Install dependencies
         script: |
           flutter pub get
-
       - name: Auto-increment version
         script: |
           # 現在のバージョン情報を取得
@@ -70,9 +69,16 @@ workflows:
           echo "Updated pubspec.yaml version:"
           grep "version:" pubspec.yaml | head -n1
 
+      - name: Static code analysis
+        script: |
+          flutter analyze
       - name: Testing
         script: |
           flutter test
+
+      - name: Build iOS app with automatic code signing
+        script: |
+          flutter build ipa --release --export-method=ad-hoc
 
     artifacts:
       - build/ios/ipa/*.ipa
