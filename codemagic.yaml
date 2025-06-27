@@ -10,10 +10,11 @@ workflows:
       groups:
         - Firebase
       vars:
+        GOOGLE_SERVICE_INFO_PLIST: $GOOGLE_SERVICE_INFO_PLIST
         FIREBASE_SERVICE_ACCOUNT: $FIREBASE_SERVICE_ACCOUNT
         FIREBASE_ANDROID_APP_ID: $FIREBASE_ANDROID_APP_ID
         FIREBASE_IOS_APP_ID: $FIREBASE_IOS_APP_ID
-        GOOGLE_SERVICE_INFO_PLIST: $GOOGLE_SERVICE_INFO_PLIST
+
     cache:
         cache_paths:
           - $FLUTTER_ROOT/.pub-cache
@@ -31,13 +32,14 @@ workflows:
       - name: Setup Firebase configuration
         script: |
           echo "Decoding GoogleService-Info.plist from environment variable..."
-          printf "%s" $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
+          echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
           echo "GoogleService-Info.plist created at: $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist"
           ls -la $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
 
       - name: Install dependencies
         script: |
           flutter pub get
+          
       - name: Auto-increment version
         script: |
           # 現在のバージョン情報を取得
