@@ -35,7 +35,6 @@ workflows:
           echo "GoogleService-Info.plist created at: $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist"
           ls -la $FCI_BUILD_DIR/ios/Runner/GoogleService-Info.plist
 
-    scripts:
       - name: Install dependencies
         script: |
           flutter pub get
