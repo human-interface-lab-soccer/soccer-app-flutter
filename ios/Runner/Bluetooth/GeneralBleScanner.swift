@@ -7,13 +7,16 @@
 import Flutter
 import CoreBluetooth
 
-/// テスト用の汎用Bluetoothスキャナクラス
+/// 汎用Bluetoothスキャナクラス
+/// フィルタリングには下記を参照↓
+/// https://www.bluetooth.com/wp-content/uploads/Files/Specification/Assigned_Numbers.html
 class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
 
+    private let MeshProvisioningServiceUUID = CBUUID(string: "1827")    // 未プロビジョニングデバイス
+    private let MeshProxyServiceUUID = CBUUID(string: "1828")           // プロビジョニング済みデバイス
+    
     private var centralManager: CBCentralManager!
     private var eventSink: FlutterEventSink?
-    private let MeshProvisioningServiceUUID = CBUUID(string: "1827")
-    private let MeshProxyServiceUUID        = CBUUID(string: "1828")
     
     override init() {
         super.init()
@@ -23,7 +26,14 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
     func startScan() {
         print("MeshProvisioningServiceのスキャンを開始します...")
         if centralManager.state == .poweredOn {
-            centralManager.scanForPeripherals(withServices: [MeshProvisioningServiceUUID, MeshProxyServiceUUID], options: nil)
+            let scanOptions: [String: Any] = [
+                CBCentralManagerScanOptionAllowDuplicatesKey: true
+            ]
+            centralManager.scanForPeripherals(
+                // ここにホワイトリストを記載することでフィルタを適用
+                withServices: [MeshProvisioningServiceUUID, MeshProxyServiceUUID],
+                options: scanOptions
+            )
         } else {
             print("BluetoothがONになっていません。state: \(centralManager.state.rawValue)")
         }
