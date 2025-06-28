@@ -47,6 +47,16 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
     }
   }
 
+  Icon rssiIcon(int rssi) {
+    if (rssi > -70) {
+      return const Icon(Icons.network_wifi, color: Colors.green);
+    } else if (rssi > -90) {
+      return const Icon(Icons.network_wifi_2_bar, color: Colors.yellow);
+    } else {
+      return const Icon(Icons.network_wifi_1_bar, color: Colors.red);
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -72,14 +82,11 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
                   padding: const EdgeInsets.all(16.0),
                   children:
                       generalBleScanner.discoveredDevices.map((device) {
-                        if (device.name == "Unknown device") {
-                          // デバイス名が"Unknown Device"の場合は表示しない
-                          return const SizedBox.shrink();
-                        }
                         return ListTile(
+                          leading: rssiIcon(device.rssi),
                           title: Text(device.name),
                           subtitle: Text(
-                            'UUID: ${device.uuid}, RSSI: ${device.rssi}, Last Seen: ${device.lastSeen}',
+                            'UUID: ${device.uuid}, RSSI: ${device.rssi}',
                           ),
                         );
                       }).toList(),
