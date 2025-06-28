@@ -33,14 +33,14 @@ class ConnectionPageState extends State<ConnectionPage> {
   // デバイス確認済みフラグ
   bool hasCheckedDevice = false;
 
-  bool showScanner = false;
+  bool isScannerVisible = false;
 
   // アクションを更新して画面に反映する関数
   void updateAction(String message) {
     setState(() {
       hasCheckedDevice = false; // デバイス確認済みフラグをリセット
       actionFeedback = message;
-      showScanner = false; // スキャナーを非表示にする
+      isScannerVisible = false; // スキャナーを非表示にする
     });
   }
 
@@ -48,7 +48,7 @@ class ConnectionPageState extends State<ConnectionPage> {
   void updateDeviceList(List<BleDevice> devices, String message) {
     setState(() {
       hasCheckedDevice = true; // デバイス確認済みフラグをセット
-      showScanner = false; // スキャナーを非表示にする
+      isScannerVisible = false; // スキャナーを非表示にする
       deviceList = devices;
       actionFeedback = message;
     });
@@ -71,7 +71,9 @@ class ConnectionPageState extends State<ConnectionPage> {
         break;
       case ButtonPress.connectDevice:
         updateAction("デバイスのスキャン");
-        showScanner = true;
+        setState(() {
+          isScannerVisible = true;
+        });
         break;
       case ButtonPress.decideGroupAction:
         updateAction("グループ決定!!");
@@ -262,7 +264,7 @@ class ConnectionPageState extends State<ConnectionPage> {
                                     ),
                                   ),
                         ),
-                      if (showScanner)
+                      if (isScannerVisible)
                         SizedBox(
                           height: availableHeight, // スキャナーの高さ
                           child: const DiscoveredDeviceList(),

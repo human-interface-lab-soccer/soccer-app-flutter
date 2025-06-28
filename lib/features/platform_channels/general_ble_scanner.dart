@@ -48,10 +48,10 @@ class GeneralBleScanner {
   final Duration _deviceTimeout = const Duration(seconds: 10);
   final Duration _cleanupInterval = const Duration(seconds: 5);
 
-  // GeneralBleScanner() {
-  //   _startStream();
-  //   _startCleanupTimer();
-  // }
+  void dispose() {
+    stopScanning();
+    _devicesController.close();
+  }
 
   /// スキャンを開始し、デバイスの検出をリッスン
   Future<void> startScanning() async {
@@ -69,7 +69,6 @@ class GeneralBleScanner {
     _subscription?.cancel();
     _subscription = null;
     _cleanupTimer?.cancel();
-    // _devicesController.close();
   }
 
   void _startCleanupTimer() {

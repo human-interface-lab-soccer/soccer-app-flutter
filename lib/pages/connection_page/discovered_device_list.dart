@@ -60,7 +60,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   @override
   void dispose() {
     super.dispose();
-    generalBleScanner.stopScanning();
+    generalBleScanner.dispose();
   }
 
   @override
@@ -81,7 +81,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
                 child: ListView(
                   padding: const EdgeInsets.all(16.0),
                   children:
-                      generalBleScanner.discoveredDevices.map((device) {
+                      (snapshot.data ?? []).map((device) {
                         return ListTile(
                           leading: rssiIcon(device.rssi),
                           title: Text(device.name),
