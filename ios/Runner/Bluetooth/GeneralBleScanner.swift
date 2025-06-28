@@ -12,29 +12,30 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
 
     private var centralManager: CBCentralManager!
     private var eventSink: FlutterEventSink?
-    var devices: [String] = []
-
+    private let MeshProvisioningServiceUUID = CBUUID(string: "1827")
+    private let MeshProxyServiceUUID        = CBUUID(string: "1828")
+    
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
     }
 
     func startScan() {
-        print("汎用スキャンを開始します...")
+        print("MeshProvisioningServiceのスキャンを開始します...")
         if centralManager.state == .poweredOn {
-            centralManager.scanForPeripherals(withServices: nil, options: nil)
+            centralManager.scanForPeripherals(withServices: [MeshProvisioningServiceUUID, MeshProxyServiceUUID], options: nil)
         } else {
             print("BluetoothがONになっていません。state: \(centralManager.state.rawValue)")
         }
     }
 
     func stopScan() {
-        print("汎用スキャンを停止します。")
+        print("MeshProvisioningServiceのスキャンを停止します。")
         centralManager.stopScan()
     }
 
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        print("汎用スキャナ: Bluetoothの状態が変化 -> \(central.state.rawValue)")
+        print("スキャナ: Bluetoothの状態が変化 -> \(central.state.rawValue)")
         if central.state == .poweredOn {
             startScan()
         }
