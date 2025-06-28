@@ -10,7 +10,7 @@
 ///   'rssi': -70,
 ///   'lastSeen': DateTime.now(),
 /// });
-/// print(device); // BleDevice(name: My Device, uuid: XXXx-XXXX, rssi: -70, lastSeen: 2025-06-26 19:12:34.567)
+/// print(device); // BleDevice(name: My Device, uuid: XXXX-XXXX, rssi: -70, lastSeen: 2025-06-26 19:12:34.567)
 /// ```
 ///
 class BleDevice {

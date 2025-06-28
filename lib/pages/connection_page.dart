@@ -55,7 +55,7 @@ class ConnectionPageState extends State<ConnectionPage> {
   }
 
   // ボタンの押下アクションに応じて処理を実行する関数
-  Future<void> handleButtonPress(ButtonPress action) async {
+  void handleButtonPress(ButtonPress action) {
     switch (action) {
       case ButtonPress.pressRed:
         updateAction("赤だよー");

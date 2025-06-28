@@ -21,7 +21,7 @@ import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 ///     print('Discovered device: ${device.name}, UUID: ${device.uuid}');
 ///   }
 /// });
-/// 
+///
 /// // スキャンを停止
 /// scanner.stopScanning();
 /// ```
