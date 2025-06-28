@@ -3,14 +3,14 @@ import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanne
 import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 
 /// 検出されたBLEデバイスのリストを表示するウィジェット
-/// 
+///
 /// ### 主な目的:
 /// - BLEデバイスのスキャンを開始し、検出されたデバイスの情報をリスト表示
-/// 
+///
 /// ### 引数・戻り値:
 /// - 特に引数はなく、ウィジェットの状態を管理するためのStatefulWidget
 /// - スキャンボタンを押すことでスキャンの開始/停止が可能
-/// 
+///
 /// ### 使用例:
 /// ```dart
 /// DiscoveredDeviceList();
@@ -31,16 +31,16 @@ class DiscoveredDeviceList extends StatefulWidget {
 
 class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   final GeneralBleScanner generalBleScanner = GeneralBleScanner();
-  bool isScanning = true;
+  bool isScanning = false;
 
-  void handleScanButtonPressed() {
+  Future<void> handleScanButtonPressed() async {
     if (isScanning) {
+      await generalBleScanner.stopScanning();
       setState(() {
         isScanning = false;
       });
-      generalBleScanner.pauseScanning();
     } else {
-      generalBleScanner.restart();
+      await generalBleScanner.startScanning();
       setState(() {
         isScanning = true;
       });
@@ -50,7 +50,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   @override
   void dispose() {
     super.dispose();
-    generalBleScanner.dispose();
+    generalBleScanner.stopScanning();
   }
 
   @override

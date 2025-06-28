@@ -5,9 +5,6 @@ import UIKit
 @main
 @objc class AppDelegate: FlutterAppDelegate {
 
-    private var meshNetworkManager: MeshNetworkManager!
-    private var connection: NetworkConnection!
-
     private var generalScanner: GeneralBleScanner?
 
     override func application(
@@ -19,6 +16,24 @@ import UIKit
             name: "human.mech.saitama-u.ac.jp/generalBleScanner",
             binaryMessenger: controller.binaryMessenger
         )
+        let generalBleScannerMethod = FlutterMethodChannel(
+            name: "human.mech.saitama-u.ac.jp/generalBleScannerMethod",
+            binaryMessenger: controller.binaryMessenger
+        )
+        
+        generalBleScannerMethod.setMethodCallHandler({
+            [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
+            if call.method == "startScanning" {
+                result("[MethodChannel] Start Scanning...")
+            } else if call.method == "stopScanning" {
+                result("[MethodChannel] Done!")
+            } else {
+                result(FlutterMethodNotImplemented)
+                return;
+            }
+            return;
+        })
+        
         let scanner = GeneralBleScanner()
         generalBleScanner.setStreamHandler(
             scanner

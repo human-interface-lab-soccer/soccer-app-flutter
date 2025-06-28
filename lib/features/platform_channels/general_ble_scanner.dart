@@ -15,19 +15,26 @@ import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 /// ```dart
 /// final scanner = GeneralBleScanner();
 /// // ストリームを購読して、検出されたデバイスを取得
+/// scanner.startScanning();
 /// scanner.discoveredDevicesStream.listen((devices) {
 ///   for (var device in devices) {
 ///     print('Discovered device: ${device.name}, UUID: ${device.uuid}');
 ///   }
 /// });
+/// 
+/// // スキャンを停止
+/// scanner.stopScanning();
 /// ```
 ///
 /// ### 注意点:
 /// - 実機での動作にはBluetoothの権限が必要です。
 /// - スキャン中はバッテリー消費が増加する場合があります。
 class GeneralBleScanner {
-  static const EventChannel _channel = EventChannel(
+  static const EventChannel _eventChannel = EventChannel(
     'human.mech.saitama-u.ac.jp/generalBleScanner',
+  );
+  static const MethodChannel _methodChannel = MethodChannel(
+    'human.mech.saitama-u.ac.jp/generalBleScannerMethod',
   );
   final List<BleDevice> _discoveredDevices = [];
   final _devicesController = StreamController<List<BleDevice>>.broadcast();
@@ -38,31 +45,33 @@ class GeneralBleScanner {
   StreamSubscription? _subscription;
   Timer? _cleanupTimer;
 
-  final Duration _deviceTimeout = const Duration(seconds: 30);
+  final Duration _deviceTimeout = const Duration(seconds: 10);
   final Duration _cleanupInterval = const Duration(seconds: 5);
 
-  GeneralBleScanner() {
-    _startStream();
+  // GeneralBleScanner() {
+  //   _startStream();
+  //   _startCleanupTimer();
+  // }
+
+  /// スキャンを開始し、デバイスの検出をリッスン
+  Future<void> startScanning() async {
+    final message = await _methodChannel.invokeMethod('startScanning');
+    print(message);
+    _subscription = _eventChannel.receiveBroadcastStream().listen(
+      _onDeviceDiscovered,
+      onError: _onScanError,
+    );
     _startCleanupTimer();
   }
 
-  /// スキャン中のデバイスを破棄し、ストリームを閉じる
-  void dispose() {
-    _subscription?.cancel();
-    _devicesController.close();
-  }
-
-  /// スキャンを一時停止
-  void pauseScanning() {
+  /// スキャンを停止し、ストリームをキャンセル
+  Future<void> stopScanning() async {
+    final message = await _methodChannel.invokeMethod('stopScanning');
+    print(message);
     _subscription?.cancel();
     _subscription = null;
     _cleanupTimer?.cancel();
-  }
-
-  /// スキャンを再開
-  void restart() {
-    _startStream();
-    _startCleanupTimer();
+    _devicesController.close();
   }
 
   void _startCleanupTimer() {
@@ -95,14 +104,6 @@ class GeneralBleScanner {
         ..addAll(updatedDevices);
       _devicesController.add(List.from(_discoveredDevices));
     }
-  }
-
-  /// スキャンを開始し、デバイスの検出をリッスン
-  void _startStream() {
-    _subscription = _channel.receiveBroadcastStream().listen(
-      _onDeviceDiscovered,
-      onError: _onScanError,
-    );
   }
 
   /// デバイスが検出されたときのコールバック
