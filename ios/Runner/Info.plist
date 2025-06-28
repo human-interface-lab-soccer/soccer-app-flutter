@@ -32,6 +32,10 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This app uses your Bluetooth radio to be able to communicate with your mesh network and/or mesh nodes,  The app does not collect, store or log any of the data being communicated over Bluetooth.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>This app uses your Bluetooth radio to be able to communicate with your mesh network and/or mesh nodes,  The app does not collect, store or log any of the data being communicated over Bluetooth.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
