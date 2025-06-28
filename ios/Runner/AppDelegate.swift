@@ -5,39 +5,45 @@ import UIKit
 @main
 @objc class AppDelegate: FlutterAppDelegate {
 
-    private var generalScanner: GeneralBleScanner?
+    private var generalBleScanner: GeneralBleScanner?
 
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
-        let generalBleScanner = FlutterEventChannel(
-            name: "human.mech.saitama-u.ac.jp/generalBleScanner",
+        let scannerEventChannel = FlutterEventChannel(
+            name: "human.mech.saitama-u.ac.jp/scannerEventChannel",
             binaryMessenger: controller.binaryMessenger
         )
-        let generalBleScannerMethod = FlutterMethodChannel(
-            name: "human.mech.saitama-u.ac.jp/generalBleScannerMethod",
+        let scannerMethodChannel = FlutterMethodChannel(
+            name: "human.mech.saitama-u.ac.jp/scannerMethodChannel",
             binaryMessenger: controller.binaryMessenger
         )
-        
-        generalBleScannerMethod.setMethodCallHandler({
-            [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
-            if call.method == "startScanning" {
-                result("[MethodChannel] Start Scanning...")
-            } else if call.method == "stopScanning" {
-                result("[MethodChannel] Done!")
-            } else {
-                result(FlutterMethodNotImplemented)
+
+        scannerMethodChannel.setMethodCallHandler({
+            [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+            guard let self = self else {
                 return;
             }
-            return;
+
+            switch call.method {
+            case "startScanning":
+                if self.generalBleScanner == nil {
+                    self.generalBleScanner = GeneralBleScanner()
+                    scannerEventChannel.setStreamHandler(self.generalBleScanner)
+                }
+                self.generalBleScanner?.startScan()
+                result("[ScannerMethodChannel] Started Scan...")
+            case "stopScanning":
+                self.generalBleScanner?.stopScan()
+                self.generalBleScanner = nil
+                result("[ScannerMethodChannel] Stop Scan...")
+            default:
+                result(FlutterMethodNotImplemented)
+            }
         })
-        
-        let scanner = GeneralBleScanner()
-        generalBleScanner.setStreamHandler(
-            scanner
-        )
+
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }

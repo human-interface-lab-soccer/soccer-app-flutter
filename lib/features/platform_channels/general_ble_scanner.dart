@@ -31,10 +31,10 @@ import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 /// - スキャン中はバッテリー消費が増加する場合があります。
 class GeneralBleScanner {
   static const EventChannel _eventChannel = EventChannel(
-    'human.mech.saitama-u.ac.jp/generalBleScanner',
+    'human.mech.saitama-u.ac.jp/scannerEventChannel',
   );
   static const MethodChannel _methodChannel = MethodChannel(
-    'human.mech.saitama-u.ac.jp/generalBleScannerMethod',
+    'human.mech.saitama-u.ac.jp/scannerMethodChannel',
   );
   final List<BleDevice> _discoveredDevices = [];
   final _devicesController = StreamController<List<BleDevice>>.broadcast();
@@ -55,8 +55,7 @@ class GeneralBleScanner {
 
   /// スキャンを開始し、デバイスの検出をリッスン
   Future<void> startScanning() async {
-    final message = await _methodChannel.invokeMethod('startScanning');
-    print(message);
+    await _methodChannel.invokeMethod('startScanning');
     _subscription = _eventChannel.receiveBroadcastStream().listen(
       _onDeviceDiscovered,
       onError: _onScanError,
@@ -66,12 +65,11 @@ class GeneralBleScanner {
 
   /// スキャンを停止し、ストリームをキャンセル
   Future<void> stopScanning() async {
-    final message = await _methodChannel.invokeMethod('stopScanning');
-    print(message);
+    await _methodChannel.invokeMethod('stopScanning');
     _subscription?.cancel();
     _subscription = null;
     _cleanupTimer?.cancel();
-    _devicesController.close();
+    // _devicesController.close();
   }
 
   void _startCleanupTimer() {
