@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:flutter/services.dart';
 import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 
@@ -39,6 +40,9 @@ class GeneralBleScanner {
   final List<BleDevice> _discoveredDevices = [];
   final _devicesController = StreamController<List<BleDevice>>.broadcast();
 
+  final Queue<Function> _operationQueue = Queue<Function>();
+  bool _isProcessingQueue = false;
+
   Stream<List<BleDevice>> get discoveredDevicesStream =>
       _devicesController.stream;
   List<BleDevice> get discoveredDevices => _discoveredDevices;
@@ -69,12 +73,30 @@ class GeneralBleScanner {
     _subscription?.cancel();
     _subscription = null;
     _cleanupTimer?.cancel();
+    _operationQueue.clear();
+    _isProcessingQueue = false;
   }
 
   void _startCleanupTimer() {
     _cleanupTimer = Timer.periodic(_cleanupInterval, (timer) {
-      _cleanupDevices();
+      _enqueueOperation(_cleanupDevices);
     });
+  }
+
+  /// Queueに操作を追加して、順次処理
+  void _enqueueOperation(Function operation) {
+    _operationQueue.add(operation);
+    _processQueue();
+  }
+
+  /// Queueの操作を処理
+  void _processQueue() {
+    if (_isProcessingQueue || _operationQueue.isEmpty) return;
+    _isProcessingQueue = true;
+    final operation = _operationQueue.removeFirst();
+    operation();
+    _isProcessingQueue = false;
+    _processQueue();
   }
 
   /// 一定時間内に検出されなかったデバイスをリストから削除
@@ -105,23 +127,29 @@ class GeneralBleScanner {
 
   /// デバイスが検出されたときのコールバック
   void _onDeviceDiscovered(dynamic device) {
-    // ストリームが閉じられている場合は何もしない
-    if (_devicesController.isClosed) return;
-    // デバイスがMapでない場合は何もしない
-    if (device is! Map) return;
+    _enqueueOperation(() {
+      // ストリームが閉じられている場合は何もしない
+      if (_devicesController.isClosed) return;
+      // デバイスがMapでない場合は何もしない
+      if (device is! Map) return;
 
-    BleDevice bleDevice = BleDevice.fromMap(Map<String, dynamic>.from(device));
-    if (_discoveredDevices.any((d) => d.uuid == bleDevice.uuid)) {
-      // 既に同じUUIDのデバイスがリストに存在する場合は上書き
-      int index = _discoveredDevices.indexWhere(
-        (d) => d.uuid == bleDevice.uuid,
+      BleDevice bleDevice = BleDevice.fromMap(
+        Map<String, dynamic>.from(device),
       );
-      _discoveredDevices[index] = bleDevice.copyWith(lastSeen: DateTime.now());
-    } else {
-      // 新しいデバイスをリストに追加
-      _discoveredDevices.add(bleDevice);
-    }
-    _devicesController.add(List<BleDevice>.from(_discoveredDevices));
+      if (_discoveredDevices.any((d) => d.uuid == bleDevice.uuid)) {
+        // 既に同じUUIDのデバイスがリストに存在する場合は上書き
+        int index = _discoveredDevices.indexWhere(
+          (d) => d.uuid == bleDevice.uuid,
+        );
+        _discoveredDevices[index] = bleDevice.copyWith(
+          lastSeen: DateTime.now(),
+        );
+      } else {
+        // 新しいデバイスをリストに追加
+        _discoveredDevices.add(bleDevice);
+      }
+      _devicesController.add(List<BleDevice>.from(_discoveredDevices));
+    });
   }
 
   /// スキャン中にエラーが発生したときの処理
