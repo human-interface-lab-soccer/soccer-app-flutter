@@ -87,14 +87,14 @@ void main() {
       await pumpConnectionPage(tester);
 
       // 初期状態ではメッセージが表示されていないことを確認
-      expect(find.text('デバイス接続'), findsNothing);
+      expect(find.text('デバイスのスキャン'), findsNothing);
 
       // 接続ボタンをタップ
       await tester.tap(find.byKey(const Key("connectButton")));
       await tester.pump();
 
       // メッセージが表示されていることを確認
-      expect(find.text('デバイス接続'), findsOneWidget);
+      expect(find.text('デバイスのスキャン'), findsOneWidget);
     });
     testWidgets('グループ決定ボタンをタップするとメッセージが表示される', (WidgetTester tester) async {
       await pumpConnectionPage(tester);
