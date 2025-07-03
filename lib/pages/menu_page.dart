@@ -95,25 +95,34 @@ class _MenuPageState extends State<MenuPage> {
   @override
   void initState() {
     super.initState();
-    _filteredMenus = _allMenus; // 初期状態では全メニューを表示
+    // 初期状態ではすべてのメニューを表示
+    _filteredMenus = _allMenus; 
+    // 検索テキストフィールドの変更を監視してフィルタリング実行
     _searchController.addListener(_filterMenus);
   }
 
   @override
   void dispose() {
+    // テキストコントローラーのリソースを解放
     _searchController.dispose();
     super.dispose();
   }
 
   void _filterMenus() {
+    // 検索テキストを小文字に変換（大文字小文字を区別しない検索のため）
     final query = _searchController.text.toLowerCase();
     setState(() {
+      // 全メニューから条件に合致するものだけを抽出
       _filteredMenus = _allMenus.where((menu) {
-        // 名前での検索
+        /// 名前での検索：メニュー名に検索文字列が含まれるかチェック
         final nameMatch = menu.name.toLowerCase().contains(query);
+        // カテゴリーでのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
         final categoryMatch = _selectedCategory == 'すべて' || menu.category == _selectedCategory;
+        // タイプでのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
         final typeMatch = _selectedType == 'すべて' || menu.type == _selectedType;
+        // 難易度でのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
         final difficultyMatch = _selectedDifficulty == 'すべて' || menu.difficulty == _selectedDifficulty;
+        // 全ての条件を満たすメニューのみを返す（AND条件）
         return nameMatch && categoryMatch && typeMatch && difficultyMatch;
       }).toList();
     });
@@ -185,7 +194,6 @@ class _MenuPageState extends State<MenuPage> {
                       DropdownButton<String>(
                         value: _selectedType,
                         isExpanded: true,
-                        hint: const Text('タイプを選択'),
                         items: <String>['すべて', '既存', '自由帳']
                             .map((String type) => DropdownMenuItem<String>(
                                   value: type,
@@ -212,7 +220,6 @@ class _MenuPageState extends State<MenuPage> {
                       DropdownButton<String>(
                         value: _selectedDifficulty,
                         isExpanded: true,
-                        hint: const Text('難易度を選択'),
                         items: <String>['すべて', '初級', '中級', '上級']
                             .map((String difficulty) => DropdownMenuItem<String>(
                                   value: difficulty,
