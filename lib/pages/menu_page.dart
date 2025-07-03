@@ -5,15 +5,13 @@ class PracticeMenu {
   final String name;
   final String category;
   final String description;
-  final int duration; // 分
   final String difficulty;
 
   PracticeMenu({
     required this.name,
     required this.category,
     required this.description,
-    required this.duration,
-    required this.difficulty,
+    required this.difficulty
   });
 }
 
@@ -37,56 +35,48 @@ class _MenuPageState extends State<MenuPage> {
       name: '基礎ドリブル練習',
       category: '基礎技術',
       description: 'ボールコントロールの基本を身につける練習です．両足でのドリブルを重点的に行います．',
-      duration: 30,
       difficulty: '初級',
     ),
     PracticeMenu(
       name: 'パス&ムーブ',
       category: '戦術',
       description: '正確なパスとポジショニングを組み合わせた練習です．チームプレイの基本を学びます．',
-      duration: 45,
       difficulty: '中級',
     ),
     PracticeMenu(
       name: 'シュート練習',
       category: '得点技術',
       description: 'ゴール前での決定力を向上させる練習です．様々な角度からのシュートを練習します．',
-      duration: 25,
       difficulty: '中級',
     ),
     PracticeMenu(
       name: 'フィジカルトレーニング',
       category: '体力強化',
       description: '持久力と筋力を向上させる総合的なトレーニングです．',
-      duration: 60,
       difficulty: '上級',
     ),
     PracticeMenu(
       name: '1対1練習',
       category: '実戦技術',
       description: '対人プレイでの判断力と技術を磨く練習です．攻守の切り替えを重点的に行います．',
-      duration: 40,
       difficulty: '上級',
     ),
     PracticeMenu(
       name: 'ボールタッチ練習',
       category: '基礎技術',
       description: 'ボールの感覚を養う基本的な練習です．初心者におすすめです．',
-      duration: 20,
       difficulty: '初級',
     ),
     PracticeMenu(
       name: 'クロス&ヘディング',
       category: '得点技術',
       description: 'サイドからのクロスとヘディングの連携練習です．',
-      duration: 35,
       difficulty: '中級',
     ),
     PracticeMenu(
       name: 'ディフェンス練習',
       category: '守備技術',
       description: '組織的な守備の基本を身につける練習です．ポジショニングを重視します．',
-      duration: 50,
       difficulty: '中級',
     ),
   ];
@@ -256,19 +246,6 @@ class _MenuPageState extends State<MenuPage> {
                               ),
                             ),
                             const Spacer(),
-                            Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${menu.duration}分',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                fontSize: 12,
-                              ),
-                            ),
                           ],
                         ),
                       ],
