@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
 
 // 練習メニューの詳細ページ
@@ -286,7 +287,6 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     );
   }
 
-  // コンパクトなフェーズ時間設定
   Widget _buildCompactPhaseTimeSetting() {
     final minutes = _phaseSeconds ~/ 60;
     final seconds = _phaseSeconds % 60;
@@ -299,59 +299,61 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // 時間表示
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'monospace',
-                ),
-              ),
-            ),
-
-            // 時間調整ボタン
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    if (_phaseSeconds > 1) {
-                      setState(() {
-                        _phaseSeconds = (_phaseSeconds - 1).clamp(1, 3600);
-                      });
-                      _updateMeterDuration();
-                    }
-                  },
-                  icon: const Icon(Icons.remove),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () {
+        SizedBox(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 分ピッカー
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                    initialItem: minutes,
+                  ),
+                  itemExtent: 32,
+                  onSelectedItemChanged: (value) {
                     setState(() {
-                      _phaseSeconds = (_phaseSeconds + 1).clamp(1, 3600);
+                      int newSeconds = _phaseSeconds % 60;
+                      if (value == 0 && newSeconds == 0) newSeconds = 1;
+                      _phaseSeconds = value * 60 + newSeconds;
+                      _updateMeterDuration();
                     });
-                    _updateMeterDuration();
                   },
-                  icon: const Icon(Icons.add),
+                  children: List.generate(
+                    61,
+                    (index) => Center(child: Text('$index')),
+                  ),
                 ),
-              ],
-            ),
-          ],
+              ),
+              const Text(
+                ':',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              // 秒ピッカー
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                    initialItem: seconds,
+                  ),
+                  itemExtent: 32,
+                  onSelectedItemChanged: (value) {
+                    setState(() {
+                      int newMinutes = _phaseSeconds ~/ 60;
+                      if (value == 0 && newMinutes == 0) value = 1;
+                      _phaseSeconds = newMinutes * 60 + value;
+                      _updateMeterDuration();
+                    });
+                  },
+                  children: List.generate(
+                    60,
+                    (index) => Center(child: Text('$index')),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-
         const SizedBox(height: 8),
-
-        // 合計時間
         Text(
           '合計練習時間：${_formatTotalTime(_totalPhases * _phaseSeconds)}',
           style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
@@ -395,10 +397,15 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         if (_isRunning) ...[
           const SizedBox(width: 8),
           ElevatedButton(
-            onPressed:
-                _meterController.isAnimating
-                    ? _meterController.stop
-                    : _meterController.forward,
+            onPressed: () {
+              setState(() {
+                if (_meterController.isAnimating) {
+                  _meterController.stop();
+                } else {
+                  _meterController.forward();
+                }
+              });
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
