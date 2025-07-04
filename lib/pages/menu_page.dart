@@ -37,21 +37,25 @@ class _MenuPageState extends State<MenuPage> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       // 全メニューから条件に合致するものだけを抽出
-      _filteredMenus = PracticeMenuData.allMenus.where((menu) {
-        /// 名前での検索：メニュー名に検索文字列が含まれるかチェック
-        final nameMatch = query.isEmpty || menu.name.toLowerCase().contains(query);
-        // カテゴリーでのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
-        final categoryMatch =
-            _selectedCategory == 'すべて' || menu.category == _selectedCategory;
-        // タイプでのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
-        final typeMatch =
-            _selectedType == 'すべて' || menu.type == _selectedType;
-        // 難易度でのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
-        final difficultyMatch =
-            _selectedDifficulty == 'すべて' || menu.difficulty == _selectedDifficulty;
-        // 全ての条件を満たすメニューのみを返す（AND条件）
-        return nameMatch && categoryMatch && typeMatch && difficultyMatch;
-      }).toList();
+      _filteredMenus =
+          PracticeMenuData.allMenus.where((menu) {
+            /// 名前での検索：メニュー名に検索文字列が含まれるかチェック
+            final nameMatch =
+                query.isEmpty || menu.name.toLowerCase().contains(query);
+            // カテゴリーでのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
+            final categoryMatch =
+                _selectedCategory == 'すべて' ||
+                menu.category == _selectedCategory;
+            // タイプでのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
+            final typeMatch =
+                _selectedType == 'すべて' || menu.type == _selectedType;
+            // 難易度でのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
+            final difficultyMatch =
+                _selectedDifficulty == 'すべて' ||
+                menu.difficulty == _selectedDifficulty;
+            // 全ての条件を満たすメニューのみを返す（AND条件）
+            return nameMatch && categoryMatch && typeMatch && difficultyMatch;
+          }).toList();
     });
   }
 
@@ -94,14 +98,15 @@ class _MenuPageState extends State<MenuPage> {
                       DropdownButton<String>(
                         value: _selectedCategory,
                         isExpanded: true,
-                        items: ['すべて', ...PracticeMenuData.getCategories()]
-                            .map(
-                              (String category) => DropdownMenuItem(
-                                value: category,
-                                child: Text(category),
-                              ),
-                            )
-                            .toList(),
+                        items:
+                            ['すべて', ...PracticeMenuData.getCategories()]
+                                .map(
+                                  (String category) => DropdownMenuItem(
+                                    value: category,
+                                    child: Text(category),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (String? newValue) {
                           setState(() {
                             _selectedCategory = newValue!;
@@ -123,14 +128,15 @@ class _MenuPageState extends State<MenuPage> {
                       DropdownButton<String>(
                         value: _selectedType,
                         isExpanded: true,
-                        items: ['すべて', ...PracticeMenuData.getTypes()]
-                            .map(
-                              (String type) => DropdownMenuItem<String>(
-                                value: type,
-                                child: Text(type),
-                              ),
-                            )
-                            .toList(),
+                        items:
+                            ['すべて', ...PracticeMenuData.getTypes()]
+                                .map(
+                                  (String type) => DropdownMenuItem<String>(
+                                    value: type,
+                                    child: Text(type),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (String? newValue) {
                           setState(() {
                             _selectedType = newValue!;
@@ -152,14 +158,16 @@ class _MenuPageState extends State<MenuPage> {
                       DropdownButton<String>(
                         value: _selectedDifficulty,
                         isExpanded: true,
-                        items: ['すべて', ...PracticeMenuData.getDifficulties()]
-                            .map(
-                              (String difficulty) => DropdownMenuItem<String>(
-                                value: difficulty,
-                                child: Text(difficulty),
-                              ),
-                            )
-                            .toList(),
+                        items:
+                            ['すべて', ...PracticeMenuData.getDifficulties()]
+                                .map(
+                                  (String difficulty) =>
+                                      DropdownMenuItem<String>(
+                                        value: difficulty,
+                                        child: Text(difficulty),
+                                      ),
+                                )
+                                .toList(),
                         onChanged: (String? newValue) {
                           setState(() {
                             _selectedDifficulty = newValue!;
@@ -217,10 +225,9 @@ class _MenuPageState extends State<MenuPage> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.1),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -238,7 +245,9 @@ class _MenuPageState extends State<MenuPage> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getTypeColor(menu.type).withValues(alpha: 0.1),
+                                color: _getTypeColor(
+                                  menu.type,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -256,8 +265,9 @@ class _MenuPageState extends State<MenuPage> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getDifficultyColor(menu.difficulty)
-                                    .withValues(alpha: 0.1),
+                                color: _getDifficultyColor(
+                                  menu.difficulty,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
