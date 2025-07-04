@@ -31,8 +31,20 @@ class BleDevice {
       name: map['name'] as String? ?? 'Unknown Device',
       uuid: map['uuid'] as String? ?? 'Unknown Address',
       rssi: map['rssi'] as int? ?? 0,
-      lastSeen: DateTime.now(),
+      lastSeen:
+          map["lastSeen"] != null
+              ? DateTime.parse(map["lastSeen"] as String)
+              : DateTime.now(),
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'uuid': uuid,
+      'rssi': rssi,
+      'lastSeen': lastSeen.toIso8601String(),
+    };
   }
 
   @override
