@@ -6,6 +6,7 @@
 //
 import Flutter
 import CoreBluetooth
+import NordicMesh
 
 /// 汎用Bluetoothスキャナクラス
 /// フィルタリングには下記を参照↓
@@ -17,7 +18,10 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
     
     private var centralManager: CBCentralManager!
     private var eventSink: FlutterEventSink?
-    
+
+    // 発見したデバイスを格納するSet
+    var discoveredDevices: Set<CBPeripheral> = []
+
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -57,9 +61,16 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
     ) {
         let deviceName = peripheral.name ?? "Unknown device"
         let deviceId = peripheral.identifier.uuidString
+
+        
+        discoveredDevices.insert(peripheral)
+
         print(
-            "[DEBUG] Found device -> Device: \(deviceName), UUID: \(deviceId), RSSI: \(RSSI.intValue)"
+            "[DEBUG] Found device -> Device: \(deviceName), UUID: \(deviceId), RSSI: \(RSSI.intValue) \n",
+            "[DEBUG] Advertisement Data: \(advertisementData)"
         )
+        print("[DEBUG] デバイスの個数", discoveredDevices.count)
+
         if let sink = eventSink {
             let deviceData: [String: Any] = [
                 "name": deviceName,
