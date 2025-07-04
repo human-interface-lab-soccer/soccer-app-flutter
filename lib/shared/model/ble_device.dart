@@ -31,9 +31,10 @@ class BleDevice {
       name: map['name'] as String? ?? 'Unknown Device',
       uuid: map['uuid'] as String? ?? 'Unknown Address',
       rssi: map['rssi'] as int? ?? 0,
-      lastSeen: map["lastSeen"] != null 
-          ? DateTime.parse(map["lastSeen"] as String)
-          : DateTime.now(),
+      lastSeen:
+          map["lastSeen"] != null
+              ? DateTime.parse(map["lastSeen"] as String)
+              : DateTime.now(),
     );
   }
 
