@@ -18,6 +18,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
   late AnimationController _meterController;
   late Animation<double> _meterAnimation;
   bool _isRunning = false;
+  bool _isPaused = false;
   int _currentPhaseIndex = 0;
   late int _totalPhases;
   late List<Color> _phaseColors;
@@ -386,52 +387,99 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     }
   }
 
-  // アクションボタン
+  // アクションボタンを表示するウィジェット
   Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _isRunning ? _stopPractice : _startPractice,
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  _isRunning
-                      ? Colors.red
-                      : Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: Text(
-              _isRunning ? '停止' : '練習開始',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        if (_isRunning) ...[
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                if (_meterController.isAnimating) {
-                  _meterController.stop();
-                } else {
-                  _meterController.forward();
-                }
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            ),
-            child: Icon(
-              _meterController.isAnimating ? Icons.pause : Icons.play_arrow,
+    if (!_isRunning) {
+      // 練習前：開始ボタンのみ（大きく）
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _startPractice,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white, // ← 正しいスペル
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text(
+                '練習開始',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
-      ],
-    );
+      );
+    } else {
+      // 練習中または一時停止中：4つのボタン（大きめボタンに統一）
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _meterController.reset();
+                  _meterController.forward();
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Icon(Icons.skip_previous, size: 24),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  if (_isPaused) {
+                    _meterController.forward();
+                    _isPaused = false;
+                  } else {
+                    _meterController.stop();
+                    _isPaused = true;
+                  }
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: Icon(_isPaused ? Icons.play_arrow : Icons.pause, size: 24),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _nextPhase,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Icon(Icons.skip_next, size: 24),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _stopPractice,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Icon(Icons.stop, size: 24),
+            ),
+          ),
+        ],
+      );
+    }
   }
+
 
   // 次のフェーズに進む
   void _nextPhase() {
@@ -443,7 +491,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
       }
     });
 
-    if (_isRunning) {
+    if (_isRunning && !_isPaused) {
       _meterController.reset();
       _meterController.forward();
     }
@@ -464,6 +512,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
   void _startPractice() {
     setState(() {
       _isRunning = true;
+      _isPaused = false;
       _currentPhaseIndex = 0;
     });
     _meterController.reset();
@@ -474,6 +523,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
   void _stopPractice() {
     setState(() {
       _isRunning = false;
+      _isPaused = false;
       _currentPhaseIndex = 0;
     });
     _meterController.stop();
