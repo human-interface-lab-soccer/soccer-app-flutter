@@ -15,12 +15,12 @@ class _MenuPageState extends State<MenuPage> {
   String _selectedType = 'すべて';
   String _selectedDifficulty = 'すべて';
   List<PracticeMenu> _filteredMenus = []; // 練習メニューのリスト
+  bool _isLoading = true; // データ読み込み中フラグ
 
   @override
   void initState() {
     super.initState();
-    // 初期状態ではすべてのメニューを表示
-    _filteredMenus = PracticeMenuData.allMenus;
+    _loadData();
     // 検索テキストフィールドの変更を監視してフィルタリング実行
     _searchController.addListener(_filterMenus);
   }
@@ -30,6 +30,39 @@ class _MenuPageState extends State<MenuPage> {
     // テキストコントローラーのリソースを解放
     _searchController.dispose();
     super.dispose();
+  }
+
+  // データの読み込み処理
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // 練習メニューのデータを読み込む
+      await PracticeMenuData.loadMenus();
+      // 初期状態では全メニューを表示
+      _filteredMenus = PracticeMenuData.allMenus;
+
+      setState(() {
+        _isLoading = false; // 読み込み完了
+      });
+    } catch (e) {
+      print('データ読み込みエラー: $e');
+      setState(() {
+        _isLoading = false;
+      });
+
+      // エラーメッセージを表示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('データの読み込みに失敗しました'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _filterMenus() {
@@ -67,235 +100,259 @@ class _MenuPageState extends State<MenuPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('練習メニュー一覧'),
       ),
-      body: Column(
-        children: [
-          // 検索バー
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: '練習メニューを検索',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-
-          // フィルタリング機能
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // カテゴリ選択ドロップダウン
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('カテゴリ'),
-                      const SizedBox(height: 4),
-                      DropdownButton<String>(
-                        value: _selectedCategory,
-                        isExpanded: true,
-                        items:
-                            ['すべて', ...PracticeMenuData.getCategories()]
-                                .map(
-                                  (String category) => DropdownMenuItem(
-                                    value: category,
-                                    child: Text(category),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedCategory = newValue!;
-                            _filterMenus();
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+      body:
+          _isLoading
+              ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('データを読み込み中...'),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                // タイプ選択ドロップダウン
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('タイプ'),
-                      const SizedBox(height: 4),
-                      DropdownButton<String>(
-                        value: _selectedType,
-                        isExpanded: true,
-                        items:
-                            ['すべて', ...PracticeMenuData.getTypes()]
-                                .map(
-                                  (String type) => DropdownMenuItem<String>(
-                                    value: type,
-                                    child: Text(type),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedType = newValue!;
-                            _filterMenus();
-                          });
-                        },
+              )
+              : Column(
+                children: [
+                  // 検索バー
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        labelText: '練習メニューを検索',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // 難易度選択ドロップダウン
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('難易度'),
-                      const SizedBox(height: 4),
-                      DropdownButton<String>(
-                        value: _selectedDifficulty,
-                        isExpanded: true,
-                        items:
-                            ['すべて', ...PracticeMenuData.getDifficulties()]
-                                .map(
-                                  (String difficulty) =>
-                                      DropdownMenuItem<String>(
-                                        value: difficulty,
-                                        child: Text(difficulty),
-                                      ),
-                                )
-                                .toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedDifficulty = newValue!;
-                            _filterMenus();
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // フィルタリング後のメニューリスト
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              '${_filteredMenus.length}件の練習メニュー',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // メニューリスト
-          Expanded(
-            child: ListView.builder(
-              itemCount: _filteredMenus.length,
-              itemBuilder: (context, index) {
-                final menu = _filteredMenus[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  child: ListTile(
-                    title: Text(
-                      menu.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+
+                  // フィルタリング機能
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const SizedBox(height: 4),
-                        Text(menu.description),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                        // カテゴリ選択ドロップダウン
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('カテゴリ'),
+                              const SizedBox(height: 4),
+                              DropdownButton<String>(
+                                value: _selectedCategory,
+                                isExpanded: true,
+                                items:
+                                    ['すべて', ...PracticeMenuData.getCategories()]
+                                        .map(
+                                          (String category) => DropdownMenuItem(
+                                            value: category,
+                                            child: Text(category),
+                                          ),
+                                        )
+                                        .toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    _selectedCategory = newValue!;
+                                    _filterMenus();
+                                  });
+                                },
                               ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        // タイプ選択ドロップダウン
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('タイプ'),
+                              const SizedBox(height: 4),
+                              DropdownButton<String>(
+                                value: _selectedType,
+                                isExpanded: true,
+                                items:
+                                    ['すべて', ...PracticeMenuData.getTypes()]
+                                        .map(
+                                          (String type) =>
+                                              DropdownMenuItem<String>(
+                                                value: type,
+                                                child: Text(type),
+                                              ),
+                                        )
+                                        .toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    _selectedType = newValue!;
+                                    _filterMenus();
+                                  });
+                                },
                               ),
-                              child: Text(
-                                menu.category,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontSize: 12,
-                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        // 難易度選択ドロップダウン
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('難易度'),
+                              const SizedBox(height: 4),
+                              DropdownButton<String>(
+                                value: _selectedDifficulty,
+                                isExpanded: true,
+                                items:
+                                    [
+                                          'すべて',
+                                          ...PracticeMenuData.getDifficulties(),
+                                        ]
+                                        .map(
+                                          (String difficulty) =>
+                                              DropdownMenuItem<String>(
+                                                value: difficulty,
+                                                child: Text(difficulty),
+                                              ),
+                                        )
+                                        .toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    _selectedDifficulty = newValue!;
+                                    _filterMenus();
+                                  });
+                                },
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getTypeColor(
-                                  menu.type,
-                                ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                menu.type,
-                                style: TextStyle(
-                                  color: _getTypeColor(menu.type),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getDifficultyColor(
-                                  menu.difficulty,
-                                ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                menu.difficulty,
-                                style: TextStyle(
-                                  color: _getDifficultyColor(menu.difficulty),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    onTap: () {
-                      // 練習メニューの詳細ページへの遷移などを実装可能
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${menu.name}が選択されました')),
-                      );
-                    },
                   ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+
+                  const SizedBox(height: 16),
+
+                  // フィルタリング後のメニューリスト
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      '${_filteredMenus.length}件の練習メニュー',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // メニューリスト
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _filteredMenus.length,
+                      itemBuilder: (context, index) {
+                        final menu = _filteredMenus[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          child: ListTile(
+                            title: Text(
+                              menu.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Text(menu.description),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        menu.category,
+                                        style: TextStyle(
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _getTypeColor(
+                                          menu.type,
+                                        ).withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        menu.type,
+                                        style: TextStyle(
+                                          color: _getTypeColor(menu.type),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _getDifficultyColor(
+                                          menu.difficulty,
+                                        ).withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        menu.difficulty,
+                                        style: TextStyle(
+                                          color: _getDifficultyColor(
+                                            menu.difficulty,
+                                          ),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              // 練習メニューの詳細ページへの遷移などを実装可能
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('${menu.name}が選択されました')),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
     );
   }
 
