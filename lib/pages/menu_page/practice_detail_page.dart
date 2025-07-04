@@ -98,7 +98,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 3),
@@ -158,7 +158,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, -3),
@@ -218,40 +218,53 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
               return Row(
                 children: List.generate(_totalPhases, (index) {
                   final isCurrentPhase = index == _currentPhaseIndex;
-                  final color = _phaseColors[index % _phaseColors.length];
                   final isCompleted = index < _currentPhaseIndex;
+                  final color = _phaseColors[index % _phaseColors.length];
 
                   return Expanded(
                     child: Container(
                       margin: const EdgeInsets.all(2),
                       height: 26,
                       decoration: BoxDecoration(
-                        color:
-                            isCompleted
-                                ? color
-                                : isCurrentPhase
-                                ? Color.lerp(
-                                  Colors.grey.shade200,
-                                  color,
-                                  _meterAnimation.value,
-                                )
-                                : Colors.grey.shade200,
+                        color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(13),
                       ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            color:
-                                (isCompleted ||
-                                        (isCurrentPhase &&
-                                            _meterAnimation.value > 0.5))
-                                    ? Colors.white
-                                    : Colors.grey.shade600,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                      child: Stack(
+                        children: [
+                          if (isCompleted)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: color,
+                                borderRadius: BorderRadius.circular(13),
+                              ),
+                            )
+                          else if (isCurrentPhase)
+                            FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: _meterAnimation.value,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                              ),
+                            ),
+                          Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                color:
+                                    (isCompleted ||
+                                            (isCurrentPhase &&
+                                                _meterAnimation.value > 0.5))
+                                        ? Colors.white
+                                        : Colors.grey.shade600,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   );
