@@ -47,12 +47,12 @@ void main() {
           .setMockStreamHandler(scannerEventChannel, null);
     });
 
-    test('startScanning calls method channel', () async {
+    test('startScanning で Method Channel が呼ばれる', () async {
       await scanner.startScanning();
       expect(isScannerActive, isTrue);
     });
 
-    test('stopScanning calls method channel', () async {
+    test('stopScanning で Method Channel が呼ばれる', () async {
       await scanner.stopScanning();
       expect(isScannerActive, isFalse);
     });
