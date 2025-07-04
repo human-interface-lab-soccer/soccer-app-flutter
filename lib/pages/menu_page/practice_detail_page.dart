@@ -1,0 +1,558 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
+
+// 練習メニューの詳細ページ
+class PracticeDetailPage extends StatefulWidget {
+  final PracticeMenu menu;
+
+  const PracticeDetailPage({super.key, required this.menu});
+
+  @override
+  State<PracticeDetailPage> createState() => _PracticeDetailPageState();
+}
+
+class _PracticeDetailPageState extends State<PracticeDetailPage>
+    with TickerProviderStateMixin {
+  int _phaseSeconds = 10; // 各フェーズの秒数
+  late AnimationController _meterController;
+  late Animation<double> _meterAnimation;
+  bool _isRunning = false;
+  bool _isPaused = false;
+  int _currentPhaseIndex = 0;
+  late int _totalPhases;
+  late List<Color> _phaseColors;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // practice_menu_data.dartからフェーズ数を取得
+    _totalPhases = widget.menu.phaseCount;
+
+    // フェーズカラーを設定
+    _phaseColors = [
+      Colors.green,
+      Colors.blue,
+      Colors.orange,
+      Colors.purple,
+      Colors.red,
+      Colors.teal,
+      Colors.indigo,
+      Colors.amber,
+    ];
+
+    // メーターアニメーションの設定
+    _meterController = AnimationController(
+      duration: Duration(seconds: _phaseSeconds),
+      vsync: this,
+    );
+
+    _meterAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _meterController, curve: Curves.linear));
+
+    _meterController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _nextPhase();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _meterController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.menu.name),
+      ),
+      body: Column(
+        children: [
+          // 上部：メニューリストの内容を表示
+          _buildMenuInfo(),
+
+          // 中部：空白エリア
+          const Expanded(child: SizedBox()),
+
+          // 下部：コンパクトなパラメータ設定エリア
+          _buildCompactParameterSettings(),
+        ],
+      ),
+    );
+  }
+
+  // メニュー情報を表示するウィジェット
+  Widget _buildMenuInfo() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.menu.name,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(widget.menu.description, style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildTag(
+                widget.menu.category,
+                Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              _buildTag(widget.menu.type, _getTypeColor(widget.menu.type)),
+              const SizedBox(width: 8),
+              _buildTag(
+                widget.menu.difficulty,
+                _getDifficultyColor(widget.menu.difficulty),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // タグを作成するヘルパーメソッド
+  Widget _buildTag(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(text, style: TextStyle(color: color, fontSize: 12)),
+    );
+  }
+
+  // コンパクトなパラメータ設定エリア
+  Widget _buildCompactParameterSettings() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // プログレスメーター
+          _buildProgressMeter(),
+
+          const SizedBox(height: 16),
+
+          // コンパクトなフェーズ時間設定
+          _buildCompactPhaseTimeSetting(),
+
+          const SizedBox(height: 16),
+
+          // 実行ボタン
+          _buildActionButtons(),
+        ],
+      ),
+    );
+  }
+
+  // プログレスメーター
+  Widget _buildProgressMeter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'プログレス',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            Text(
+              '${_totalPhases}フェーズ',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // プログレスバー
+        Container(
+          height: 30,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: AnimatedBuilder(
+            animation: _meterAnimation,
+            builder: (context, child) {
+              return Row(
+                children: List.generate(_totalPhases, (index) {
+                  final isCurrentPhase = index == _currentPhaseIndex;
+                  final isCompleted = index < _currentPhaseIndex;
+                  final color = _phaseColors[index % _phaseColors.length];
+
+                  return Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.all(2),
+                      height: 26,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Stack(
+                        children: [
+                          if (isCompleted)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: color,
+                                borderRadius: BorderRadius.circular(13),
+                              ),
+                            )
+                          else if (isCurrentPhase)
+                            FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: _meterAnimation.value,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                              ),
+                            ),
+                          Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                color:
+                                    (isCompleted ||
+                                            (isCurrentPhase &&
+                                                _meterAnimation.value > 0.5))
+                                        ? Colors.white
+                                        : Colors.grey.shade600,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              );
+            },
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // 現在のフェーズ情報
+        if (_isRunning) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '現在のフェーズ：${_currentPhaseIndex + 1}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: _phaseColors[_currentPhaseIndex % _phaseColors.length],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                'フェーズ ${_currentPhaseIndex + 1}/${_totalPhases}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCompactPhaseTimeSetting() {
+    final minutes = _phaseSeconds ~/ 60;
+    final seconds = _phaseSeconds % 60;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'フェーズ時間',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 分ピッカー
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                    initialItem: minutes,
+                  ),
+                  itemExtent: 32,
+                  onSelectedItemChanged: (value) {
+                    setState(() {
+                      int newSeconds = _phaseSeconds % 60;
+                      if (value == 0 && newSeconds == 0) newSeconds = 1;
+                      _phaseSeconds = value * 60 + newSeconds;
+                      _updateMeterDuration();
+                    });
+                  },
+                  children: List.generate(
+                    61,
+                    (index) => Center(child: Text('$index')),
+                  ),
+                ),
+              ),
+              const Text(
+                ':',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              // 秒ピッカー
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                    initialItem: seconds,
+                  ),
+                  itemExtent: 32,
+                  onSelectedItemChanged: (value) {
+                    setState(() {
+                      int newMinutes = _phaseSeconds ~/ 60;
+                      if (value == 0 && newMinutes == 0) value = 1;
+                      _phaseSeconds = newMinutes * 60 + value;
+                      _updateMeterDuration();
+                    });
+                  },
+                  children: List.generate(
+                    60,
+                    (index) => Center(child: Text('$index')),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '合計練習時間：${_formatTotalTime(_totalPhases * _phaseSeconds)}',
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        ),
+      ],
+    );
+  }
+
+  // 合計時間をフォーマットするヘルパーメソッド
+  String _formatTotalTime(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    if (minutes > 0) {
+      return '${minutes}分${seconds}秒';
+    } else {
+      return '${seconds}秒';
+    }
+  }
+
+  // アクションボタンを表示するウィジェット
+  Widget _buildActionButtons() {
+    if (!_isRunning) {
+      // 練習前：開始ボタンのみ（大きく）
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _startPractice,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white, // ← 正しいスペル
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text(
+                '練習開始',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // 練習中または一時停止中：4つのボタン（大きめボタンに統一）
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _meterController.reset();
+                  _meterController.forward();
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Icon(Icons.skip_previous, size: 24),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  if (_isPaused) {
+                    _meterController.forward();
+                    _isPaused = false;
+                  } else {
+                    _meterController.stop();
+                    _isPaused = true;
+                  }
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: Icon(_isPaused ? Icons.play_arrow : Icons.pause, size: 24),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _nextPhase,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Icon(Icons.skip_next, size: 24),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _stopPractice,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Icon(Icons.stop, size: 24),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+
+  // 次のフェーズに進む
+  void _nextPhase() {
+    setState(() {
+      if (_currentPhaseIndex < _totalPhases - 1) {
+        _currentPhaseIndex++;
+      } else {
+        _currentPhaseIndex = 0; // 最初のフェーズに戻る
+      }
+    });
+
+    if (_isRunning && !_isPaused) {
+      _meterController.reset();
+      _meterController.forward();
+    }
+  }
+
+  // メーターの継続時間を更新
+  void _updateMeterDuration() {
+    if (_meterController.isAnimating) {
+      _meterController.stop();
+      _meterController.duration = Duration(seconds: _phaseSeconds);
+      _meterController.forward();
+    } else {
+      _meterController.duration = Duration(seconds: _phaseSeconds);
+    }
+  }
+
+  // 練習開始処理
+  void _startPractice() {
+    setState(() {
+      _isRunning = true;
+      _isPaused = false;
+      _currentPhaseIndex = 0;
+    });
+    _meterController.reset();
+    _meterController.forward();
+  }
+
+  // 練習停止処理
+  void _stopPractice() {
+    setState(() {
+      _isRunning = false;
+      _isPaused = false;
+      _currentPhaseIndex = 0;
+    });
+    _meterController.stop();
+    _meterController.reset();
+  }
+
+  // タイプに応じた色を返すヘルパーメソッド
+  Color _getTypeColor(String type) {
+    switch (type) {
+      case '既存':
+        return Colors.blue;
+      case '自由帳':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // 難易度に応じた色を返すヘルパーメソッド
+  Color _getDifficultyColor(String difficulty) {
+    switch (difficulty) {
+      case '初級':
+        return Colors.green;
+      case '中級':
+        return Colors.orange;
+      case '上級':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+}
