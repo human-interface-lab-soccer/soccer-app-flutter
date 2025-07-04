@@ -14,7 +14,7 @@ class PracticeDetailPage extends StatefulWidget {
 
 class _PracticeDetailPageState extends State<PracticeDetailPage>
     with TickerProviderStateMixin {
-  int _phaseSeconds = 30; // 各フェーズの秒数
+  int _phaseSeconds = 10; // 各フェーズの秒数
   late AnimationController _meterController;
   late Animation<double> _meterAnimation;
   bool _isRunning = false;
