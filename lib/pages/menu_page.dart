@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
+import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
 
 // メニューページ（検索・フィルタリング機能付き）
 class MenuPage extends StatefulWidget {
@@ -90,6 +91,14 @@ class _MenuPageState extends State<MenuPage> {
             return nameMatch && categoryMatch && typeMatch && difficultyMatch;
           }).toList();
     });
+  }
+
+  // メニュー詳細ページへの遷移
+  void _navigateToDetailPage(PracticeMenu menu) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PracticeDetailPage(menu: menu)),
+    );
   }
 
   @override
@@ -340,12 +349,8 @@ class _MenuPageState extends State<MenuPage> {
                                 ),
                               ],
                             ),
-                            onTap: () {
-                              // 練習メニューの詳細ページへの遷移などを実装可能
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('${menu.name}が選択されました')),
-                              );
-                            },
+                            trailing: const Icon(Icons.arrow_forward_ios),
+                            onTap: () => _navigateToDetailPage(menu),
                           ),
                         );
                       },
