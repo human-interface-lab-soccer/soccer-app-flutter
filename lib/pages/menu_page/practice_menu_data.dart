@@ -8,6 +8,7 @@ class PracticeMenu {
   final String description;
   final String type;
   final String difficulty;
+  final int phaseCount;
 
   PracticeMenu({
     required this.name,
@@ -15,6 +16,7 @@ class PracticeMenu {
     required this.description,
     required this.type,
     required this.difficulty,
+    required this.phaseCount,
   });
 
   // JSONからオブジェクトを生成するファクトリメソッド
@@ -25,6 +27,7 @@ class PracticeMenu {
       description: json['description'] ?? '',
       type: json['type'] ?? '',
       difficulty: json['difficulty'] ?? '',
+      phaseCount: json['phaseCount'] ?? 4,
     );
   }
 
@@ -36,6 +39,7 @@ class PracticeMenu {
       'description': description,
       'type': type,
       'difficulty': difficulty,
+      'phaseCount': phaseCount,
     };
   }
 }
