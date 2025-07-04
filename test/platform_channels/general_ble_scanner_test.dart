@@ -41,6 +41,10 @@ void main() {
 
     tearDown(() {
       scanner.dispose();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(scannerMethodChannel, null);
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockStreamHandler(scannerEventChannel, null);
     });
 
     test('startScanning calls method channel', () async {
