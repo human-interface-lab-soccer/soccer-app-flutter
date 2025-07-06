@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
-import 'package:soccer_app_flutter/utils/color_utils.dart';
-import 'package:soccer_app_flutter/utils/time_utils.dart';
+import 'package:soccer_app_flutter/utils/color_helper.dart';
+import 'package:soccer_app_flutter/utils/time_helper.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {
@@ -37,23 +37,14 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
 
     // practice_menu_data.dartからフェーズ数を取得
     _totalPhases = widget.menu.phaseCount;
-    _totalTimerSeconds = TimeUtils.getTotalSeconds(
+    _totalTimerSeconds = TimeHelpers.getTotalSeconds(
       _timerMinutes,
       _timerSeconds,
     );
     _currentTimerSeconds = _totalTimerSeconds;
 
     // フェーズカラーを設定
-    _phaseColors = [
-      Colors.green,
-      Colors.blue,
-      Colors.orange,
-      Colors.purple,
-      Colors.red,
-      Colors.teal,
-      Colors.indigo,
-      Colors.amber,
-    ];
+    _phaseColors = ColorHelpers.getPhaseColors();
 
     // メーターアニメーションの設定
     _meterController = AnimationController(
@@ -173,12 +164,12 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
               const SizedBox(width: 8),
               _buildTag(
                 widget.menu.type,
-                ColorUtils.getTypeColor(widget.menu.type),
+                ColorHelpers.getTypeColor(widget.menu.type),
               ),
               const SizedBox(width: 8),
               _buildTag(
                 widget.menu.difficulty,
-                ColorUtils.getDifficultyColor(widget.menu.difficulty),
+                ColorHelpers.getDifficultyColor(widget.menu.difficulty),
               ),
             ],
           ),
@@ -255,7 +246,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             Text(
-              TimeUtils.formatTime(_currentTimerSeconds),
+              TimeHelpers.formatTime(_currentTimerSeconds),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

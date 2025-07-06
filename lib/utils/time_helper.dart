@@ -1,5 +1,5 @@
 // 時間に関するユーティリティクラス
-class TimeUtils {
+class TimeHelpers {
   // 秒数を分と秒に変換するヘルパーメソッド
   static String formatTime(int totalSeconds) {
     final minutes = totalSeconds ~/ 60;

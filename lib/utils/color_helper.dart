@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // 色に関するヘルパークラス
-class ColorUtils {
+class ColorHelpers {
   // タイプに応じた色を返すヘルパーメソッド
   static Color getTypeColor(String type) {
     switch (type) {
@@ -26,5 +26,19 @@ class ColorUtils {
       default:
         return Colors.grey;
     }
+  }
+
+  // フェーズカラーのリストを取得
+  static List<Color> getPhaseColors() {
+    return [
+      Colors.green,
+      Colors.blue,
+      Colors.orange,
+      Colors.purple,
+      Colors.red,
+      Colors.teal,
+      Colors.indigo,
+      Colors.amber,
+    ];
   }
 }

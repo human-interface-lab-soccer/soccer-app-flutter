@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
-import 'package:soccer_app_flutter/utils/color_utils.dart';
+import 'package:soccer_app_flutter/utils/color_helper.dart';
 
 // メニューページ（検索・フィルタリング機能付き）
 class MenuPage extends StatefulWidget {
@@ -310,7 +310,7 @@ class _MenuPageState extends State<MenuPage> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: ColorUtils.getTypeColor(
+                                        color: ColorHelpers.getTypeColor(
                                           menu.type,
                                         ).withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
@@ -318,7 +318,7 @@ class _MenuPageState extends State<MenuPage> {
                                       child: Text(
                                         menu.type,
                                         style: TextStyle(
-                                          color: ColorUtils.getTypeColor(
+                                          color: ColorHelpers.getTypeColor(
                                             menu.type,
                                           ),
                                           fontSize: 12,
@@ -332,7 +332,7 @@ class _MenuPageState extends State<MenuPage> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: ColorUtils.getDifficultyColor(
+                                        color: ColorHelpers.getDifficultyColor(
                                           menu.difficulty,
                                         ).withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
@@ -340,9 +340,10 @@ class _MenuPageState extends State<MenuPage> {
                                       child: Text(
                                         menu.difficulty,
                                         style: TextStyle(
-                                          color: ColorUtils.getDifficultyColor(
-                                            menu.difficulty,
-                                          ),
+                                          color:
+                                              ColorHelpers.getDifficultyColor(
+                                                menu.difficulty,
+                                              ),
                                           fontSize: 12,
                                         ),
                                       ),
