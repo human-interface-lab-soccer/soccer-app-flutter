@@ -15,13 +15,19 @@ class PracticeDetailPage extends StatefulWidget {
 class _PracticeDetailPageState extends State<PracticeDetailPage>
     with TickerProviderStateMixin {
   int _phaseSeconds = 10; // 各フェーズの秒数
+  int _timerMinutes = 3; // タイマーの分数
+  int _timerSeconds = 0; // タイマーの秒数
   late AnimationController _meterController;
+  late AnimationController _timerController;
   late Animation<double> _meterAnimation;
+  late Animation<double> _timerAnimation;
   bool _isRunning = false;
   bool _isPaused = false;
   int _currentPhaseIndex = 0;
   late int _totalPhases;
   late List<Color> _phaseColors;
+  late int _totalTimerSeconds;
+  late int _currentTimerSeconds;
 
   @override
   void initState() {
@@ -29,6 +35,8 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
 
     // practice_menu_data.dartからフェーズ数を取得
     _totalPhases = widget.menu.phaseCount;
+    _totalTimerSeconds = _timerMinutes * 60 + _timerSeconds;
+    _currentTimerSeconds = _totalTimerSeconds;
 
     // フェーズカラーを設定
     _phaseColors = [
@@ -58,11 +66,37 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         _nextPhase();
       }
     });
+
+    // タイマーアニメーションの設定
+    _timerController = AnimationController(
+      duration: Duration(seconds: _totalTimerSeconds),
+      vsync: this,
+    );
+
+    _timerAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _timerController, curve: Curves.linear));
+
+    _timerController.addListener(() {
+      setState(() {
+        _currentTimerSeconds =
+            (_totalTimerSeconds * (1.0 - _timerController.value)).round();
+      });
+    });
+
+    _timerController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        // タイマー終了時の処理
+        _stopPractice();
+      }
+    });
   }
 
   @override
   void dispose() {
     _meterController.dispose();
+    _timerController.dispose();
     super.dispose();
   }
 
@@ -169,13 +203,18 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // タイマー設定
+          if (_isRunning) _buildTimerDisplay(),
           // プログレスメーター
           _buildProgressMeter(),
 
           const SizedBox(height: 16),
 
           // コンパクトなフェーズ時間設定
-          _buildCompactPhaseTimeSetting(),
+          if (!_isRunning) _buildCompactPhaseTimeSetting(),
+
+          // タイマー設定
+          if (!_isRunning) _buildTimerSetting(),
 
           const SizedBox(height: 16),
 
@@ -183,6 +222,68 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
           _buildActionButtons(),
         ],
       ),
+    );
+  }
+
+  // タイマー表示
+  Widget _buildTimerDisplay() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              '残り時間',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            Text(
+              _formatTime(_currentTimerSeconds),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color:
+                    _currentTimerSeconds < 30
+                        ? Colors.red
+                        : _currentTimerSeconds < 60
+                        ? Colors.orange
+                        : Colors.black,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // タイマープログレスバー
+        Container(
+          height: 8,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: AnimatedBuilder(
+            animation: _timerAnimation,
+            builder: (context, child) {
+              return FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: _timerAnimation.value,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color:
+                        _currentTimerSeconds < 30
+                            ? Colors.red
+                            : _currentTimerSeconds < 60
+                            ? Colors.orange
+                            : Colors.blue,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
@@ -199,7 +300,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             Text(
-              '${_totalPhases}フェーズ',
+              '$_totalPhasesフェーズ',
               style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ],
@@ -291,7 +392,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
                 ),
               ),
               Text(
-                'フェーズ ${_currentPhaseIndex + 1}/${_totalPhases}',
+                'フェーズ ${_currentPhaseIndex + 1}/$_totalPhases',
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
             ],
@@ -367,13 +468,79 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  // タイマー設定ウィジェット
+  Widget _buildTimerSetting() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'タイマー設定',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
         const SizedBox(height: 8),
-        Text(
-          '合計練習時間：${_formatTotalTime(_totalPhases * _phaseSeconds)}',
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        SizedBox(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 分ピッカー
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                    initialItem: _timerMinutes,
+                  ),
+                  itemExtent: 32,
+                  onSelectedItemChanged: (value) {
+                    setState(() {
+                      _timerMinutes = value;
+                      _updateTimerDuration();
+                    });
+                  },
+                  children: List.generate(
+                    61,
+                    (index) => Center(child: Text('$index')),
+                  ),
+                ),
+              ),
+              const Text(
+                ':',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              // 秒ピッカー
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(
+                    initialItem: _timerSeconds,
+                  ),
+                  itemExtent: 32,
+                  onSelectedItemChanged: (value) {
+                    setState(() {
+                      _timerSeconds = value;
+                      _updateTimerDuration();
+                    });
+                  },
+                  children: List.generate(
+                    60,
+                    (index) => Center(child: Text('$index')),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
+  }
+
+  // 時間をフォーマットするヘルパーメソッド
+  String _formatTime(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   // 合計時間をフォーマットするヘルパーメソッド
@@ -381,9 +548,9 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     final minutes = totalSeconds ~/ 60;
     final seconds = totalSeconds % 60;
     if (minutes > 0) {
-      return '${minutes}分${seconds}秒';
+      return '$minutes分$seconds秒';
     } else {
-      return '${seconds}秒';
+      return '$seconds秒';
     }
   }
 
@@ -413,14 +580,10 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
       // 練習中または一時停止中：4つのボタン（大きめボタンに統一）
       return Row(
         children: [
+          // 前のフェーズに戻るボタン
           Expanded(
             child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _meterController.reset();
-                  _meterController.forward();
-                });
-              },
+              onPressed: _previousPhase,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
@@ -430,19 +593,10 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
             ),
           ),
           const SizedBox(width: 8),
+          // 一時停止/再開ボタン
           Expanded(
             child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  if (_isPaused) {
-                    _meterController.forward();
-                    _isPaused = false;
-                  } else {
-                    _meterController.stop();
-                    _isPaused = true;
-                  }
-                });
-              },
+              onPressed: _pauseResumePractice,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
@@ -452,6 +606,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
             ),
           ),
           const SizedBox(width: 8),
+          // 次のフェーズに進むボタン
           Expanded(
             child: ElevatedButton(
               onPressed: _nextPhase,
@@ -464,6 +619,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
             ),
           ),
           const SizedBox(width: 8),
+          // 練習停止ボタン
           Expanded(
             child: ElevatedButton(
               onPressed: _stopPractice,
@@ -480,6 +636,21 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     }
   }
 
+  // 前のフェーズに戻る
+  void _previousPhase() {
+    setState(() {
+      if (_currentPhaseIndex > 0) {
+        _currentPhaseIndex--;
+      } else {
+        _currentPhaseIndex = _totalPhases - 1; // 最後のフェーズに戻る
+      }
+    });
+
+    if (_isRunning && !_isPaused) {
+      _meterController.reset();
+      _meterController.forward();
+    }
+  }
 
   // 次のフェーズに進む
   void _nextPhase() {
@@ -497,6 +668,21 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     }
   }
 
+  // 一時停止/再開処理
+  void _pauseResumePractice() {
+    setState(() {
+      if (_isPaused) {
+        _meterController.forward();
+        _timerController.forward();
+        _isPaused = false;
+      } else {
+        _meterController.stop();
+        _timerController.stop();
+        _isPaused = true;
+      }
+    });
+  }
+
   // メーターの継続時間を更新
   void _updateMeterDuration() {
     if (_meterController.isAnimating) {
@@ -508,15 +694,25 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     }
   }
 
+  // タイマーの継続時間を更新
+  void _updateTimerDuration() {
+    _totalTimerSeconds = _timerMinutes * 60 + _timerSeconds;
+    _currentTimerSeconds = _totalTimerSeconds;
+    _timerController.duration = Duration(seconds: _totalTimerSeconds);
+  }
+
   // 練習開始処理
   void _startPractice() {
     setState(() {
       _isRunning = true;
       _isPaused = false;
       _currentPhaseIndex = 0;
+      _currentTimerSeconds = _totalTimerSeconds;
     });
     _meterController.reset();
     _meterController.forward();
+    _timerController.reset();
+    _timerController.forward();
   }
 
   // 練習停止処理
@@ -525,9 +721,12 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
       _isRunning = false;
       _isPaused = false;
       _currentPhaseIndex = 0;
+      _currentTimerSeconds = _totalTimerSeconds;
     });
     _meterController.stop();
     _meterController.reset();
+    _timerController.stop();
+    _timerController.reset();
   }
 
   // タイプに応じた色を返すヘルパーメソッド
