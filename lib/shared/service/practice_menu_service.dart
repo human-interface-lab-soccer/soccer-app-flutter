@@ -46,12 +46,22 @@ class PracticeMenuService {
 
   // タイプのリストを取得
   static List<String> getTypes() {
-    return _allMenus.map((menu) => menu.type).toSet().toList();
+    final types = _allMenus.map((menu) => menu.type).toSet().toList();
+    types.sort((a, b) {
+      const order = ['既存', '自由帳'];
+      return order.indexOf(a).compareTo(order.indexOf(b));
+    });
+    return types;
   }
 
   // 難易度のリストを取得
   static List<String> getDifficulties() {
-    return _allMenus.map((menu) => menu.difficulty).toSet().toList();
+    final difficulties = _allMenus.map((menu) => menu.difficulty).toSet().toList();
+    difficulties.sort((a, b) {
+      const order = ['初級', '中級', '上級'];
+      return order.indexOf(a).compareTo(order.indexOf(b));
+    });
+    return difficulties;
   }
 
   // メニューの再読み込み（必要に応じて）
