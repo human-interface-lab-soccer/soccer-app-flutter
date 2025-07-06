@@ -107,17 +107,26 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.menu.name),
       ),
-      body: Column(
-        children: [
-          // 上部：メニューリストの内容を表示
-          _buildMenuInfo(),
+      body: GestureDetector(
+        // スワイプで戻る機能
+        onHorizontalDragEnd: (details) {
+          if (details.velocity.pixelsPerSecond.dx > 300) {
+            // 右にスワイプした場合、前のページに戻る
+            Navigator.of(context).pop();
+          }
+        },
+        child: Column(
+          children: [
+            // 上部：メニューリストの内容を表示
+            _buildMenuInfo(),
 
-          // 中部：空白エリア
-          const Expanded(child: SizedBox()),
+            // 中部：空白エリア
+            const Expanded(child: SizedBox()),
 
-          // 下部：コンパクトなパラメータ設定エリア
-          _buildCompactParameterSettings(),
-        ],
+            // 下部：コンパクトなパラメータ設定エリア
+            _buildCompactParameterSettings(),
+          ],
+        ),
       ),
     );
   }
@@ -565,7 +574,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
               onPressed: _startPractice,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white, // ← 正しいスペル
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: const Text(
