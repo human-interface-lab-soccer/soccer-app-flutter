@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
+import 'package:soccer_app_flutter/utils/color_utils.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {
@@ -166,11 +167,14 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
                 Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: 8),
-              _buildTag(widget.menu.type, _getTypeColor(widget.menu.type)),
+              _buildTag(
+                widget.menu.type,
+                ColorUtils.getTypeColor(widget.menu.type),
+              ),
               const SizedBox(width: 8),
               _buildTag(
                 widget.menu.difficulty,
-                _getDifficultyColor(widget.menu.difficulty),
+                ColorUtils.getDifficultyColor(widget.menu.difficulty),
               ),
             ],
           ),
@@ -725,31 +729,5 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     _meterController.reset();
     _timerController.stop();
     _timerController.reset();
-  }
-
-  // タイプに応じた色を返すヘルパーメソッド
-  Color _getTypeColor(String type) {
-    switch (type) {
-      case '既存':
-        return Colors.blue;
-      case '自由帳':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  // 難易度に応じた色を返すヘルパーメソッド
-  Color _getDifficultyColor(String difficulty) {
-    switch (difficulty) {
-      case '初級':
-        return Colors.green;
-      case '中級':
-        return Colors.orange;
-      case '上級':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
   }
 }
