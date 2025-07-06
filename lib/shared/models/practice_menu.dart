@@ -6,6 +6,8 @@ class PracticeMenu {
   final String type;
   final String difficulty;
   final int phaseCount;
+  static const int defaultPhaseCount = 4; // デフォルトのフェーズ数
+
 
   PracticeMenu({
     required this.name,
@@ -24,7 +26,7 @@ class PracticeMenu {
       description: json['description'] ?? '',
       type: json['type'] ?? '',
       difficulty: json['difficulty'] ?? '',
-      phaseCount: json['phaseCount'] ?? 4,
+      phaseCount: json['phaseCount'] ?? defaultPhaseCount,
     );
   }
 
