@@ -22,6 +22,10 @@ import CoreBluetooth
             name: "human.mech.saitama-u.ac.jp/scannerMethodChannel",
             binaryMessenger: controller.binaryMessenger
         )
+        let provisioningMethodChannel = FlutterMethodChannel(
+            name: "human.mech.saitama-u.ac.jp/provisioningMethodChannel",
+            binaryMessenger: controller.binaryMessenger
+        )
         
         initializeMeshNetwork()
         
@@ -43,6 +47,23 @@ import CoreBluetooth
                 self.generalBleScanner?.stopScan()
                 self.generalBleScanner = nil
                 result("[ScannerMethodChannel] Stop Scan...")
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        })
+        
+        provisioningMethodChannel.setMethodCallHandler({
+            [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+            guard let self = self else {
+                return;
+            }
+            
+            switch call.method {
+            case "provisioning":
+                let args = call.arguments
+                print(args)
+                
+                self.provisioning()
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -89,11 +110,25 @@ import CoreBluetooth
 //        )
     }
     
-    func provisioning(uuid: CBUUID) -> Void {
-        let unprovisionedDevice: CBPeripheral = UnprovisionedDevice(uuid: uuid)
-        try {
-            meshNetworkManager.provision(unprovisionedDevice: unprovisionedDevice, over: bearer)
-        } catch (error) {
+    func provisioning() -> Void {
+        let peripheral: CBPeripheral = (generalBleScanner?.discoveredDevices.first!)!
+        let advertisementData: [String: Any] = generalBleScanner?.messages[(peripheral.identifier.uuidString)] as! [String : Any]
+//        
+//        if let unprovisionedDevice = UnprovisionedDevice(advertisementData: advertisementData) {
+//            let bearer = PBGattBearer(target: peripheral)
+//            
+//        } else {
+//            print()
+//        }
+        print("Provisioning...")
+        print("target UUID: ", peripheral.identifier.uuidString)
+        print("advertisementData: ", advertisementData)
+        
+        do{
+            let unprovisionedDevice = try UnprovisionedDevice(advertisementData: advertisementData)
+            let bearer = PBGattBearer(target: peripheral)
+            let provisioningManager = try! meshNetworkManager.provision(unprovisionedDevice: unprovisionedDevice!, over: bearer)
+        } catch {
             print(error)
         }
     }

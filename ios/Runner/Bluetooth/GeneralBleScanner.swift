@@ -21,6 +21,7 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
 
     // 発見したデバイスを格納するSet
     var discoveredDevices: Set<CBPeripheral> = []
+    var messages = [String: Any]()
 
     override init() {
         super.init()
@@ -62,8 +63,8 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
         let deviceName = peripheral.name ?? "Unknown device"
         let deviceId = peripheral.identifier.uuidString
 
-        
         discoveredDevices.insert(peripheral)
+        messages[deviceId] = advertisementData
 
         print(
             "[DEBUG] Found device -> Device: \(deviceName), UUID: \(deviceId), RSSI: \(RSSI.intValue) \n",
