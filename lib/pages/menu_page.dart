@@ -51,7 +51,7 @@ class _MenuPageState extends State<MenuPage> {
         _isLoading = false; // 読み込み完了
       });
     } catch (e) {
-      print('データ読み込みエラー: $e');
+      debugPrint('データ読み込みエラー: $e');
       setState(() {
         _isLoading = false;
       });

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
@@ -26,9 +27,9 @@ class PracticeMenuService {
           menuList.map((menuData) => PracticeMenu.fromJson(menuData)).toList();
 
       _isLoaded = true;
-      print('練習メニューを${_allMenus.length}件読み込みました');
+      debugPrint('練習メニューを${_allMenus.length}件読み込みました');
     } catch (e) {
-      print('練習メニューの読み込みエラー: $e');
+      debugPrint('練習メニューの読み込みエラー: $e');
       // エラーが発生した場合は空のリストを設定
       _allMenus = [];
       _isLoaded = true;
