@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
+import 'package:soccer_app_flutter/shared/model/practice_menu.dart';
 import 'package:soccer_app_flutter/utils/color_helper.dart';
 import 'package:soccer_app_flutter/utils/time_helper.dart';
 

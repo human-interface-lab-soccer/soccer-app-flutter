@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
+import 'package:soccer_app_flutter/shared/model/practice_menu.dart';
+import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
 import 'package:soccer_app_flutter/utils/color_helper.dart';
 
@@ -42,9 +43,9 @@ class _MenuPageState extends State<MenuPage> {
 
     try {
       // 練習メニューのデータを読み込む
-      await PracticeMenuData.loadMenus();
+      await PracticeMenuService.loadMenus();
       // 初期状態では全メニューを表示
-      _filteredMenus = PracticeMenuData.allMenus;
+      _filteredMenus = PracticeMenuService.allMenus;
 
       setState(() {
         _isLoading = false; // 読み込み完了
@@ -73,7 +74,7 @@ class _MenuPageState extends State<MenuPage> {
     setState(() {
       // 全メニューから条件に合致するものだけを抽出
       _filteredMenus =
-          PracticeMenuData.allMenus.where((menu) {
+          PracticeMenuService.allMenus.where((menu) {
             /// 名前での検索：メニュー名に検索文字列が含まれるかチェック
             final nameMatch =
                 query.isEmpty || menu.name.toLowerCase().contains(query);
@@ -154,7 +155,10 @@ class _MenuPageState extends State<MenuPage> {
                                 value: _selectedCategory,
                                 isExpanded: true,
                                 items:
-                                    ['すべて', ...PracticeMenuData.getCategories()]
+                                    [
+                                          'すべて',
+                                          ...PracticeMenuService.getCategories(),
+                                        ]
                                         .map(
                                           (String category) => DropdownMenuItem(
                                             value: category,
@@ -184,7 +188,7 @@ class _MenuPageState extends State<MenuPage> {
                                 value: _selectedType,
                                 isExpanded: true,
                                 items:
-                                    ['すべて', ...PracticeMenuData.getTypes()]
+                                    ['すべて', ...PracticeMenuService.getTypes()]
                                         .map(
                                           (String type) =>
                                               DropdownMenuItem<String>(
@@ -217,7 +221,7 @@ class _MenuPageState extends State<MenuPage> {
                                 items:
                                     [
                                           'すべて',
-                                          ...PracticeMenuData.getDifficulties(),
+                                          ...PracticeMenuService.getDifficulties(),
                                         ]
                                         .map(
                                           (String difficulty) =>
