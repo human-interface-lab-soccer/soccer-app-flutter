@@ -552,17 +552,6 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
-  // 合計時間をフォーマットするヘルパーメソッド
-  String _formatTotalTime(int totalSeconds) {
-    final minutes = totalSeconds ~/ 60;
-    final seconds = totalSeconds % 60;
-    if (minutes > 0) {
-      return '$minutes分$seconds秒';
-    } else {
-      return '$seconds秒';
-    }
-  }
-
   // アクションボタンを表示するウィジェット
   Widget _buildActionButtons() {
     if (!_isRunning) {
