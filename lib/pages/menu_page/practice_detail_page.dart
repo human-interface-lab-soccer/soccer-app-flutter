@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_menu_data.dart';
 import 'package:soccer_app_flutter/utils/color_utils.dart';
+import 'package:soccer_app_flutter/utils/time_utils.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {
@@ -36,7 +37,10 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
 
     // practice_menu_data.dartからフェーズ数を取得
     _totalPhases = widget.menu.phaseCount;
-    _totalTimerSeconds = _timerMinutes * 60 + _timerSeconds;
+    _totalTimerSeconds = TimeUtils.getTotalSeconds(
+      _timerMinutes,
+      _timerSeconds,
+    );
     _currentTimerSeconds = _totalTimerSeconds;
 
     // フェーズカラーを設定
@@ -251,7 +255,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             Text(
-              _formatTime(_currentTimerSeconds),
+              TimeUtils.formatTime(_currentTimerSeconds),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -547,13 +551,6 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         ),
       ],
     );
-  }
-
-  // 時間をフォーマットするヘルパーメソッド
-  String _formatTime(int totalSeconds) {
-    final minutes = totalSeconds ~/ 60;
-    final seconds = totalSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   // アクションボタンを表示するウィジェット
