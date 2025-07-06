@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/pages/main_navigation_page.dart';
-import 'package:soccer_app_flutter/themes/button_theme_extension.dart';
+import 'package:soccer_app_flutter/shared/themes/button_theme_extension.dart';
 
 void main() {
   runApp(const MyApp());

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:soccer_app_flutter/shared/model/ble_device.dart';
-import 'package:soccer_app_flutter/themes/button_theme_extension.dart';
-import 'package:soccer_app_flutter/utils/layout_helpers.dart';
-import 'package:soccer_app_flutter/widgets/circle_button.dart';
-import 'package:soccer_app_flutter/widgets/box_button.dart';
+import 'package:soccer_app_flutter/shared/models/ble_device.dart';
+import 'package:soccer_app_flutter/shared/themes/button_theme_extension.dart';
+import 'package:soccer_app_flutter/shared/utils/layout_helpers.dart';
+import 'package:soccer_app_flutter/shared/widgets/circle_button.dart';
+import 'package:soccer_app_flutter/shared/widgets/box_button.dart';
 import 'package:soccer_app_flutter/pages/connection_page/discovered_device_list.dart';
 
 // ボタンの押下アクションを定義する列挙型

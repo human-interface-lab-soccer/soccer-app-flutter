@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'package:flutter/services.dart';
-import 'package:soccer_app_flutter/shared/model/ble_device.dart';
+import 'package:soccer_app_flutter/shared/models/ble_device.dart';
 
 /// このクラスは、BLE（Bluetooth Low Energy）デバイスのスキャン機能を提供します。
 ///

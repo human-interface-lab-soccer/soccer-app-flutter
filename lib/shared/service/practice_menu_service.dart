@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:soccer_app_flutter/shared/model/practice_menu.dart';
+import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
 // 練習メニューのデータを管理するサービスクラス
 class PracticeMenuService {

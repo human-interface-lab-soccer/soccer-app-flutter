@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:soccer_app_flutter/shared/model/practice_menu.dart';
+import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
-import 'package:soccer_app_flutter/utils/color_helper.dart';
+import 'package:soccer_app_flutter/shared/utils/color_helper.dart';
 
 // メニューページ（検索・フィルタリング機能付き）
 class MenuPage extends StatefulWidget {
