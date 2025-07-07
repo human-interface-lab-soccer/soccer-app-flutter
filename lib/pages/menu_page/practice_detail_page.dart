@@ -4,6 +4,7 @@ import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
 import 'package:soccer_app_flutter/shared/utils/time_helpers.dart';
 import 'package:soccer_app_flutter/shared/widgets/practice_timer_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/progress_meter_widget.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {
@@ -219,7 +220,13 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
               timerAnimation: _timerAnimation,
             ),
           // プログレスメーター
-          _buildProgressMeter(),
+          ProgressMeterWidget(
+            totalPhases: _totalPhases,
+            currentPhaseIndex: _currentPhaseIndex,
+            phaseColors: _phaseColors,
+            meterAnimation: _meterAnimation,
+            isRunning: _isRunning,
+          ),
 
           const SizedBox(height: 16),
 
@@ -235,121 +242,6 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
           _buildActionButtons(),
         ],
       ),
-    );
-  }
-
-  // プログレスメーター
-  Widget _buildProgressMeter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'プログレス',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            Text(
-              '$_totalPhasesフェーズ',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-
-        // プログレスバー
-        Container(
-          height: 30,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: AnimatedBuilder(
-            animation: _meterAnimation,
-            builder: (context, child) {
-              return Row(
-                children: List.generate(_totalPhases, (index) {
-                  final isCurrentPhase = index == _currentPhaseIndex;
-                  final isCompleted = index < _currentPhaseIndex;
-                  final color = _phaseColors[index % _phaseColors.length];
-
-                  return Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.all(2),
-                      height: 26,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(13),
-                      ),
-                      child: Stack(
-                        children: [
-                          if (isCompleted)
-                            Container(
-                              decoration: BoxDecoration(
-                                color: color,
-                                borderRadius: BorderRadius.circular(13),
-                              ),
-                            )
-                          else if (isCurrentPhase)
-                            FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: _meterAnimation.value,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  borderRadius: BorderRadius.circular(13),
-                                ),
-                              ),
-                            ),
-                          Center(
-                            child: Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                color:
-                                    (isCompleted ||
-                                            (isCurrentPhase &&
-                                                _meterAnimation.value > 0.5))
-                                        ? Colors.white
-                                        : Colors.grey.shade600,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              );
-            },
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // 現在のフェーズ情報
-        if (_isRunning) ...[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '現在のフェーズ：${_currentPhaseIndex + 1}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _phaseColors[_currentPhaseIndex % _phaseColors.length],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                'フェーズ ${_currentPhaseIndex + 1}/$_totalPhases',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-              ),
-            ],
-          ),
-        ],
-      ],
     );
   }
 
