@@ -105,14 +105,16 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
                                     ),
                                     ElevatedButton(
                                       onPressed: () async {
-                                        await Provisioning().startProvisioning(device.uuid);
+                                        await Provisioning().startProvisioning(
+                                          device.uuid,
+                                        );
                                         // Navigator.of(context).pop();
                                       },
                                       child: const Text('Start Provisioning'),
                                     ),
                                   ],
                                 );
-                              }
+                              },
                             );
                           },
                         );
