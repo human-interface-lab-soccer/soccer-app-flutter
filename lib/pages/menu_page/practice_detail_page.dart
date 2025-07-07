@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
 import 'package:soccer_app_flutter/shared/utils/time_helpers.dart';
+import 'package:soccer_app_flutter/shared/widgets/practice_timer_widget.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {
@@ -212,7 +213,11 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // タイマー設定
-          if (_isRunning) _buildTimerDisplay(),
+          if (_isRunning)
+            PracticeTimerWidget(
+              currentTimerSeconds: _currentTimerSeconds,
+              timerAnimation: _timerAnimation,
+            ),
           // プログレスメーター
           _buildProgressMeter(),
 
@@ -230,68 +235,6 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
           _buildActionButtons(),
         ],
       ),
-    );
-  }
-
-  // タイマー表示
-  Widget _buildTimerDisplay() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '残り時間',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            Text(
-              TimeHelpers.formatTime(_currentTimerSeconds),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color:
-                    _currentTimerSeconds < 30
-                        ? Colors.red
-                        : _currentTimerSeconds < 60
-                        ? Colors.orange
-                        : Colors.black,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-
-        // タイマープログレスバー
-        Container(
-          height: 8,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: AnimatedBuilder(
-            animation: _timerAnimation,
-            builder: (context, child) {
-              return FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: _timerAnimation.value,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color:
-                        _currentTimerSeconds < 30
-                            ? Colors.red
-                            : _currentTimerSeconds < 60
-                            ? Colors.orange
-                            : Colors.blue,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
     );
   }
 

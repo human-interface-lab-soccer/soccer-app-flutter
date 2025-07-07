@@ -7,11 +7,7 @@ class MenuItemWidget extends StatelessWidget {
   final PracticeMenu menu;
   final VoidCallback onTap;
 
-  const MenuItemWidget({
-    super.key,
-    required this.menu,
-    required this.onTap,
-  });
+  const MenuItemWidget({super.key, required this.menu, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -30,15 +26,9 @@ class MenuItemWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                _buildTag(
-                  menu.category,
-                  Theme.of(context).colorScheme.primary,
-                ),
+                _buildTag(menu.category, Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
-                _buildTag(
-                  menu.type,
-                  ColorHelpers.getTypeColor(menu.type),
-                ),
+                _buildTag(menu.type, ColorHelpers.getTypeColor(menu.type)),
                 const SizedBox(width: 8),
                 _buildTag(
                   menu.difficulty,
@@ -62,10 +52,7 @@ class MenuItemWidget extends StatelessWidget {
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        text,
-        style: TextStyle(color: color, fontSize: 12),
-      ),
+      child: Text(text, style: TextStyle(color: color, fontSize: 12)),
     );
   }
 }

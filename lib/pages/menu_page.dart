@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
-import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_filter_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_item_widget.dart';
 
