@@ -1,10 +1,13 @@
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
+/// デフォルトフィルタ値
+const defaultFilterValue = 'すべて';
+
 /// メニューフィルタリング機能を提供するMixin
 mixin MenuFilterMixin {
-  String _selectedCategory = 'すべて';
-  String _selectedType = 'すべて';
-  String _selectedDifficulty = 'すべて';
+  String _selectedCategory = defaultFilterValue;
+  String _selectedType = defaultFilterValue;
+  String _selectedDifficulty = defaultFilterValue;
 
   // Getters
   String get selectedCategory => _selectedCategory;
@@ -54,16 +57,18 @@ mixin MenuFilterMixin {
 
   /// カテゴリーとの一致判定
   bool _matchesCategory(String menuCategory, String selectedCategory) {
-    return selectedCategory == 'すべて' || menuCategory == selectedCategory;
+    return selectedCategory == defaultFilterValue ||
+        menuCategory == selectedCategory;
   }
 
   /// タイプとの一致判定
   bool _matchesType(String menuType, String selectedType) {
-    return selectedType == 'すべて' || menuType == selectedType;
+    return selectedType == defaultFilterValue || menuType == selectedType;
   }
 
   /// 難易度との一致判定
   bool _matchesDifficulty(String menuDifficulty, String selectedDifficulty) {
-    return selectedDifficulty == 'すべて' || menuDifficulty == selectedDifficulty;
+    return selectedDifficulty == defaultFilterValue ||
+        menuDifficulty == selectedDifficulty;
   }
 }
