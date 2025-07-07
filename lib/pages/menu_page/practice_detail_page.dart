@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
-import 'package:soccer_app_flutter/shared/utils/color_helper.dart';
-import 'package:soccer_app_flutter/shared/utils/time_helper.dart';
+import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
+import 'package:soccer_app_flutter/shared/utils/time_helpers.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {

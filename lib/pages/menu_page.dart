@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
-import 'package:soccer_app_flutter/shared/utils/color_helper.dart';
+import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_filter_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_item_widget.dart';
 
 // メニューページ（検索・フィルタリング機能付き）
 class MenuPage extends StatefulWidget {
@@ -183,102 +184,9 @@ class _MenuPageState extends State<MenuPage> {
                       itemCount: _filteredMenus.length,
                       itemBuilder: (context, index) {
                         final menu = _filteredMenus[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          child: ListTile(
-                            title: Text(
-                              menu.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 4),
-                                Text(menu.description),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        menu.category,
-                                        style: TextStyle(
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.primary,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: ColorHelpers.getTypeColor(
-                                          menu.type,
-                                        ).withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        menu.type,
-                                        style: TextStyle(
-                                          color: ColorHelpers.getTypeColor(
-                                            menu.type,
-                                          ),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: ColorHelpers.getDifficultyColor(
-                                          menu.difficulty,
-                                        ).withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        menu.difficulty,
-                                        style: TextStyle(
-                                          color:
-                                              ColorHelpers.getDifficultyColor(
-                                                menu.difficulty,
-                                              ),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            trailing: const Icon(Icons.arrow_forward_ios),
-                            onTap: () => _navigateToDetailPage(menu),
-                          ),
+                        return MenuItemWidget(
+                          menu: menu,
+                          onTap: () => _navigateToDetailPage(menu),
                         );
                       },
                     ),
