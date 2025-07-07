@@ -3,6 +3,7 @@ import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
 import 'package:soccer_app_flutter/shared/utils/color_helper.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_filter_widget.dart';
 
 // メニューページ（検索・フィルタリング機能付き）
 class MenuPage extends StatefulWidget {
@@ -139,110 +140,28 @@ class _MenuPageState extends State<MenuPage> {
                   ),
 
                   // フィルタリング機能
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // カテゴリ選択ドロップダウン
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('カテゴリ'),
-                              const SizedBox(height: 4),
-                              DropdownButton<String>(
-                                value: _selectedCategory,
-                                isExpanded: true,
-                                items:
-                                    [
-                                          'すべて',
-                                          ...PracticeMenuService.getCategories(),
-                                        ]
-                                        .map(
-                                          (String category) => DropdownMenuItem(
-                                            value: category,
-                                            child: Text(category),
-                                          ),
-                                        )
-                                        .toList(),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    _selectedCategory = newValue!;
-                                    _filterMenus();
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        // タイプ選択ドロップダウン
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('タイプ'),
-                              const SizedBox(height: 4),
-                              DropdownButton<String>(
-                                value: _selectedType,
-                                isExpanded: true,
-                                items:
-                                    ['すべて', ...PracticeMenuService.getTypes()]
-                                        .map(
-                                          (String type) =>
-                                              DropdownMenuItem<String>(
-                                                value: type,
-                                                child: Text(type),
-                                              ),
-                                        )
-                                        .toList(),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    _selectedType = newValue!;
-                                    _filterMenus();
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        // 難易度選択ドロップダウン
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('難易度'),
-                              const SizedBox(height: 4),
-                              DropdownButton<String>(
-                                value: _selectedDifficulty,
-                                isExpanded: true,
-                                items:
-                                    [
-                                          'すべて',
-                                          ...PracticeMenuService.getDifficulties(),
-                                        ]
-                                        .map(
-                                          (String difficulty) =>
-                                              DropdownMenuItem<String>(
-                                                value: difficulty,
-                                                child: Text(difficulty),
-                                              ),
-                                        )
-                                        .toList(),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    _selectedDifficulty = newValue!;
-                                    _filterMenus();
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  MenuFilterWidget(
+                    selectedCategory: _selectedCategory,
+                    selectedType: _selectedType,
+                    selectedDifficulty: _selectedDifficulty,
+                    onCategoryChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value;
+                        _filterMenus(); // フィルタリングを再実行
+                      });
+                    },
+                    onTypeChanged: (value) {
+                      setState(() {
+                        _selectedType = value;
+                        _filterMenus(); // フィルタリングを再実行
+                      });
+                    },
+                    onDifficultyChanged: (value) {
+                      setState(() {
+                        _selectedDifficulty = value;
+                        _filterMenus(); // フィルタリングを再実行
+                      });
+                    },
                   ),
 
                   const SizedBox(height: 16),

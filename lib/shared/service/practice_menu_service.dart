@@ -56,7 +56,8 @@ class PracticeMenuService {
 
   // 難易度のリストを取得
   static List<String> getDifficulties() {
-    final difficulties = _allMenus.map((menu) => menu.difficulty).toSet().toList();
+    final difficulties =
+        _allMenus.map((menu) => menu.difficulty).toSet().toList();
     difficulties.sort((a, b) {
       const order = ['初級', '中級', '上級'];
       return order.indexOf(a).compareTo(order.indexOf(b));

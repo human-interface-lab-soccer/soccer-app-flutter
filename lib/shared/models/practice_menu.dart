@@ -8,7 +8,6 @@ class PracticeMenu {
   final int phaseCount;
   static const int defaultPhaseCount = 4; // デフォルトのフェーズ数
 
-
   PracticeMenu({
     required this.name,
     required this.category,
