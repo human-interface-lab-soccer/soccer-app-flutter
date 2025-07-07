@@ -3,7 +3,7 @@ import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_filter_widget.dart';
-import 'package:soccer_app_flutter/shared/widgets/menu_item_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_list_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_search_bar.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_counter_widget.dart';
 import 'package:soccer_app_flutter/shared/mixins/menu_filter_mixin.dart';
@@ -152,15 +152,9 @@ class _MenuPageState extends State<MenuPage> with MenuFilterMixin {
 
                   // メニューリスト
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: _filteredMenus.length,
-                      itemBuilder: (context, index) {
-                        final menu = _filteredMenus[index];
-                        return MenuItemWidget(
-                          menu: menu,
-                          onTap: () => _navigateToDetailPage(menu),
-                        );
-                      },
+                    child: MenuListWidget(
+                      menus: _filteredMenus,
+                      onMenuTap: _navigateToDetailPage,
                     ),
                   ),
                 ],
