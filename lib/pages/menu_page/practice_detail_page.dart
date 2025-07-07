@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
-import 'package:soccer_app_flutter/shared/widgets/menu_info_card.dart';
 import 'package:soccer_app_flutter/shared/controllers/practice_timer_controller.dart';
-import 'package:soccer_app_flutter/shared/widgets/practice_action_buttons.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_info_card.dart';
+import 'package:soccer_app_flutter/shared/widgets/practice_parameter_settings.dart';
+import 'package:soccer_app_flutter/shared/mixins/swipe_navigation_mixin.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {
@@ -15,19 +16,28 @@ class PracticeDetailPage extends StatefulWidget {
 }
 
 class _PracticeDetailPageState extends State<PracticeDetailPage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, SwipeNavigationMixin {
   late PracticeTimerController _controller;
 
   // 初期設定値
-  final int _initialPhaseSeconds = 10;
-  final int _initialTimerMinutes = 3;
-  final int _initialTimerSeconds = 0;
+  static const int _initialPhaseSeconds = 10;
+  static const int _initialTimerMinutes = 3;
+  static const int _initialTimerSeconds = 0;
 
   @override
   void initState() {
     super.initState();
+    _initializeController();
+  }
 
-    // コントローラーの初期化
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// コントローラーの初期化処理
+  void _initializeController() {
     _controller = PracticeTimerController();
     _controller.initialize(
       widget.menu.phaseCount,
@@ -44,12 +54,6 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -57,13 +61,8 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         title: Text(widget.menu.name),
       ),
       body: GestureDetector(
-        // スワイプで戻る機能
-        onHorizontalDragEnd: (details) {
-          if (details.velocity.pixelsPerSecond.dx > 300) {
-            // 右にスワイプした場合，前のページに戻る
-            Navigator.of(context).pop();
-          }
-        },
+        // スワイプで戻る機能（SwipeNavigationMixinから提供）
+        onHorizontalDragEnd: (details) => handleSwipeNavigation(details, context),
         child: Column(
           children: [
             // 上部：メニューリストの内容を表示
@@ -72,8 +71,8 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
             // 中部：空白エリア
             const Expanded(child: SizedBox()),
 
-            // 下部：コンパクトなパラメータ設定エリア
-            PracticeActionButtons(controller: _controller),
+            // 下部：パラメータ設定エリア
+            PracticeParameterSettings(controller: _controller),
           ],
         ),
       ),
