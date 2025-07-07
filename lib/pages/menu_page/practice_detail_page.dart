@@ -62,7 +62,8 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
       ),
       body: GestureDetector(
         // スワイプで戻る機能（SwipeNavigationMixinから提供）
-        onHorizontalDragEnd: (details) => handleSwipeNavigation(details, context),
+        onHorizontalDragEnd:
+            (details) => handleSwipeNavigation(details, context),
         child: Column(
           children: [
             // 上部：メニューリストの内容を表示

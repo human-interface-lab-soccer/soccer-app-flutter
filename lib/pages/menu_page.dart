@@ -4,6 +4,9 @@ import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_filter_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_item_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_search_bar.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_counter_widget.dart';
+import 'package:soccer_app_flutter/shared/mixins/menu_filter_mixin.dart';
 
 // メニューページ（検索・フィルタリング機能付き）
 class MenuPage extends StatefulWidget {
@@ -13,11 +16,8 @@ class MenuPage extends StatefulWidget {
   State<MenuPage> createState() => _MenuPageState();
 }
 
-class _MenuPageState extends State<MenuPage> {
+class _MenuPageState extends State<MenuPage> with MenuFilterMixin {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'すべて';
-  String _selectedType = 'すべて';
-  String _selectedDifficulty = 'すべて';
   List<PracticeMenu> _filteredMenus = []; // 練習メニューのリスト
   bool _isLoading = true; // データ読み込み中フラグ
 
@@ -26,7 +26,7 @@ class _MenuPageState extends State<MenuPage> {
     super.initState();
     _loadData();
     // 検索テキストフィールドの変更を監視してフィルタリング実行
-    _searchController.addListener(_filterMenus);
+    _searchController.addListener(_applyFilters);
   }
 
   @override
@@ -69,31 +69,35 @@ class _MenuPageState extends State<MenuPage> {
     }
   }
 
-  void _filterMenus() {
-    // 検索テキストを小文字に変換（大文字小文字を区別しない検索のため）
-    final query = _searchController.text.toLowerCase();
+  // フィルタリング処理の適用
+  void _applyFilters() {
     setState(() {
-      // 全メニューから条件に合致するものだけを抽出
-      _filteredMenus =
-          PracticeMenuService.allMenus.where((menu) {
-            /// 名前での検索：メニュー名に検索文字列が含まれるかチェック
-            final nameMatch =
-                query.isEmpty || menu.name.toLowerCase().contains(query);
-            // カテゴリーでのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
-            final categoryMatch =
-                _selectedCategory == 'すべて' ||
-                menu.category == _selectedCategory;
-            // タイプでのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
-            final typeMatch =
-                _selectedType == 'すべて' || menu.type == _selectedType;
-            // 難易度でのフィルタリング：「すべて」選択時は全て表示，それ以外は一致するもののみ
-            final difficultyMatch =
-                _selectedDifficulty == 'すべて' ||
-                menu.difficulty == _selectedDifficulty;
-            // 全ての条件を満たすメニューのみを返す（AND条件）
-            return nameMatch && categoryMatch && typeMatch && difficultyMatch;
-          }).toList();
+      _filteredMenus = filterMenus(
+        allMenus: PracticeMenuService.allMenus,
+        searchQuery: _searchController.text,
+        selectedCategory: selectedCategory,
+        selectedType: selectedType,
+        selectedDifficulty: selectedDifficulty,
+      );
     });
+  }
+
+  // カテゴリー変更時の処理
+  void _onCategoryChanged(String value) {
+    updateSelectedCategory(value);
+    _applyFilters();
+  }
+
+  // タイプ変更時の処理
+  void _onTypeChanged(String value) {
+    updateSelectedType(value);
+    _applyFilters();
+  }
+
+  // 難易度変更時の処理
+  void _onDifficultyChanged(String value) {
+    updateSelectedDifficulty(value);
+    _applyFilters();
   }
 
   // メニュー詳細ページへの遷移
@@ -127,53 +131,22 @@ class _MenuPageState extends State<MenuPage> {
               : Column(
                 children: [
                   // 検索バー
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: const InputDecoration(
-                        labelText: '練習メニューを検索',
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
+                  MenuSearchBar(controller: _searchController),
 
                   // フィルタリング機能
                   MenuFilterWidget(
-                    selectedCategory: _selectedCategory,
-                    selectedType: _selectedType,
-                    selectedDifficulty: _selectedDifficulty,
-                    onCategoryChanged: (value) {
-                      setState(() {
-                        _selectedCategory = value;
-                        _filterMenus(); // フィルタリングを再実行
-                      });
-                    },
-                    onTypeChanged: (value) {
-                      setState(() {
-                        _selectedType = value;
-                        _filterMenus(); // フィルタリングを再実行
-                      });
-                    },
-                    onDifficultyChanged: (value) {
-                      setState(() {
-                        _selectedDifficulty = value;
-                        _filterMenus(); // フィルタリングを再実行
-                      });
-                    },
+                    selectedCategory: selectedCategory,
+                    selectedType: selectedType,
+                    selectedDifficulty: selectedDifficulty,
+                    onCategoryChanged: _onCategoryChanged,
+                    onTypeChanged: _onTypeChanged,
+                    onDifficultyChanged: _onDifficultyChanged,
                   ),
 
                   const SizedBox(height: 16),
 
-                  // フィルタリング後のメニューリスト
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      '${_filteredMenus.length}件の練習メニュー',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
+                  // フィルタリング後のメニュー件数表示
+                  MenuCounterWidget(count: _filteredMenus.length),
 
                   const SizedBox(height: 8),
 
