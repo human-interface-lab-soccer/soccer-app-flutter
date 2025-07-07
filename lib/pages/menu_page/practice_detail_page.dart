@@ -211,7 +211,12 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
               initialMinutes: _controller.timerMinutes,
               initialSeconds: _controller.timerSeconds,
               onTimeChanged: (minutes, seconds) {
-                _controller.updateTimerTime(minutes, seconds);
+                // 0:00を許容しない
+                if (minutes == 0 && seconds == 0) {
+                  _controller.updateTimerTime(1, 0);
+                } else {
+                  _controller.updateTimerTime(minutes, seconds);
+                }
               },
             ),
 
