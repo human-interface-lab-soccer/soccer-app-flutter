@@ -66,12 +66,6 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
         discoveredDevices.insert(peripheral)
         messages[deviceId] = advertisementData
 
-        print(
-            "[DEBUG] Found device -> Device: \(deviceName), UUID: \(deviceId), RSSI: \(RSSI.intValue) \n",
-            "[DEBUG] Advertisement Data: \(advertisementData)"
-        )
-        print("[DEBUG] デバイスの個数", discoveredDevices.count)
-
         if let sink = eventSink {
             let deviceData: [String: Any] = [
                 "name": deviceName,

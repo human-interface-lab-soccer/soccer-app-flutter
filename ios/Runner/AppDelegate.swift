@@ -101,35 +101,35 @@ import CoreBluetooth
         } catch {
             print(error)
         }
-        
-        // Provisioning
-//        let unprovisionedDevice: CBPeripheral = generalBleScanner?.discoveredDevices.first
-//        let provisioningManager = try meshNetworkManager.provision(
-//            unprovisionedDevice: UnprovisionedDevice(uuid: unprovisionedDevice.identifier.uuidString),
-//            over: PBGattBearer(target: unprovisionedDevice)
-//        )
     }
     
     func provisioning() -> Void {
         let peripheral: CBPeripheral = (generalBleScanner?.discoveredDevices.first!)!
         let advertisementData: [String: Any] = generalBleScanner?.messages[(peripheral.identifier.uuidString)] as! [String : Any]
-//        
-//        if let unprovisionedDevice = UnprovisionedDevice(advertisementData: advertisementData) {
-//            let bearer = PBGattBearer(target: peripheral)
-//            
-//        } else {
-//            print()
-//        }
-        print("Provisioning...")
-        print("target UUID: ", peripheral.identifier.uuidString)
-        print("advertisementData: ", advertisementData)
         
-        do{
-            let unprovisionedDevice = try UnprovisionedDevice(advertisementData: advertisementData)
+        if let unprovisionedDevice = UnprovisionedDevice(advertisementData: advertisementData) {
             let bearer = PBGattBearer(target: peripheral)
-            let provisioningManager = try! meshNetworkManager.provision(unprovisionedDevice: unprovisionedDevice!, over: bearer)
-        } catch {
-            print(error)
+            do {
+                let provisioningManager = try meshNetworkManager.provision(unprovisionedDevice: unprovisionedDevice, over: bearer)
+                
+                print("[Provisioning Manager State]", provisioningManager.state)
+                print("[Provisioning Manager isDeviceSupported]", provisioningManager.isDeviceSupported)
+                print("[Mesh Network]", meshNetworkManager.meshNetwork?.localProvisioner)
+                print(meshNetworkManager.meshNetwork?.meshName)
+                print(meshNetworkManager.meshNetwork?.nodes[0].elements)
+                
+                // ここで成功したことを伝えたい
+            } catch {
+                print("Error to provisioning")
+                print(error)
+                
+                // ここで失敗したことと原因を伝えたい
+            }
+        } else {
+            print("Error Catching unprovisioned Device!!")
+            print(advertisementData.debugDescription)
+            
+            // ここで失敗したことと原因を伝えたい
         }
     }
 }
