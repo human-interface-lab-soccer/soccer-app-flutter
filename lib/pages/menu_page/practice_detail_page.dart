@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_info_card.dart';
 import 'package:soccer_app_flutter/shared/widgets/practice_timer_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/progress_meter_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/time_picker_widget.dart';
 import 'package:soccer_app_flutter/shared/controllers/practice_timer_controller.dart';
+import 'package:soccer_app_flutter/shared/widgets/tag_widget.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {
@@ -73,7 +75,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         child: Column(
           children: [
             // 上部：メニューリストの内容を表示
-            _buildMenuInfo(),
+            MenuInfoCard(menu: widget.menu),
 
             // 中部：空白エリア
             const Expanded(child: SizedBox()),
@@ -83,69 +85,6 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
           ],
         ),
       ),
-    );
-  }
-
-  // メニュー情報を表示するウィジェット
-  Widget _buildMenuInfo() {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.menu.name,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(widget.menu.description, style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildTag(
-                widget.menu.category,
-                Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              _buildTag(
-                widget.menu.type,
-                ColorHelpers.getTypeColor(widget.menu.type),
-              ),
-              const SizedBox(width: 8),
-              _buildTag(
-                widget.menu.difficulty,
-                ColorHelpers.getDifficultyColor(widget.menu.difficulty),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // タグを作成するヘルパーメソッド
-  Widget _buildTag(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(text, style: TextStyle(color: color, fontSize: 12)),
     );
   }
 
