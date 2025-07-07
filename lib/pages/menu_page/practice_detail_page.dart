@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
 import 'package:soccer_app_flutter/shared/utils/time_helpers.dart';
 import 'package:soccer_app_flutter/shared/widgets/practice_timer_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/progress_meter_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/time_picker_widget.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends StatefulWidget {
@@ -231,10 +231,38 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
           const SizedBox(height: 16),
 
           // コンパクトなフェーズ時間設定
-          if (!_isRunning) _buildCompactPhaseTimeSetting(),
+          if (!_isRunning)
+            TimePickerWidget(
+              title: 'フェーズ時間',
+              initialMinutes: _phaseSeconds ~/ 60,
+              initialSeconds: _phaseSeconds % 60,
+              onTimeChanged: (minutes, seconds) {
+                setState(() {
+                  // 0:00を許容しない
+                  if (minutes == 0 && seconds == 0) {
+                    _phaseSeconds = 1;
+                  } else {
+                    _phaseSeconds = minutes * 60 + seconds;
+                  }
+                  _updateMeterDuration();
+                });
+              },
+            ),
 
           // タイマー設定
-          if (!_isRunning) _buildTimerSetting(),
+          if (!_isRunning)
+            TimePickerWidget(
+              title: 'タイマー設定',
+              initialMinutes: _timerMinutes,
+              initialSeconds: _timerSeconds,
+              onTimeChanged: (minutes, seconds) {
+                setState(() {
+                  _timerMinutes = minutes;
+                  _timerSeconds = seconds;
+                  _updateTimerDuration();
+                });
+              },
+            ),
 
           const SizedBox(height: 16),
 
@@ -242,140 +270,6 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
           _buildActionButtons(),
         ],
       ),
-    );
-  }
-
-  Widget _buildCompactPhaseTimeSetting() {
-    final minutes = _phaseSeconds ~/ 60;
-    final seconds = _phaseSeconds % 60;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'フェーズ時間',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 40,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 分ピッカー
-              Expanded(
-                child: CupertinoPicker(
-                  scrollController: FixedExtentScrollController(
-                    initialItem: minutes,
-                  ),
-                  itemExtent: 32,
-                  onSelectedItemChanged: (value) {
-                    setState(() {
-                      int newSeconds = _phaseSeconds % 60;
-                      if (value == 0 && newSeconds == 0) newSeconds = 1;
-                      _phaseSeconds = value * 60 + newSeconds;
-                      _updateMeterDuration();
-                    });
-                  },
-                  children: List.generate(
-                    61,
-                    (index) => Center(child: Text('$index')),
-                  ),
-                ),
-              ),
-              const Text(
-                ':',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              // 秒ピッカー
-              Expanded(
-                child: CupertinoPicker(
-                  scrollController: FixedExtentScrollController(
-                    initialItem: seconds,
-                  ),
-                  itemExtent: 32,
-                  onSelectedItemChanged: (value) {
-                    setState(() {
-                      int newMinutes = _phaseSeconds ~/ 60;
-                      if (value == 0 && newMinutes == 0) value = 1;
-                      _phaseSeconds = newMinutes * 60 + value;
-                      _updateMeterDuration();
-                    });
-                  },
-                  children: List.generate(
-                    60,
-                    (index) => Center(child: Text('$index')),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // タイマー設定ウィジェット
-  Widget _buildTimerSetting() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'タイマー設定',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 40,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 分ピッカー
-              Expanded(
-                child: CupertinoPicker(
-                  scrollController: FixedExtentScrollController(
-                    initialItem: _timerMinutes,
-                  ),
-                  itemExtent: 32,
-                  onSelectedItemChanged: (value) {
-                    setState(() {
-                      _timerMinutes = value;
-                      _updateTimerDuration();
-                    });
-                  },
-                  children: List.generate(
-                    61,
-                    (index) => Center(child: Text('$index')),
-                  ),
-                ),
-              ),
-              const Text(
-                ':',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              // 秒ピッカー
-              Expanded(
-                child: CupertinoPicker(
-                  scrollController: FixedExtentScrollController(
-                    initialItem: _timerSeconds,
-                  ),
-                  itemExtent: 32,
-                  onSelectedItemChanged: (value) {
-                    setState(() {
-                      _timerSeconds = value;
-                      _updateTimerDuration();
-                    });
-                  },
-                  children: List.generate(
-                    60,
-                    (index) => Center(child: Text('$index')),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 

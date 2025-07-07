@@ -30,7 +30,7 @@ class ProgressMeterWidget extends StatelessWidget {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             Text(
-              '${totalPhases}フェーズ',
+              '$totalPhasesフェーズ',
               style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ],
