@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanner.dart';
+import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
 import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 
 /// 検出されたBLEデバイスのリストを表示するウィジェット
@@ -88,6 +89,32 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
                           subtitle: Text(
                             'UUID: ${device.uuid}, RSSI: ${device.rssi}',
                           ),
+                          onTap: () async {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return SimpleDialog(
+                                  title: Text('Provisioning ${device.name}'),
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Text(
+                                        'UUID: ${device.uuid}\nRSSI: ${device.rssi}',
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        await Provisioning().startProvisioning(device.uuid);
+                                        // Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Start Provisioning'),
+                                    ),
+                                  ],
+                                );
+                              }
+                            );
+                          },
                         );
                       }).toList(),
                 ),
