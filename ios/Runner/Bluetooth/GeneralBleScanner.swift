@@ -20,8 +20,9 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
     private var eventSink: FlutterEventSink?
 
     // 発見したデバイスを格納するSet
-    var discoveredDevices: Set<CBPeripheral> = []
-    var messages = [String: Any]()
+//    var discoveredDevices = [String: CBPeripheral]()
+//    var advertisementDatas = [String: Any]()
+    var discoveredDevicesList = [String: [String: Any]]()
 
     override init() {
         super.init()
@@ -63,8 +64,13 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
         let deviceName = peripheral.name ?? "Unknown device"
         let deviceId = peripheral.identifier.uuidString
 
-        discoveredDevices.insert(peripheral)
-        messages[deviceId] = advertisementData
+//        discoveredDevices[deviceId] = peripheral
+//        advertisementDatas[deviceId] = advertisementData
+        discoveredDevicesList[deviceId] = [
+            "peripheral": peripheral,
+            "advertisementData": advertisementData
+        ]
+        
 
         if let sink = eventSink {
             let deviceData: [String: Any] = [

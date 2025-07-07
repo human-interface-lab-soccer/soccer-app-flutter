@@ -60,10 +60,13 @@ import CoreBluetooth
             
             switch call.method {
             case "provisioning":
-                let args = call.arguments
-                print(args)
-                
-                self.provisioning()
+                let args = call.arguments as? [String: String]
+                if let uuidString = args?["uuid"] {
+                    let provisioningStatus = self.provisioning(uuid: uuidString)
+                    result(provisioningStatus)
+                } else {
+                    result(["isSuccess": false, "Body": "uuidキーが見つかりません"])
+                }
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -84,7 +87,6 @@ import CoreBluetooth
             location: .first,
             models: [
                 Model(sigModelId: .genericOnOffClientModelId, delegate: GenericOnOffClientDelegate()),
-//                Model(vendorModelId: .simpleOnOffClientModelId, companyId: .nordicSemiconductorCompanyId, delegate: SimpleOnOffClientDelegate()
             ]
         )
         meshNetworkManager.localElements = [primaryElement]
@@ -102,34 +104,45 @@ import CoreBluetooth
             print(error)
         }
     }
-    
-    func provisioning() -> Void {
-        let peripheral: CBPeripheral = (generalBleScanner?.discoveredDevices.first!)!
-        let advertisementData: [String: Any] = generalBleScanner?.messages[(peripheral.identifier.uuidString)] as! [String : Any]
+
+    func provisioning(uuid: String) -> [String: Any?] {
+        // UUIDからスキャン済みデバイスを検索
+        guard let deviceInfo = generalBleScanner?.discoveredDevicesList[uuid] else {
+            // デバイスが見つからない場合はError
+            return ["Status": "Failed to connect target device", "Body": ""]
+        }
+        let peripheral = deviceInfo["peripheral"] as! CBPeripheral
+        let advertisementData = deviceInfo["advertisementData"] as! [String: Any]
         
+        // unprovisioning deviceにしてみる
         if let unprovisionedDevice = UnprovisionedDevice(advertisementData: advertisementData) {
             let bearer = PBGattBearer(target: peripheral)
+            bearer.dataDelegate = meshNetworkManager
+            meshNetworkManager.transmitter = bearer
+            bearer.open()
+            
             do {
                 let provisioningManager = try meshNetworkManager.provision(unprovisionedDevice: unprovisionedDevice, over: bearer)
-                
-                print("[Provisioning Manager State]", provisioningManager.state)
-                print("[Provisioning Manager isDeviceSupported]", provisioningManager.isDeviceSupported)
-                print("[Mesh Network]", meshNetworkManager.meshNetwork?.localProvisioner)
-                print(meshNetworkManager.meshNetwork?.meshName)
-                print(meshNetworkManager.meshNetwork?.nodes[0].elements)
-                
-                // ここで成功したことを伝えたい
+
+//                print("[Provisioning Manager State]", provisioningManager.state)
+//                print("[Provisioning Manager isDeviceSupported]", provisioningManager.isDeviceSupported)
+//                print("[Mesh Network]", meshNetworkManager.meshNetwork?.localProvisioner)
+//                print(meshNetworkManager.meshNetwork?.meshName)
+//                print(meshNetworkManager.meshNetwork?.nodes[0].elements)
+                print("Probably Success ..!")
+                return ["isSuccess": true, "Body": nil]
             } catch {
-                print("Error to provisioning")
-                print(error)
-                
-                // ここで失敗したことと原因を伝えたい
+                // プロビジョニングに失敗したらErrorメッセージをそのまま返す
+//                print("Error to provisioning")
+//                print(error)
+                return ["isSuccess": false, "Body": "Failed to provisioning. \(error)"]
             }
         } else {
-            print("Error Catching unprovisioned Device!!")
-            print(advertisementData.debugDescription)
-            
-            // ここで失敗したことと原因を伝えたい
+            // unprovisioning deviceにできない（Proxy Nodeとか）場合はError
+            return [
+                "isSuccess": false,
+                "Body": "Failed to recognize as unprovisioned device"
+            ]
         }
     }
 }
