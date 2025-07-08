@@ -6,7 +6,20 @@ class Provisioning {
     'human.mech.saitama-u.ac.jp/provisioningMethodChannel',
   );
 
-  Future<void> startProvisioning(String uuid) async {
-    await _methodChannel.invokeMethod('provisioning', {'uuid': uuid});
+  Future<bool> startProvisioning(String uuid) async {
+    final response = await _methodChannel.invokeMethod('provisioning', {
+      'uuid': uuid,
+    });
+
+    print(response);
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['Body'] ?? 'No message provided';
+    if (isSuccess) {
+      print('Provisioning successful: $message');
+    } else {
+      // ignore: avoid_print
+      print('Provisioning failed: $message');
+    }
+    return isSuccess;
   }
 }

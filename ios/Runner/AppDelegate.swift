@@ -122,13 +122,17 @@ import CoreBluetooth
             bearer.open()
             
             do {
-                let provisioningManager = try meshNetworkManager.provision(unprovisionedDevice: unprovisionedDevice, over: bearer)
+                let provisioningManager = try meshNetworkManager.provision(
+                    unprovisionedDevice: unprovisionedDevice,
+                    over: bearer
+                )
 
 //                print("[Provisioning Manager State]", provisioningManager.state)
 //                print("[Provisioning Manager isDeviceSupported]", provisioningManager.isDeviceSupported)
 //                print("[Mesh Network]", meshNetworkManager.meshNetwork?.localProvisioner)
 //                print(meshNetworkManager.meshNetwork?.meshName)
 //                print(meshNetworkManager.meshNetwork?.nodes[0].elements)
+//                print(meshNetworkManager.meshNetwork?.nodes)
                 print("Probably Success ..!")
                 return ["isSuccess": true, "Body": nil]
             } catch {
