@@ -28,11 +28,21 @@ class PracticeMenuService {
 
       _isLoaded = true;
       debugPrint('練習メニューを${_allMenus.length}件読み込みました');
-    } catch (e) {
-      debugPrint('練習メニューの読み込みエラー: $e');
-      // エラーが発生した場合は空のリストを設定
+    } on PlatformException catch (e) {
+      // アセットファイルが見つからない場合
+      debugPrint('練習メニューファイルが見つかりません: $e');
       _allMenus = [];
-      _isLoaded = true;
+      // _isLoaded = falseのまま（再読み込み可能）
+    } on FormatException catch (e) {
+      // JSONのフォーマットが不正な場合
+      debugPrint('練習メニューのJSONフォーマットエラー: $e');
+      _allMenus = [];
+      // _isLoaded = falseのまま（再読み込み可能）
+    } catch (e) {
+      // その他の予期しないエラー
+      debugPrint('練習メニューの読み込みエラー: $e');
+      _allMenus = [];
+      // _isLoaded = falseのまま（再読み込み可能）
     }
   }
 
