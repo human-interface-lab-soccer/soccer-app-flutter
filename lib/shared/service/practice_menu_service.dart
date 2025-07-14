@@ -26,23 +26,26 @@ class PracticeMenuService {
       _allMenus =
           menuList.map((menuData) => PracticeMenu.fromMap(menuData)).toList();
 
-      _isLoaded = true;
+      _isLoaded = true; // 読み込み完了フラグを設定
       debugPrint('練習メニューを${_allMenus.length}件読み込みました');
     } on PlatformException catch (e) {
       // アセットファイルが見つからない場合
       debugPrint('練習メニューファイルが見つかりません: $e');
       _allMenus = [];
-      // _isLoaded = falseのまま（再読み込み可能）
+      _isLoaded = false; // 読み込み失敗フラグを設定
+      throw Exception('練習メニューファイルが見つかりません');
     } on FormatException catch (e) {
       // JSONのフォーマットが不正な場合
       debugPrint('練習メニューのJSONフォーマットエラー: $e');
       _allMenus = [];
-      // _isLoaded = falseのまま（再読み込み可能）
+      _isLoaded = false; // 読み込み失敗フラグを設定
+      throw Exception('練習メニューのJSONフォーマットエラー');
     } catch (e) {
       // その他の予期しないエラー
       debugPrint('練習メニューの読み込みエラー: $e');
       _allMenus = [];
-      // _isLoaded = falseのまま（再読み込み可能）
+      _isLoaded = false; // 読み込み失敗フラグを設定
+      throw Exception('練習メニューの読み込みエラー: $e');
     }
   }
 

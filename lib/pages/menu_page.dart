@@ -6,7 +6,12 @@ import 'package:soccer_app_flutter/shared/widgets/menu_filter_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_list_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_search_bar.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_counter_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/loading_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/error_display_widget.dart';
 import 'package:soccer_app_flutter/shared/mixins/menu_filter_mixin.dart';
+
+// データの読み込み状態を管理するenum
+enum LoadingState { loading, loaded, error }
 
 // メニューページ（検索・フィルタリング機能付き）
 class MenuPage extends StatefulWidget {
@@ -18,20 +23,19 @@ class MenuPage extends StatefulWidget {
 
 class _MenuPageState extends State<MenuPage> with MenuFilterMixin {
   final TextEditingController _searchController = TextEditingController();
-  List<PracticeMenu> _filteredMenus = []; // 練習メニューのリスト
-  bool _isLoading = true; // データ読み込み中フラグ
+  List<PracticeMenu> _filteredMenus = [];
+  LoadingState _loadingState = LoadingState.loading;
+  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
     _loadData();
-    // 検索テキストフィールドの変更を監視してフィルタリング実行
     _searchController.addListener(_applyFilters);
   }
 
   @override
   void dispose() {
-    // テキストコントローラーのリソースを解放
     _searchController.dispose();
     super.dispose();
   }
@@ -39,30 +43,36 @@ class _MenuPageState extends State<MenuPage> with MenuFilterMixin {
   // データの読み込み処理
   Future<void> _loadData() async {
     setState(() {
-      _isLoading = true;
+      _loadingState = LoadingState.loading;
     });
 
     try {
-      // 練習メニューのデータを読み込む
+      // サービス層でデータを読み込む
       await PracticeMenuService.loadMenus();
-      // 初期状態では全メニューを表示
-      _filteredMenus = PracticeMenuService.allMenus;
 
+      // 成功時の処理
+      _filteredMenus = PracticeMenuService.allMenus;
       setState(() {
-        _isLoading = false; // 読み込み完了
+        _loadingState = LoadingState.loaded;
       });
     } catch (e) {
-      debugPrint('データ読み込みエラー: $e');
+      // エラー時の処理
       setState(() {
-        _isLoading = false;
+        _loadingState = LoadingState.error;
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
       });
 
-      // エラーメッセージを表示
+      // エラーメッセージをSnackBarで表示
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('データの読み込みに失敗しました'),
+            content: Text(_errorMessage),
             backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: '再試行',
+              textColor: Colors.white,
+              onPressed: _loadData,
+            ),
           ),
         );
       }
@@ -71,6 +81,8 @@ class _MenuPageState extends State<MenuPage> with MenuFilterMixin {
 
   // フィルタリング処理の適用
   void _applyFilters() {
+    if (_loadingState != LoadingState.loaded) return;
+
     setState(() {
       _filteredMenus = filterMenus(
         allMenus: PracticeMenuService.allMenus,
@@ -116,49 +128,54 @@ class _MenuPageState extends State<MenuPage> with MenuFilterMixin {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('練習メニュー一覧'),
       ),
-      body:
-          _isLoading
-              ? const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('データを読み込み中...'),
-                  ],
-                ),
-              )
-              : Column(
-                children: [
-                  // 検索バー
-                  MenuSearchBar(controller: _searchController),
+      body: _buildBody(),
+    );
+  }
 
-                  // フィルタリング機能
-                  MenuFilterWidget(
-                    selectedCategory: selectedCategory,
-                    selectedType: selectedType,
-                    selectedDifficulty: selectedDifficulty,
-                    onCategoryChanged: _onCategoryChanged,
-                    onTypeChanged: _onTypeChanged,
-                    onDifficultyChanged: _onDifficultyChanged,
-                  ),
+  Widget _buildBody() {
+    switch (_loadingState) {
+      case LoadingState.loading:
+        return const LoadingWidget(message: 'メニューを読み込み中...');
 
-                  const SizedBox(height: 16),
+      case LoadingState.error:
+        return ErrorDisplayWidget(message: _errorMessage, onRetry: _loadData);
 
-                  // フィルタリング後のメニュー件数表示
-                  MenuCounterWidget(count: _filteredMenus.length),
+      case LoadingState.loaded:
+        return _buildContent();
+    }
+  }
 
-                  const SizedBox(height: 8),
+  Widget _buildContent() {
+    return Column(
+      children: [
+        // 検索バー
+        MenuSearchBar(controller: _searchController),
 
-                  // メニューリスト
-                  Expanded(
-                    child: MenuListWidget(
-                      menus: _filteredMenus,
-                      onMenuTap: _navigateToDetailPage,
-                    ),
-                  ),
-                ],
-              ),
+        // フィルタリング機能
+        MenuFilterWidget(
+          selectedCategory: selectedCategory,
+          selectedType: selectedType,
+          selectedDifficulty: selectedDifficulty,
+          onCategoryChanged: _onCategoryChanged,
+          onTypeChanged: _onTypeChanged,
+          onDifficultyChanged: _onDifficultyChanged,
+        ),
+
+        const SizedBox(height: 16),
+
+        // フィルタリング後のメニュー件数表示
+        MenuCounterWidget(count: _filteredMenus.length),
+
+        const SizedBox(height: 8),
+
+        // メニューリスト
+        Expanded(
+          child: MenuListWidget(
+            menus: _filteredMenus,
+            onMenuTap: _navigateToDetailPage,
+          ),
+        ),
+      ],
     );
   }
 }
