@@ -18,7 +18,7 @@ class PracticeMenu {
   });
 
   // JSONからオブジェクトを生成するファクトリメソッド
-  factory PracticeMenu.fromJson(Map<String, dynamic> json) {
+  factory PracticeMenu.fromMap(Map<String, dynamic> json) {
     return PracticeMenu(
       name: json['name'] ?? '',
       category: json['category'] ?? '',

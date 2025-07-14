@@ -24,7 +24,7 @@ class PracticeMenuService {
       // メニューリストを作成
       final List<dynamic> menuList = jsonData['menus'] ?? [];
       _allMenus =
-          menuList.map((menuData) => PracticeMenu.fromJson(menuData)).toList();
+          menuList.map((menuData) => PracticeMenu.fromMap(menuData)).toList();
 
       _isLoaded = true;
       debugPrint('練習メニューを${_allMenus.length}件読み込みました');
