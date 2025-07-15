@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // 四角いボタン用のカスタムウィジェット
-class BoxButton extends StatelessWidget {
+class BoxButtonWidget extends StatelessWidget {
   // ボタンのデフォルトサイズ、内側余白、外枠の太さを定義
   static const double _defaultPadding = 1.0; // ボタンのデフォルト内側余白
   static const double _defaultBorderWidth = 1.0; // ボタンのデフォルト外枠の太さ
@@ -14,7 +14,7 @@ class BoxButton extends StatelessWidget {
   final double? height; // ボタンの高さ（省略時はデフォルト高さを使用）
 
   // コンストラクタ（必須パラメータ：label, onPressed）
-  const BoxButton({
+  const BoxButtonWidget({
     super.key, //FlutterのWidget識別用のkey（省略可）
     required this.label, // ボタンに表示するテキスト
     required this.onPressed, // ボタンが押されたときのコールバック関数

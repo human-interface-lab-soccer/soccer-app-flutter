@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanner.dart';
-import 'package:soccer_app_flutter/shared/model/ble_device.dart';
+import 'package:soccer_app_flutter/shared/models/ble_device.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soccer_app_flutter/enums/navigation_items.dart';
+import 'package:soccer_app_flutter/shared/enums/navigation_items.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
