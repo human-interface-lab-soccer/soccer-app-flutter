@@ -4,7 +4,7 @@ import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 import 'package:soccer_app_flutter/pages/menu_page/practice_detail_page.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_filter_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_list_widget.dart';
-import 'package:soccer_app_flutter/shared/widgets/menu_search_bar.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_search_bar_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_counter_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/loading_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/error_display_widget.dart';
@@ -149,7 +149,7 @@ class _MenuPageState extends State<MenuPage> with MenuFilterMixin {
     return Column(
       children: [
         // 検索バー
-        MenuSearchBar(controller: _searchController),
+        MenuSearchBarWidget(controller: _searchController),
 
         // フィルタリング機能
         MenuFilterWidget(

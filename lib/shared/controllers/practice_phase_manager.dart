@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // 練習フェーズを管理
-class PhaseManager with ChangeNotifier {
+class PracticePhaseManager with ChangeNotifier {
   int _phaseSeconds = 10;
   int _currentPhaseIndex = 0;
   late int _totalPhases;

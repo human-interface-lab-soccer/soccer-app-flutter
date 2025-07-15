@@ -3,14 +3,14 @@ import 'package:soccer_app_flutter/shared/controllers/practice_timer_manager.dar
 import 'package:soccer_app_flutter/shared/controllers/practice_phase_manager.dart';
 
 class PracticeTimerController with ChangeNotifier {
-  late TimerManager _timerManager;
-  late PhaseManager _phaseManager;
+  late PracticeTimerManager _timerManager;
+  late PracticePhaseManager _phaseManager;
   bool _isRunning = false;
   bool _isPaused = false;
 
   // ゲッター
-  TimerManager get timerManager => _timerManager;
-  PhaseManager get phaseManager => _phaseManager;
+  PracticeTimerManager get timerManager => _timerManager;
+  PracticePhaseManager get phaseManager => _phaseManager;
   bool get isRunning => _isRunning;
   bool get isPaused => _isPaused;
 
@@ -32,8 +32,8 @@ class PracticeTimerController with ChangeNotifier {
       duration: Duration(seconds: phaseSeconds),
     );
 
-    _timerManager = TimerManager();
-    _phaseManager = PhaseManager();
+    _timerManager = PracticeTimerManager();
+    _phaseManager = PracticePhaseManager();
 
     _timerManager.initialize(timerController);
     _phaseManager.initialize(totalPhases, meterController);

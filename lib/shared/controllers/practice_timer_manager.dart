@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // 練習タイマーを管理
-class TimerManager with ChangeNotifier {
+class PracticeTimerManager with ChangeNotifier {
   int _minutes = 3;
   int _seconds = 0;
   late int _totalSeconds;
