@@ -1,5 +1,8 @@
+import 'package:uuid/uuid.dart';
+
 // 練習メニューのデータクラス
 class PracticeMenu {
+  final String id;
   final String name;
   final String category;
   final String description;
@@ -9,17 +12,19 @@ class PracticeMenu {
   static const int defaultPhaseCount = 4; // デフォルトのフェーズ数
 
   PracticeMenu({
+    String? id,
     required this.name,
     required this.category,
     required this.description,
     required this.type,
     required this.difficulty,
     required this.phaseCount,
-  });
+  }) : id = id ?? const Uuid().v4();
 
   // JSONからオブジェクトを生成するファクトリメソッド
   factory PracticeMenu.fromMap(Map<String, dynamic> json) {
     return PracticeMenu(
+      id: json['id'],
       name: json['name'] ?? '',
       category: json['category'] ?? '',
       description: json['description'] ?? '',
@@ -32,6 +37,7 @@ class PracticeMenu {
   // オブジェクトをJSONに変換するメソッド
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'category': category,
       'description': description,
