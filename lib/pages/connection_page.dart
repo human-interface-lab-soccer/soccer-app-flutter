@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/models/ble_device.dart';
 import 'package:soccer_app_flutter/shared/themes/button_theme_extension.dart';
 import 'package:soccer_app_flutter/shared/utils/layout_helpers.dart';
-import 'package:soccer_app_flutter/shared/widgets/circle_button.dart';
-import 'package:soccer_app_flutter/shared/widgets/box_button.dart';
+import 'package:soccer_app_flutter/shared/widgets/circle_button_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/box_button_widget.dart';
 import 'package:soccer_app_flutter/pages/connection_page/discovered_device_list.dart';
 
 // ボタンの押下アクションを定義する列挙型
@@ -126,7 +126,7 @@ class ConnectionPageState extends State<ConnectionPage> {
     final circleButtons = <Widget>[];
     for (var item in data) {
       circleButtons.add(
-        CircleButton(
+        CircleButtonWidget(
           key: Key(item["key"] as String),
           label: item["label"] as String,
           onPressed: () => handleButtonPress(item["action"] as ButtonPress),
@@ -162,7 +162,7 @@ class ConnectionPageState extends State<ConnectionPage> {
     final boxButtons = <Widget>[];
     for (var item in data) {
       boxButtons.add(
-        BoxButton(
+        BoxButtonWidget(
           key: Key(item["key"] as String),
           label: item["label"] as String,
           onPressed: () => handleButtonPress(item["action"] as ButtonPress),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 /// メニュー検索バーウィジェット
-class MenuSearchBar extends StatelessWidget {
+class MenuSearchBarWidget extends StatelessWidget {
   final TextEditingController controller;
 
-  const MenuSearchBar({super.key, required this.controller});
+  const MenuSearchBarWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {

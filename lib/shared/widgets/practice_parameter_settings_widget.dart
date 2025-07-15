@@ -4,13 +4,13 @@ import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
 import 'package:soccer_app_flutter/shared/widgets/practice_timer_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/progress_meter_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/time_picker_widget.dart';
-import 'package:soccer_app_flutter/shared/widgets/practice_action_buttons.dart';
+import 'package:soccer_app_flutter/shared/widgets/practice_action_buttons_widget.dart';
 
 /// 練習パラメータ設定エリア
-class PracticeParameterSettings extends StatelessWidget {
+class PracticeParameterSettingsWidget extends StatelessWidget {
   final PracticeTimerController controller;
 
-  const PracticeParameterSettings({super.key, required this.controller});
+  const PracticeParameterSettingsWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class PracticeParameterSettings extends StatelessWidget {
           const SizedBox(height: 16),
           _buildTimeSettings(),
           const SizedBox(height: 16),
-          PracticeActionButtons(controller: controller),
+          PracticeActionButtonsWidget(controller: controller),
         ],
       ),
     );

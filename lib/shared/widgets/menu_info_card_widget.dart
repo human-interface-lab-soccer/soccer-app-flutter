@@ -4,10 +4,10 @@ import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
 import 'package:soccer_app_flutter/shared/widgets/tag_widget.dart';
 
 /// メニュー情報を表示するカードウィジェット
-class MenuInfoCard extends StatelessWidget {
+class MenuInfoCardWidget extends StatelessWidget {
   final PracticeMenu menu;
 
-  const MenuInfoCard({super.key, required this.menu});
+  const MenuInfoCardWidget({super.key, required this.menu});
 
   @override
   Widget build(BuildContext context) {

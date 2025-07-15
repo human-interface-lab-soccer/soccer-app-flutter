@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // 丸型のボタン用カスタムウィジェット
-class CircleButton extends StatelessWidget {
+class CircleButtonWidget extends StatelessWidget {
   // ボタンのデフォルトサイズ、内側余白、外枠の太さを定義
   static const double _defaultSize = 80.0; // ボタンのデフォルトサイズ
   static const double _defaultPadding = 1.0; // ボタンのデフォルト内側余白
@@ -13,7 +13,7 @@ class CircleButton extends StatelessWidget {
   final Color color;
   final double? size; // ボタンのサイズ（省略時はデフォルトサイズを使用）
   // コンストラクタ（必須パラメータ：label, onPressed, color）
-  const CircleButton({
+  const CircleButtonWidget({
     super.key, //FlutterのWidget識別用のkey（省略可）
     required this.label, // ボタンに表示するテキスト
     required this.onPressed, // ボタンが押されたときのコールバック関数

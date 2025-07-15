@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/controllers/practice_timer_controller.dart';
 
 /// 練習アクションボタンウィジェット
-class PracticeActionButtons extends StatelessWidget {
+class PracticeActionButtonsWidget extends StatelessWidget {
   final PracticeTimerController controller;
 
-  const PracticeActionButtons({super.key, required this.controller});
+  const PracticeActionButtonsWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {

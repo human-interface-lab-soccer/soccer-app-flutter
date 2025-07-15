@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/controllers/practice_timer_controller.dart';
-import 'package:soccer_app_flutter/shared/widgets/menu_info_card.dart';
-import 'package:soccer_app_flutter/shared/widgets/practice_parameter_settings.dart';
+import 'package:soccer_app_flutter/shared/widgets/menu_info_card_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/practice_parameter_settings_widget.dart';
 import 'package:soccer_app_flutter/shared/mixins/swipe_navigation_mixin.dart';
 
 // 練習メニューの詳細ページ
@@ -67,13 +67,13 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         child: Column(
           children: [
             // 上部：メニューリストの内容を表示
-            MenuInfoCard(menu: widget.menu),
+            MenuInfoCardWidget(menu: widget.menu),
 
             // 中部：空白エリア
             const Expanded(child: SizedBox()),
 
             // 下部：パラメータ設定エリア
-            PracticeParameterSettings(controller: _controller),
+            PracticeParameterSettingsWidget(controller: _controller),
           ],
         ),
       ),
