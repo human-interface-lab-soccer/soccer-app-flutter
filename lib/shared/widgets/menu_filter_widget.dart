@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
 
+/// デフォルトフィルタ値
+const defaultFilterValue = 'すべて';
+
 // メニューのフィルタリングウィジェット
 class MenuFilterWidget extends StatelessWidget {
   final String selectedCategory;
@@ -38,7 +41,10 @@ class MenuFilterWidget extends StatelessWidget {
                   value: selectedCategory,
                   isExpanded: true,
                   items:
-                      ['すべて', ...PracticeMenuService.getCategories()]
+                      [
+                            defaultFilterValue,
+                            ...PracticeMenuService.getCategories(),
+                          ]
                           .map(
                             (String category) => DropdownMenuItem(
                               value: category,
@@ -67,9 +73,9 @@ class MenuFilterWidget extends StatelessWidget {
                   value: selectedType,
                   isExpanded: true,
                   items:
-                      ['すべて', ...PracticeMenuService.getTypes()]
+                      [defaultFilterValue, ...PracticeMenuService.getTypes()]
                           .map(
-                            (String type) => DropdownMenuItem<String>(
+                            (String type) => DropdownMenuItem(
                               value: type,
                               child: Text(type),
                             ),
@@ -96,9 +102,12 @@ class MenuFilterWidget extends StatelessWidget {
                   value: selectedDifficulty,
                   isExpanded: true,
                   items:
-                      ['すべて', ...PracticeMenuService.getDifficulties()]
+                      [
+                            defaultFilterValue,
+                            ...PracticeMenuService.getDifficulties(),
+                          ]
                           .map(
-                            (String difficulty) => DropdownMenuItem<String>(
+                            (String difficulty) => DropdownMenuItem(
                               value: difficulty,
                               child: Text(difficulty),
                             ),

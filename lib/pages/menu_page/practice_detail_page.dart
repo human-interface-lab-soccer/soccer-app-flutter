@@ -60,21 +60,23 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.menu.name),
       ),
-      body: GestureDetector(
-        // スワイプで戻る機能（SwipeNavigationMixinから提供）
-        onHorizontalDragEnd:
-            (details) => handleSwipeNavigation(details, context),
-        child: Column(
-          children: [
-            // 上部：メニューリストの内容を表示
-            MenuInfoCardWidget(menu: widget.menu),
+      body: SafeArea(
+        child: GestureDetector(
+          // スワイプで戻る機能（SwipeNavigationMixinから提供）
+          onHorizontalDragEnd:
+              (details) => handleSwipeNavigation(details, context),
+          child: Column(
+            children: [
+              // 上部：メニューリストの内容を表示
+              MenuInfoCardWidget(menu: widget.menu),
 
-            // 中部：空白エリア
-            const Expanded(child: SizedBox()),
+              // 中部：空白エリア
+              const Expanded(child: SizedBox()),
 
-            // 下部：パラメータ設定エリア
-            PracticeParameterSettingsWidget(controller: _controller),
-          ],
+              // 下部：パラメータ設定エリア
+              PracticeParameterSettingsWidget(controller: _controller),
+            ],
+          ),
         ),
       ),
     );
