@@ -5,6 +5,9 @@ import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
 // 練習メニューのデータを管理するサービスクラス
 class PracticeMenuService {
+  // 順序定義を定数として定義
+  static const List<String> _typeOrder = ['既存', '自由帳'];
+  static const List<String> _difficultyOrder = ['初級', '中級', '上級'];
   static List<PracticeMenu> _allMenus = [];
   static bool _isLoaded = false;
 
@@ -60,10 +63,7 @@ class PracticeMenuService {
   // タイプのリストを取得
   static List<String> getTypes() {
     final types = _allMenus.map((menu) => menu.type).toSet().toList();
-    types.sort((a, b) {
-      const order = ['既存', '自由帳'];
-      return order.indexOf(a).compareTo(order.indexOf(b));
-    });
+    types.sort((a, b) => _compareByOrder(a, b, _typeOrder));
     return types;
   }
 
@@ -71,10 +71,7 @@ class PracticeMenuService {
   static List<String> getDifficulties() {
     final difficulties =
         _allMenus.map((menu) => menu.difficulty).toSet().toList();
-    difficulties.sort((a, b) {
-      const order = ['初級', '中級', '上級'];
-      return order.indexOf(a).compareTo(order.indexOf(b));
-    });
+    difficulties.sort((a, b) => _compareByOrder(a, b, _difficultyOrder));
     return difficulties;
   }
 
@@ -82,5 +79,18 @@ class PracticeMenuService {
   static Future<void> reloadMenus() async {
     _isLoaded = false;
     await loadMenus();
+  }
+
+  // 共通のソート関数
+  static int _compareByOrder(String a, String b, List<String> order) {
+    final indexA = order.indexOf(a);
+    final indexB = order.indexOf(b);
+
+    // 定義されていない項目は最後に配置
+    if (indexA == -1 && indexB == -1) return 0;
+    if (indexA == -1) return 1;
+    if (indexB == -1) return -1;
+
+    return indexA.compareTo(indexB);
   }
 }
