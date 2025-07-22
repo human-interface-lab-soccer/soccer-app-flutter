@@ -86,11 +86,13 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   Future<void> handleStartProvisioning(String uuid) async {
     bool isSuccess = await Provisioning().startProvisioning(uuid);
     if (isSuccess) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Provisioning started successfully')),
       );
     } else {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(const SnackBar(content: Text('Provisioning failed')));
     }

@@ -10,11 +10,10 @@ class Provisioning {
     final response = await _methodChannel.invokeMethod('provisioning', {
       'uuid': uuid,
     });
-
-    print(response);
     bool isSuccess = response['isSuccess'] ?? false;
     String message = response['Body'] ?? 'No message provided';
     if (isSuccess) {
+      // ignore: avoid_print
       print('Provisioning successful: $message');
     } else {
       // ignore: avoid_print
