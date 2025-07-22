@@ -49,7 +49,7 @@ class GenericOnOffClientDelegate: ModelDelegate {
     /// The current state of the Generic On Off Client model.
     var state: Bool = false {
         didSet {
-            publish(using: MeshNetworkManager())
+            publish(using: MeshNetworkManager.instance)
         }
     }
     

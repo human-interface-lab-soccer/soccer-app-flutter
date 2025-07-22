@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,7 @@
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		75684D8F2E17B7D500C151EA /* GenericOnOffClientDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75684D8E2E17B7D500C151EA /* GenericOnOffClientDelegate.swift */; };
+		75CEE7A32E2A3AEF00767CA9 /* ProvisioningHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CEE7A22E2A3AEF00767CA9 /* ProvisioningHandler.swift */; };
 		75CF3CB62E09AEB900EA146E /* NordicMesh in Frameworks */ = {isa = PBXBuildFile; productRef = 75CF3CB52E09AEB900EA146E /* NordicMesh */; };
 		75F213342DF8026B006D37CD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75F213332DF8026B006D37CD /* GoogleService-Info.plist */; };
 		75F213352DF8026B006D37CD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75F213332DF8026B006D37CD /* GoogleService-Info.plist */; };
@@ -58,6 +59,7 @@
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		75684D8E2E17B7D500C151EA /* GenericOnOffClientDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GenericOnOffClientDelegate.swift; path = MeshNetwork/GenericOnOffClientDelegate.swift; sourceTree = "<group>"; };
+		75CEE7A22E2A3AEF00767CA9 /* ProvisioningHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProvisioningHandler.swift; path = MeshNetwork/ProvisioningHandler.swift; sourceTree = "<group>"; };
 		75F213332DF8026B006D37CD /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		75FE7BC02E0D509300A40785 /* GeneralBleScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GeneralBleScanner.swift; path = Bluetooth/GeneralBleScanner.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -76,17 +78,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		75FE7B642E0A97BD00A40785 /* MeshNetwork */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = MeshNetwork;
-			sourceTree = "<group>";
-		};
+		75FE7B642E0A97BD00A40785 /* MeshNetwork */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = MeshNetwork; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -184,6 +176,7 @@
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
+				75CEE7A22E2A3AEF00767CA9 /* ProvisioningHandler.swift */,
 				75FE7BC02E0D509300A40785 /* GeneralBleScanner.swift */,
 				75684D8E2E17B7D500C151EA /* GenericOnOffClientDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
@@ -388,9 +381,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -416,6 +413,7 @@
 				75684D8F2E17B7D500C151EA /* GenericOnOffClientDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				75FE7BC12E0D509300A40785 /* GeneralBleScanner.swift in Sources */,
+				75CEE7A32E2A3AEF00767CA9 /* ProvisioningHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

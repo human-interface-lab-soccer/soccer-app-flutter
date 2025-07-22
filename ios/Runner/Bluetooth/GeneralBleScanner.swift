@@ -19,9 +19,7 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
     private var centralManager: CBCentralManager!
     private var eventSink: FlutterEventSink?
 
-    // 発見したデバイスを格納するSet
-//    var discoveredDevices = [String: CBPeripheral]()
-//    var advertisementDatas = [String: Any]()
+    // 発見したデバイスを格納するList
     var discoveredDevicesList = [String: [String: Any]]()
 
     override init() {
@@ -33,11 +31,12 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
         print("MeshProvisioningServiceのスキャンを開始します...")
         if centralManager.state == .poweredOn {
             let scanOptions: [String: Any] = [
-                CBCentralManagerScanOptionAllowDuplicatesKey: true
+                CBCentralManagerScanOptionAllowDuplicatesKey: false
             ]
             centralManager.scanForPeripherals(
                 // ここにホワイトリストを記載することでフィルタを適用
-                withServices: [MeshProvisioningServiceUUID, MeshProxyServiceUUID],
+//                withServices: [MeshProvisioningServiceUUID, MeshProxyServiceUUID],
+                withServices: [MeshProvisioningServiceUUID],
                 options: scanOptions
             )
         } else {
@@ -64,8 +63,6 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
         let deviceName = peripheral.name ?? "Unknown device"
         let deviceId = peripheral.identifier.uuidString
 
-//        discoveredDevices[deviceId] = peripheral
-//        advertisementDatas[deviceId] = advertisementData
         discoveredDevicesList[deviceId] = [
             "peripheral": peripheral,
             "advertisementData": advertisementData
