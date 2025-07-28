@@ -117,7 +117,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ).showSnackBar(SnackBar(content: Text("error: $message")));
     }
     // close the dialog after provisioning
     Navigator.of(context).pop();
