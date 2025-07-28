@@ -31,7 +31,7 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
         print("MeshProvisioningServiceのスキャンを開始します...")
         if centralManager.state == .poweredOn {
             let scanOptions: [String: Any] = [
-                CBCentralManagerScanOptionAllowDuplicatesKey: false
+                CBCentralManagerScanOptionAllowDuplicatesKey: true
             ]
             centralManager.scanForPeripherals(
                 // ここにホワイトリストを記載することでフィルタを適用
