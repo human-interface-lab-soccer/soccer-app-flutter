@@ -84,18 +84,43 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   }
 
   Future<void> handleStartProvisioning(String uuid) async {
-    bool isSuccess = await Provisioning().startProvisioning(uuid);
+    Map<String, dynamic> response = await Provisioning().startProvisioning(
+      uuid,
+    );
+    if (!mounted) return;
+
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['message'] ?? 'No message provided';
+
     if (isSuccess) {
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Provisioning started successfully')),
+        SnackBar(content: Text("Provisioning successfully started")),
+      );
+      // streamを購読して、プロビジョニングの進捗を受け取る
+      Provisioning().provisioningStream.listen(
+        (data) {
+          if (!mounted) return;
+          SnackBar snackBar = SnackBar(
+            content: Text(
+              '${data['status'] ?? 'Unknown'}: ${data["message"] ?? ""}',
+            ),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        },
+        onError: (error) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Provisioning error: $error')));
+        },
       );
     } else {
       ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
         context,
-      ).showSnackBar(const SnackBar(content: Text('Provisioning failed')));
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
+    // close the dialog after provisioning
+    Navigator.of(context).pop();
   }
 
   @override
