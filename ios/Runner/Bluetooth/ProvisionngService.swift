@@ -9,6 +9,15 @@ import CoreBluetooth
 import Flutter
 import NordicMesh
 
+enum ProvisioningStatus: String {
+    case connecting = "connecting"
+    case discovering = "discovering"
+    case identifying = "identifying"
+    case provisioning = "provisioning"
+    case complete = "complete"
+    case error = "error"
+}
+
 class ProvisioningService: NSObject {
 
     static let attentionTimer: UInt8 = 5
@@ -75,7 +84,7 @@ class ProvisioningService: NSObject {
         do {
             try? bearer.open()
             _provisioningEventStreamHandler.sendEvent(
-                status: "connecting",
+                status: .connecting,
                 data: [
                     "message":
                         "Connecting to \(unprovisionedDevice.name ?? "device")..."
@@ -98,7 +107,7 @@ class ProvisioningService: NSObject {
             let capabilities = provisioningManager.provisioningCapabilities
         else {
             _provisioningEventStreamHandler.sendEvent(
-                status: "error",
+                status: .error,
                 data: [
                     "message":
                         "Cannot start provisioning: capabilities not available."
@@ -108,7 +117,7 @@ class ProvisioningService: NSObject {
         }
 
         _provisioningEventStreamHandler.sendEvent(
-            status: "provisioning",
+            status: .provisioning,
             data: ["message": "Provisioning..."]
         )
 
@@ -126,7 +135,7 @@ class ProvisioningService: NSObject {
                     provisioningManager.networkKey = newKey
                 } catch {
                     _provisioningEventStreamHandler.sendEvent(
-                        status: "error",
+                        status: .error,
                         data: [
                             "message":
                                 "Failed to create network key: \(error.localizedDescription)"
@@ -145,7 +154,7 @@ class ProvisioningService: NSObject {
             )
         } catch {
             _provisioningEventStreamHandler.sendEvent(
-                status: "error",
+                status: .error,
                 data: [
                     "message":
                         "Failed to start provisioning: \(error.localizedDescription)"
@@ -170,14 +179,14 @@ class ProvisioningService: NSObject {
 extension ProvisioningService: GattBearerDelegate {
     func bearerDidConnect(_ bearer: Bearer) {
         _provisioningEventStreamHandler.sendEvent(
-            status: "connecting",
+            status: .connecting,
             data: ["message": "Discovering services..."]
         )
     }
 
     func bearerDidDiscoverServices(_ bearer: Bearer) {
         _provisioningEventStreamHandler.sendEvent(
-            status: "connecting",
+            status: .connecting,
             data: ["message": "Initializing..."]
         )
     }
@@ -187,14 +196,14 @@ extension ProvisioningService: GattBearerDelegate {
             let provisioningBearer = bearer as? ProvisioningBearer
         else {
             _provisioningEventStreamHandler.sendEvent(
-                status: "error",
+                status: .error,
                 data: ["message": "Internal error: Device or bearer invalid."]
             )
             return
         }
 
         _provisioningEventStreamHandler.sendEvent(
-            status: "identifying",
+            status: .identifying,
             data: ["message": "Identifying device..."]
         )
 
@@ -209,7 +218,7 @@ extension ProvisioningService: GattBearerDelegate {
             )
         } catch {
             _provisioningEventStreamHandler.sendEvent(
-                status: "error",
+                status: .error,
                 data: [
                     "message":
                         "Provisioning setup failed: \(error.localizedDescription)"
@@ -222,7 +231,7 @@ extension ProvisioningService: GattBearerDelegate {
     func bearer(_ bearer: Bearer, didClose error: Error?) {
         guard let state = provisioningManager?.state else {
             _provisioningEventStreamHandler.sendEvent(
-                status: "disconnected",
+                status: .error,
                 data: ["message": "Device disconnected."]
             )
             cleanupProvisioning()
@@ -238,14 +247,14 @@ extension ProvisioningService: GattBearerDelegate {
                     )
                 else {
                     _provisioningEventStreamHandler.sendEvent(
-                        status: "error",
+                        status: .error,
                         data: ["message": "Provisioned node not found."]
                     )
                     cleanupProvisioning()
                     return
                 }
                 _provisioningEventStreamHandler.sendEvent(
-                    status: "complete",
+                    status: .complete,
                     data: [
                         "message": "Provisioning complete!",
                         "nodeUuid": node.uuid.uuidString,
@@ -254,7 +263,7 @@ extension ProvisioningService: GattBearerDelegate {
                 )
             } else {
                 _provisioningEventStreamHandler.sendEvent(
-                    status: "error",
+                    status: .error,
                     data: [
                         "message": "Failed to save mesh network configuration."
                     ]
@@ -262,7 +271,7 @@ extension ProvisioningService: GattBearerDelegate {
             }
         } else {
             _provisioningEventStreamHandler.sendEvent(
-                status: "error",
+                status: .error,
                 data: [
                     "message":
                         "Disconnected: \(error?.localizedDescription ?? "Unknown reason")"
@@ -284,7 +293,7 @@ extension ProvisioningService: ProvisioningDelegate {
             switch state {
             case .requestingCapabilities:
                 self._provisioningEventStreamHandler.sendEvent(
-                    status: "identifying",
+                    status: .identifying,
                     data: ["message": "Requesting capabilities..."]
                 )
 
@@ -294,21 +303,22 @@ extension ProvisioningService: ProvisioningDelegate {
                     "algorithms": "\(capabilities.algorithms)",
                     "publicKeyType": "\(capabilities.publicKeyType)",
                     "oobType": "\(capabilities.oobType)",
+                    "message": "Capabilities received!",
                 ]
                 self._provisioningEventStreamHandler.sendEvent(
-                    status: "capabilitiesReceived",
+                    status: .identifying,
                     data: capsData
                 )
                 self.startProvisioning()
 
             case .complete:
                 self._provisioningEventStreamHandler.sendEvent(
-                    status: "provisioning",
+                    status: .provisioning,
                     data: ["message": "Finalizing..."]
                 )
             case let .failed(error):
                 self._provisioningEventStreamHandler.sendEvent(
-                    status: "error",
+                    status: .error,
                     data: [
                         "message":
                             "Provisioning failed: \(error.localizedDescription)"
@@ -324,7 +334,7 @@ extension ProvisioningService: ProvisioningDelegate {
 
     func authenticationActionRequired(_ action: AuthAction) {
         _provisioningEventStreamHandler.sendEvent(
-            status: "error",
+            status: .error,
             data: ["message": "Authentication required but not supported."]
         )
         try? bearer?.close()
@@ -332,7 +342,7 @@ extension ProvisioningService: ProvisioningDelegate {
 
     func inputComplete() {
         _provisioningEventStreamHandler.sendEvent(
-            status: "provisioning",
+            status: .provisioning,
             data: ["message": "Input complete. Provisioning..."]
         )
     }

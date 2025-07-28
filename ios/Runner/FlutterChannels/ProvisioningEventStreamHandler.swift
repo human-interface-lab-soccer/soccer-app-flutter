@@ -23,12 +23,12 @@ class ProvisioningEventStreamHandler: NSObject, FlutterStreamHandler {
         return nil
     }
 
-    func sendEvent(status: String, data: [String: Any]) {
+    func sendEvent(status: ProvisioningStatus, data: [String: Any]) {
         print("[provisioningEvent] status: \(status), data: \(data)")
         guard let sink = eventSink else { return }
         DispatchQueue.main.async {
             var eventData = data
-            eventData["status"] = status
+            eventData["status"] = status.rawValue
             sink(eventData)
         }
     }

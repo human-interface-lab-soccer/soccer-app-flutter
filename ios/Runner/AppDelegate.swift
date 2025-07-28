@@ -103,13 +103,10 @@ import UIKit
     }
 
     private func initializeProvisioningService() {
-        // ProvisioningService は自身で GeneralBleScanner と連携するようにします。
-        // または、AppDelegate で BleScanner を初期化し、ProvisioningService に渡すことも可能です。
-        // ここでは、ProvisioningService が BleScanner を内部で管理する想定で記述します。
-        self.bleScanner = GeneralBleScanner()  // BleScanner はここで保持し、ProvisioningServiceに渡す
+        self.bleScanner = GeneralBleScanner()
         self.provisioningService = ProvisioningService(
             meshNetworkManager: meshNetworkManager,
-            bleScanner: self.bleScanner!  // ProvisioningService に BleScanner を渡す
+            bleScanner: self.bleScanner!
         )
     }
 
@@ -125,9 +122,6 @@ import UIKit
 
 // MARK: - MeshNetworkManager Extension & Dummy Delegate
 
-// このExtensionは AppDelegate が MeshNetworkManager.instance を提供するために残しますが、
-// 将来的にはDI (Dependency Injection) コンテナや他の設計パターンを用いて、
-// グローバルなシングルトンアクセスを避けることを検討するべきです。
 extension MeshNetworkManager {
     static var instance: MeshNetworkManager {
         if Thread.isMainThread {
