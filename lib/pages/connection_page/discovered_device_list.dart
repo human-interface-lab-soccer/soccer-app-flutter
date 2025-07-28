@@ -57,6 +57,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   ];
 
   final GeneralBleScanner generalBleScanner = GeneralBleScanner();
+  final Provisioning _provisioning = Provisioning();
   bool isScanning = false;
 
   Future<void> handleScanButtonPressed() async {
@@ -84,7 +85,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   }
 
   Future<void> handleStartProvisioning(String uuid) async {
-    Map<String, dynamic> response = await Provisioning().startProvisioning(
+    Map<String, dynamic> response = await _provisioning.startProvisioning(
       uuid,
     );
     if (!mounted) return;
@@ -97,7 +98,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
         SnackBar(content: Text("Provisioning successfully started")),
       );
       // streamを購読して、プロビジョニングの進捗を受け取る
-      Provisioning().provisioningStream.listen(
+      _provisioning.provisioningStream.listen(
         (data) {
           if (!mounted) return;
           SnackBar snackBar = SnackBar(
