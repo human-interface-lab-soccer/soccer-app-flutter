@@ -38,19 +38,19 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   final List<BleDevice> _testDevices = [
     BleDevice(
       name: 'Test Device 1',
-      uuid: 'XXXXXXXXXX',
+      uuid: 'test-device-1-uuid',
       rssi: -65,
       lastSeen: DateTime.now(),
     ),
     BleDevice(
       name: 'Test Device 2',
-      uuid: 'YYYYYYYYYY',
+      uuid: 'test-device-2-uuid',
       rssi: -75,
       lastSeen: DateTime.now(),
     ),
     BleDevice(
       name: 'Test Device 3',
-      uuid: 'ZZZZZZZZZZ',
+      uuid: 'test-device-3-uuid',
       rssi: -95,
       lastSeen: DateTime.now(),
     ),
