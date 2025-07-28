@@ -85,9 +85,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   }
 
   Future<void> handleStartProvisioning(String uuid) async {
-    Map<String, dynamic> response = await _provisioning.startProvisioning(
-      uuid,
-    );
+    Map<String, dynamic> response = await _provisioning.startProvisioning(uuid);
     if (!mounted) return;
 
     bool isSuccess = response['isSuccess'] ?? false;
