@@ -10,14 +10,12 @@ import Flutter
 import NordicMesh
 
 enum ChannelName {
-    static let scannerMethod = "human.mech.saitama-u.ac.jp/scannerMethodChannel"
-    static let scannerEvent = "human.mech.saitama-u.ac.jp/scannerEventChannel"
-    static let provisioningMethod =
-        "human.mech.saitama-u.ac.jp/provisioningMethodChannel"
-    static let provisioningEvent =
-        "human.mech.saitama-u.ac.jp/provisioningEventChannel"
-    static let meshNetworkMethod =
-        "human.mech.saitama-u.ac.jp/meshNetworkMethodChannel"
+    static let domain = "human.mech.saitama-u.ac.jp"
+    static let scannerMethod = "\(domain)/scannerMethodChannel"
+    static let scannerEvent = "\(domain)/scannerEventChannel"
+    static let provisioningMethod = "\(domain)/provisioningMethodChannel"
+    static let provisioningEvent = "\(domain)/provisioningEventChannel"
+    static let meshNetworkMethod = "\(domain)/meshNetworkMethodChannel"
 }
 
 class FlutterChannelManager {

@@ -51,7 +51,7 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
                       itemBuilder: (context, index) {
                         return ListTile(
                           title: Text(
-                            _networkNodes[index]["deviceName"] ?? "unknown",
+                            _networkNodes[index]["name"] ?? "unknown",
                           ),
                           subtitle: Text(
                             'UUID: ${_networkNodes[index]["uuid"]}, Unicast Address: ${_networkNodes[index]["primaryUnicastAddress"]}',
