@@ -6,9 +6,14 @@ class MeshNetwork {
     'human.mech.saitama-u.ac.jp/meshNetworkMethodChannel',
   );
 
-  static Future<void> getNodeList() async {
-    final responce = await _methodChannel.invokeMethod('getNodeList');
-    print("Node List Fetched: ");
-    print(responce);
+  static Future<List<Map<String, String>>> getNodeList() async {
+    final response = await _methodChannel.invokeMethod('getNodeList');
+    if (response is List) {
+      return response.map((node) {
+        return Map<String, String>.from(node);
+      }).toList();
+    } else {
+      throw Exception('Failed to fetch node list');
+    }
   }
 }
