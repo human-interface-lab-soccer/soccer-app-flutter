@@ -126,10 +126,10 @@ class FlutterChannelManager {
                 for: uuidString,
                 result: result
             )
-        case "reset":
+        case "resetNode":
             // パラメータに `unicastAddress` が含まれているかを確認
             guard let args = call.arguments as? [String: Any],
-                let unicastAddress: Address = args["unicastAddress"]
+                let unicastAddress = args["unicastAddress"]
             else {
                 result([
                     "isSuccess": false,
@@ -139,9 +139,10 @@ class FlutterChannelManager {
             }
 
             // Unicast Address からノードを指定
-            guard let manager = MeshNetworkManager.instance,
+            let manager = MeshNetworkManager.instance
+            guard
                 let node = manager.meshNetwork?.node(
-                    withAddress: unicastAddress
+                    withAddress: unicastAddress as! Address
                 )
             else {
                 result([
