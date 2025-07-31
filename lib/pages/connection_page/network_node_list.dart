@@ -1,7 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
 
-class NetworkNodeList extends StatelessWidget {
+class NetworkNodeList extends StatefulWidget {
   const NetworkNodeList({super.key});
+
+  @override
+  State<NetworkNodeList> createState() => _NetworkNodeListState();
+}
+
+class _NetworkNodeListState extends State<NetworkNodeList> {
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch the node list when the widget is initialized
+    _fetchNodeList();
+  }
 
   // sample data for network nodes
   final networkNodes = const <Map<String, String>>[
@@ -10,6 +24,10 @@ class NetworkNodeList extends StatelessWidget {
     {"deviceName": "device3", "uuid": "uuid3-xxx", "unicastAddress": "0x0004"},
     {"deviceName": "device4", "uuid": "uuid4-xxx", "unicastAddress": "0x0005"},
   ];
+
+  Future<void> _fetchNodeList() async {
+    await MeshNetwork.getNodeList();
+  }
 
   @override
   Widget build(BuildContext context) {
