@@ -16,6 +16,8 @@ enum ChannelName {
         "human.mech.saitama-u.ac.jp/provisioningMethodChannel"
     static let provisioningEvent =
         "human.mech.saitama-u.ac.jp/provisioningEventChannel"
+    static let meshNetworkMethod =
+        "human.mech.saitama-u.ac.jp/meshNetworkMethodChannel"
 }
 
 class FlutterChannelManager {
@@ -24,9 +26,10 @@ class FlutterChannelManager {
     private weak var provisioningService: ProvisioningService?
 
     private var scannerMethodChannel: FlutterMethodChannel!
-    private var provisioningMethodChannel: FlutterMethodChannel!
     private var scannerEventChannel: FlutterEventChannel!
+    private var provisioningMethodChannel: FlutterMethodChannel!
     private var provisioningEventChannel: FlutterEventChannel!
+    private var meshNetworkMethodChannel: FlutterMethodChannel!
 
     init(
         messenger: FlutterBinaryMessenger,
@@ -53,6 +56,11 @@ class FlutterChannelManager {
             binaryMessenger: messenger
         )
 
+        meshNetworkMethodChannel = FlutterMethodChannel(
+            name: ChannelName.meshNetworkMethod,
+            binaryMessenger: messenger
+        )
+
         scannerMethodChannel.setMethodCallHandler {
             [weak self] (call, result) in
             self?.handleScannerMethod(call: call, result: result)
@@ -61,6 +69,11 @@ class FlutterChannelManager {
         provisioningMethodChannel.setMethodCallHandler {
             [weak self] (call, result) in
             self?.handleProvisioningMethod(call: call, result: result)
+        }
+
+        meshNetworkMethodChannel.setMethodCallHandler {
+            [weak self] (call, result) in
+            self?.haldleMeshNetworkMethod(call: call, result: result)
         }
     }
 
@@ -115,6 +128,30 @@ class FlutterChannelManager {
                 for: uuidString,
                 result: result
             )
+        default:
+            result(FlutterMethodNotImplemented)
+        }
+    }
+
+    private func haldleMeshNetworkMethod(
+        call: FlutterMethodCall,
+        result: @escaping FlutterResult
+    ) {
+        switch call.method {
+        case "getNodeList":
+            guard let nodeList = MeshNetworkManager.instance.meshNetwork?.nodes else {
+                result([])
+                return
+            }
+            let returnList: [[String: String]] = nodeList.map { node in
+                return [
+                    "name": node.name ?? "unknown device",
+                    "uuid": "\(node.uuid)",
+                    "primaryUnicastAddress": "\(node.primaryUnicastAddress)",
+                ]
+            }
+            print(returnList)
+            result(returnList)
         default:
             result(FlutterMethodNotImplemented)
         }
