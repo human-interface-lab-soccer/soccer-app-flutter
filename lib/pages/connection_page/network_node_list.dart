@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
+import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
 
 class NetworkNodeList extends StatefulWidget {
   const NetworkNodeList({super.key});
@@ -49,6 +50,9 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
                     : ListView.builder(
                       itemCount: _networkNodes.length,
                       itemBuilder: (context, index) {
+                        int unicastAddress = int.parse(
+                          _networkNodes[index]["primaryUnicastAddress"] ?? "0",
+                        );
                         return ListTile(
                           title: Text(
                             _networkNodes[index]["name"] ?? "unknown",
@@ -57,18 +61,21 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
                             'UUID: ${_networkNodes[index]["uuid"]}, Unicast Address: ${_networkNodes[index]["primaryUnicastAddress"]}',
                           ),
                           leading: const Icon(Icons.network_check),
-                          trailing: const Icon(Icons.arrow_forward),
-                          onTap:
-                              () => {
-                                // Handle node tap action here
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Tapped on ${_networkNodes[index]}',
+                          // TODO: リセットアクションの結果を表示する
+                          trailing: unicastAddress == 1
+                              ? const SizedBox()
+                              : ElevatedButton(
+                                  child: const Icon(
+                                    Icons.delete,
+                                      color: Colors.red,
                                     ),
+                                    onPressed: () async {
+                                      var _resp = await Provisioning.resetNode(
+                                        unicastAddress,
+                                      );
+                                      print(_resp);
+                                    },
                                   ),
-                                ),
-                              },
                         );
                       },
                     ),
