@@ -126,6 +126,47 @@ class FlutterChannelManager {
                 for: uuidString,
                 result: result
             )
+        case "reset":
+            // パラメータに `unicastAddress` が含まれているかを確認
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress: Address = args["unicastAddress"]
+            else {
+                result([
+                    "isSuccess": false,
+                    "message": "unicastAddress key not found in arguments.",
+                ])
+                return
+            }
+
+            // Unicast Address からノードを指定
+            guard let manager = MeshNetworkManager.instance,
+                let node = manager.meshNetwork?.node(
+                    withAddress: unicastAddress
+                )
+            else {
+                result([
+                    "isSuccess": false,
+                    "message":
+                        "Couldn't identify the node with address \(unicastAddress).",
+                ])
+                return
+            }
+
+            // ノードをProvisioning前の状態にリセット
+            let message = ConfigNodeReset()
+            do {
+                try manager.send(message, to: node)
+                result([
+                    "isSuccess": true,
+                    "message": "Successfully reset the node!",
+                ])
+            } catch {
+                result([
+                    "isSuccess": false,
+                    "message": "Fail to reset the node. \(error)",
+                ])
+            }
+
         default:
             result(FlutterMethodNotImplemented)
         }
