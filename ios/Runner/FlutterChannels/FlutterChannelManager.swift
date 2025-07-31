@@ -139,7 +139,8 @@ class FlutterChannelManager {
     ) {
         switch call.method {
         case "getNodeList":
-            guard let nodeList = MeshNetworkManager.instance.meshNetwork?.nodes else {
+            guard let nodeList = MeshNetworkManager.instance.meshNetwork?.nodes
+            else {
                 result([])
                 return
             }
