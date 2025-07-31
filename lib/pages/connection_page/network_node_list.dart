@@ -9,6 +9,12 @@ class NetworkNodeList extends StatefulWidget {
 }
 
 class _NetworkNodeListState extends State<NetworkNodeList> {
+  List<Map<String, String>> _networkNodes = [];
+  bool _isLoading = true;
+  final bool _isDebugMode = const bool.fromEnvironment(
+    'DEBUG',
+    defaultValue: false,
+  );
 
   @override
   void initState() {
@@ -17,16 +23,17 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
     _fetchNodeList();
   }
 
-  // sample data for network nodes
-  final networkNodes = const <Map<String, String>>[
-    {'deviceName': "device1", "uuid": "uuid1-xxx", "unicastAddress": "0x0002"},
-    {"deviceName": "device2", "uuid": "uuid2-xxx", "unicastAddress": "0x0003"},
-    {"deviceName": "device3", "uuid": "uuid3-xxx", "unicastAddress": "0x0004"},
-    {"deviceName": "device4", "uuid": "uuid4-xxx", "unicastAddress": "0x0005"},
-  ];
-
   Future<void> _fetchNodeList() async {
-    await MeshNetwork.getNodeList();
+    var networkNodes = await MeshNetwork.getNodeList();
+    if (_isDebugMode) {
+      await Future.delayed(
+        const Duration(seconds: 1),
+      ); // Simulate loading delay
+    }
+    setState(() {
+      _networkNodes = networkNodes;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -36,28 +43,35 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: networkNodes.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(networkNodes[index]["deviceName"] ?? "unknown"),
-                  subtitle: Text(
-                    'UUID: ${networkNodes[index]["uuid"]}, Unicast Address: ${networkNodes[index]["unicastAddress"]}',
-                  ),
-                  leading: Icon(Icons.network_check),
-                  trailing: Icon(Icons.arrow_forward),
-                  onTap:
-                      () => {
-                        // Handle node tap action here
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Tapped on ${networkNodes[index]}'),
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                      itemCount: _networkNodes.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(
+                            _networkNodes[index]["deviceName"] ?? "unknown",
                           ),
-                        ),
+                          subtitle: Text(
+                            'UUID: ${_networkNodes[index]["uuid"]}, Unicast Address: ${_networkNodes[index]["primaryUnicastAddress"]}',
+                          ),
+                          leading: const Icon(Icons.network_check),
+                          trailing: const Icon(Icons.arrow_forward),
+                          onTap:
+                              () => {
+                                // Handle node tap action here
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Tapped on ${_networkNodes[index]}',
+                                    ),
+                                  ),
+                                ),
+                              },
+                        );
                       },
-                );
-              },
-            ),
+                    ),
           ),
         ],
       ),
