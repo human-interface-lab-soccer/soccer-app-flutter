@@ -61,6 +61,7 @@ class ConnectionPageState extends State<ConnectionPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          // TODO: l10n
           title: Text("Network Nodes"),
           content: SizedBox(
             width: MediaQuery.of(context).size.width * 0.8,
@@ -71,6 +72,7 @@ class ConnectionPageState extends State<ConnectionPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              // TODO: l10n
               child: Text("Close"),
             ),
           ],
