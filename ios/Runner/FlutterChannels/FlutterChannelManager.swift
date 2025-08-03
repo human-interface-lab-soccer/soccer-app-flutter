@@ -71,7 +71,7 @@ class FlutterChannelManager {
 
         meshNetworkMethodChannel.setMethodCallHandler {
             [weak self] (call, result) in
-            self?.haldleMeshNetworkMethod(call: call, result: result)
+            self?.handleMeshNetworkMethod(call: call, result: result)
         }
     }
 
@@ -173,7 +173,7 @@ class FlutterChannelManager {
         }
     }
 
-    private func haldleMeshNetworkMethod(
+    private func handleMeshNetworkMethod(
         call: FlutterMethodCall,
         result: @escaping FlutterResult
     ) {
