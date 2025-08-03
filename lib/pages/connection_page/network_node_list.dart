@@ -10,8 +10,13 @@ class NetworkNodeList extends StatefulWidget {
 }
 
 class _NetworkNodeListState extends State<NetworkNodeList> {
+  /// ネットワークノードのリスト
   List<Map<String, String>> _networkNodes = [];
+
+  /// ロード中のフラグ
   bool _isLoading = true;
+
+  /// デバッグモードのフラグ
   final bool _isDebugMode = const bool.fromEnvironment(
     'DEBUG',
     defaultValue: false,
@@ -24,6 +29,7 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
     _fetchNodeList();
   }
 
+  /// ネットワークノードのリストを取得するメソッド
   Future<void> _fetchNodeList() async {
     var networkNodes = await MeshNetwork.getNodeList();
     if (_isDebugMode) {
@@ -35,6 +41,24 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
       _networkNodes = networkNodes;
       _isLoading = false;
     });
+  }
+
+  /// ノードをリセットするメソッド
+  Future<void> _resetNode(int unicastAddress) async {
+    var response = await Provisioning.resetNode(unicastAddress);
+    if (!mounted) return;
+    if (response['isSuccess']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Node reset successful: ${response['message']}'),
+        ),
+      );
+      // _fetchNodeList();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Node reset failed: ${response['message']}')),
+      );
+    }
   }
 
   @override
@@ -61,20 +85,15 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
                             'UUID: ${_networkNodes[index]["uuid"]}, Unicast Address: ${_networkNodes[index]["primaryUnicastAddress"]}',
                           ),
                           leading: const Icon(Icons.network_check),
-                          // TODO: リセットアクションの結果を表示する
-                          trailing: unicastAddress == 1
-                              ? const SizedBox()
-                              : ElevatedButton(
-                                  child: const Icon(
-                                    Icons.delete,
+                          trailing:
+                              unicastAddress == 1
+                                  ? const SizedBox()
+                                  : ElevatedButton(
+                                    child: const Icon(
+                                      Icons.delete,
                                       color: Colors.red,
                                     ),
-                                    onPressed: () async {
-                                      var _resp = await Provisioning.resetNode(
-                                        unicastAddress,
-                                      );
-                                      print(_resp);
-                                    },
+                                    onPressed: () => _resetNode(unicastAddress),
                                   ),
                         );
                       },
