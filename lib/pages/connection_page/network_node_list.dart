@@ -53,7 +53,6 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
           content: Text('Node reset successful: ${response['message']}'),
         ),
       );
-      
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Node reset failed: ${response['message']}')),
