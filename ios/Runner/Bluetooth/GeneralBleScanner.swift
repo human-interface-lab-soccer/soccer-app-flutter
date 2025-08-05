@@ -4,20 +4,24 @@
 //
 //  Created by naokeyn on 2025/06/26.
 //
-import Flutter
 import CoreBluetooth
+import Flutter
+import NordicMesh
 
 /// 汎用Bluetoothスキャナクラス
 /// フィルタリングには下記を参照↓
 /// https://www.bluetooth.com/wp-content/uploads/Files/Specification/Assigned_Numbers.html
 class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
 
-    private let MeshProvisioningServiceUUID = CBUUID(string: "1827")    // 未プロビジョニングデバイス
-    private let MeshProxyServiceUUID = CBUUID(string: "1828")           // プロビジョニング済みデバイス
-    
+    private let MeshProvisioningServiceUUID = CBUUID(string: "1827")  // 未プロビジョニングデバイス
+    private let MeshProxyServiceUUID = CBUUID(string: "1828")  // プロビジョニング済みデバイス
+
     private var centralManager: CBCentralManager!
     private var eventSink: FlutterEventSink?
-    
+
+    // 発見したデバイスを格納するList
+    var discoveredDevicesList = [String: [String: Any]]()
+
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -31,11 +35,14 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
             ]
             centralManager.scanForPeripherals(
                 // ここにホワイトリストを記載することでフィルタを適用
-                withServices: [MeshProvisioningServiceUUID, MeshProxyServiceUUID],
+                //                withServices: [MeshProvisioningServiceUUID, MeshProxyServiceUUID],
+                withServices: [MeshProvisioningServiceUUID],
                 options: scanOptions
             )
         } else {
-            print("BluetoothがONになっていません。state: \(centralManager.state.rawValue)")
+            print(
+                "BluetoothがONになっていません。state: \(centralManager.state.rawValue)"
+            )
         }
     }
 
@@ -52,14 +59,19 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
     }
 
     func centralManager(
-        _ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
-        advertisementData: [String: Any], rssi RSSI: NSNumber
+        _ central: CBCentralManager,
+        didDiscover peripheral: CBPeripheral,
+        advertisementData: [String: Any],
+        rssi RSSI: NSNumber
     ) {
         let deviceName = peripheral.name ?? "Unknown device"
         let deviceId = peripheral.identifier.uuidString
-        print(
-            "[DEBUG] Found device -> Device: \(deviceName), UUID: \(deviceId), RSSI: \(RSSI.intValue)"
-        )
+
+        discoveredDevicesList[deviceId] = [
+            "peripheral": peripheral,
+            "advertisementData": advertisementData,
+        ]
+
         if let sink = eventSink {
             let deviceData: [String: Any] = [
                 "name": deviceName,
@@ -73,7 +85,10 @@ class GeneralBleScanner: NSObject, CBCentralManagerDelegate {
 
 extension GeneralBleScanner: FlutterStreamHandler {
 
-    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink)
+    func onListen(
+        withArguments arguments: Any?,
+        eventSink events: @escaping FlutterEventSink
+    )
         -> FlutterError?
     {
         self.eventSink = events
