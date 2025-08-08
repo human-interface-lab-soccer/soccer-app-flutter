@@ -5,6 +5,7 @@ import 'package:soccer_app_flutter/utils/layout_helpers.dart';
 import 'package:soccer_app_flutter/widgets/circle_button.dart';
 import 'package:soccer_app_flutter/widgets/box_button.dart';
 import 'package:soccer_app_flutter/pages/connection_page/discovered_device_list.dart';
+import 'package:soccer_app_flutter/pages/connection_page/network_node_list.dart';
 
 // ボタンの押下アクションを定義する列挙型
 enum ButtonPress {
@@ -54,6 +55,32 @@ class ConnectionPageState extends State<ConnectionPage> {
     });
   }
 
+  /// ネットワークノードのリストを表示するダイアログを表示
+  void showNodeList() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          // TODO: l10n
+          title: Text("Network Nodes"),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: NetworkNodeList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              // TODO: l10n
+              child: Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // ボタンの押下アクションに応じて処理を実行する関数
   void handleButtonPress(ButtonPress action) {
     switch (action) {
@@ -77,6 +104,8 @@ class ConnectionPageState extends State<ConnectionPage> {
         break;
       case ButtonPress.decideGroupAction:
         updateAction("グループ決定!!");
+        // ネットワークノードのリストを表示
+        showNodeList();
         break;
       case ButtonPress.checkDeviceStatus:
         updateDeviceList(

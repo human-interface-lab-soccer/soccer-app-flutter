@@ -10,12 +10,12 @@ import Flutter
 import NordicMesh
 
 enum ChannelName {
-    static let scannerMethod = "human.mech.saitama-u.ac.jp/scannerMethodChannel"
-    static let scannerEvent = "human.mech.saitama-u.ac.jp/scannerEventChannel"
-    static let provisioningMethod =
-        "human.mech.saitama-u.ac.jp/provisioningMethodChannel"
-    static let provisioningEvent =
-        "human.mech.saitama-u.ac.jp/provisioningEventChannel"
+    static let domain = "human.mech.saitama-u.ac.jp"
+    static let scannerMethod = "\(domain)/scannerMethodChannel"
+    static let scannerEvent = "\(domain)/scannerEventChannel"
+    static let provisioningMethod = "\(domain)/provisioningMethodChannel"
+    static let provisioningEvent = "\(domain)/provisioningEventChannel"
+    static let meshNetworkMethod = "\(domain)/meshNetworkMethodChannel"
 }
 
 class FlutterChannelManager {
@@ -24,9 +24,10 @@ class FlutterChannelManager {
     private weak var provisioningService: ProvisioningService?
 
     private var scannerMethodChannel: FlutterMethodChannel!
-    private var provisioningMethodChannel: FlutterMethodChannel!
     private var scannerEventChannel: FlutterEventChannel!
+    private var provisioningMethodChannel: FlutterMethodChannel!
     private var provisioningEventChannel: FlutterEventChannel!
+    private var meshNetworkMethodChannel: FlutterMethodChannel!
 
     init(
         messenger: FlutterBinaryMessenger,
@@ -53,6 +54,11 @@ class FlutterChannelManager {
             binaryMessenger: messenger
         )
 
+        meshNetworkMethodChannel = FlutterMethodChannel(
+            name: ChannelName.meshNetworkMethod,
+            binaryMessenger: messenger
+        )
+
         scannerMethodChannel.setMethodCallHandler {
             [weak self] (call, result) in
             self?.handleScannerMethod(call: call, result: result)
@@ -61,6 +67,11 @@ class FlutterChannelManager {
         provisioningMethodChannel.setMethodCallHandler {
             [weak self] (call, result) in
             self?.handleProvisioningMethod(call: call, result: result)
+        }
+
+        meshNetworkMethodChannel.setMethodCallHandler {
+            [weak self] (call, result) in
+            self?.handleMeshNetworkMethod(call: call, result: result)
         }
     }
 
@@ -115,6 +126,73 @@ class FlutterChannelManager {
                 for: uuidString,
                 result: result
             )
+        case "resetNode":
+            // パラメータに `unicastAddress` が含まれているかを確認
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"]
+            else {
+                result([
+                    "isSuccess": false,
+                    "message": "unicastAddress key not found in arguments.",
+                ])
+                return
+            }
+
+            // Unicast Address からノードを指定
+            let manager = MeshNetworkManager.instance
+            guard
+                let node = manager.meshNetwork?.node(
+                    withAddress: unicastAddress as! Address
+                )
+            else {
+                result([
+                    "isSuccess": false,
+                    "message":
+                        "Couldn't identify the node with address \(unicastAddress).",
+                ])
+                return
+            }
+
+            // ノードをProvisioning前の状態にリセット
+            let message = ConfigNodeReset()
+            do {
+                try manager.send(message, to: node)
+                result([
+                    "isSuccess": true,
+                    "message": "Successfully reset the node!",
+                ])
+            } catch {
+                result([
+                    "isSuccess": false,
+                    "message": "Fail to reset the node. \(error)",
+                ])
+            }
+
+        default:
+            result(FlutterMethodNotImplemented)
+        }
+    }
+
+    private func handleMeshNetworkMethod(
+        call: FlutterMethodCall,
+        result: @escaping FlutterResult
+    ) {
+        switch call.method {
+        case "getNodeList":
+            guard let nodeList = MeshNetworkManager.instance.meshNetwork?.nodes
+            else {
+                result([])
+                return
+            }
+            let returnList: [[String: String]] = nodeList.map { node in
+                return [
+                    "name": node.name ?? "unknown device",
+                    "uuid": "\(node.uuid)",
+                    "primaryUnicastAddress": "\(node.primaryUnicastAddress)",
+                ]
+            }
+            print(returnList)
+            result(returnList)
         default:
             result(FlutterMethodNotImplemented)
         }
