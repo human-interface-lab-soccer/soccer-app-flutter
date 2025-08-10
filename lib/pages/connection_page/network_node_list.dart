@@ -43,8 +43,15 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
     });
   }
 
+  /// ノードのConfigurationを行うメソッド
+  Future<void> _configureNode(final int unicastAddress) async {
+    // TODO: - Configuration logic for the node
+    // ignore: avoid_print
+    print("Configure node with unicast address $unicastAddress");
+  }
+
   /// ノードをリセットするメソッド
-  Future<void> _resetNode(int unicastAddress) async {
+  Future<void> _resetNode(final int unicastAddress) async {
     var response = await Provisioning.resetNode(unicastAddress);
     if (!mounted) return;
     if (response['isSuccess']) {
@@ -83,16 +90,71 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
                           subtitle: Text(
                             'UUID: ${_networkNodes[index]["uuid"]}, Unicast Address: ${_networkNodes[index]["primaryUnicastAddress"]}',
                           ),
-                          leading: const Icon(Icons.network_check),
                           trailing:
                               unicastAddress == 1
                                   ? const SizedBox()
-                                  : ElevatedButton(
-                                    child: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () => _resetNode(unicastAddress),
+                                  : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return SimpleDialog(
+                                                title: Text(
+                                                  'Provisioning ${_networkNodes[index]["name"]}',
+                                                ),
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                          16.0,
+                                                        ),
+                                                    child: Text(
+                                                      'UUID: ${_networkNodes[index]["uuid"]}',
+                                                    ),
+                                                  ),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      _configureNode(
+                                                        unicastAddress,
+                                                      );
+                                                    },
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        const Icon(
+                                                          Icons.add_to_queue,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        Text('Configure node'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      _resetNode(
+                                                        unicastAddress,
+                                                      );
+                                                    },
+                                                    child: const Icon(
+                                                      Icons.delete,
+                                                      color: Colors.red,
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: const Icon(Icons.edit),
+                                      ),
+                                    ],
                                   ),
                         );
                       },
