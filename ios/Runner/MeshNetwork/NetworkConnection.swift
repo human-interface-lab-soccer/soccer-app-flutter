@@ -103,7 +103,9 @@ class NetworkConnection: NSObject, Bearer {
                 && proxies.count < NetworkConnection.maxConnections
             {
                 centralManager.scanForPeripherals(
-                    withServices: [MeshProxyService.uuid], options: nil)
+                    withServices: [MeshProxyService.uuid],
+                    options: nil
+                )
             }
         }
     }
@@ -119,9 +121,14 @@ class NetworkConnection: NSObject, Bearer {
     }
 
     func open() {
-        if !isStarted && isConnectionModeAutomatic && centralManager.state == .poweredOn {
+        if !isStarted && isConnectionModeAutomatic
+            && centralManager.state == .poweredOn
+        {
             //            centralManager.scanForPeripherals(withServices: nil, options: nil)
-            centralManager.scanForPeripherals(withServices: [MeshProxyService.uuid], options: nil)
+            centralManager.scanForPeripherals(
+                withServices: [MeshProxyService.uuid],
+                options: nil
+            )
         }
         isStarted = true
     }
@@ -162,7 +169,8 @@ class NetworkConnection: NSObject, Bearer {
     /// - parameter bearer: The GATT Bearer proxy to use.
     func use(proxy bearer: GattBearer) {
         // Make sure we're not adding a duplicate.
-        guard !proxies.contains(where: { $0.identifier == bearer.identifier }) else {
+        guard !proxies.contains(where: { $0.identifier == bearer.identifier })
+        else {
             return
         }
         // If we reached the limit, disconnect the one added as a first.
@@ -199,21 +207,28 @@ extension NetworkConnection: CBCentralManagerDelegate {
             if isStarted && isConnectionModeAutomatic
                 && proxies.count < NetworkConnection.maxConnections
             {
-                central.scanForPeripherals(withServices: [MeshProxyService.uuid], options: nil)
+                central.scanForPeripherals(
+                    withServices: [MeshProxyService.uuid],
+                    options: nil
+                )
             }
         case .poweredOff, .resetting:
             proxies.forEach { $0.close() }
             proxies.removeAll()
         case .unauthorized, .unsupported:
-            print("DEBUG: Bluetooth is unauthorized. Check Info.plist and user permissions.")
+            print(
+                "DEBUG: Bluetooth is unauthorized. Check Info.plist and user permissions."
+            )
         default:
             break
         }
     }
 
     func centralManager(
-        _ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
-        advertisementData: [String: Any], rssi RSSI: NSNumber
+        _ central: CBCentralManager,
+        didDiscover peripheral: CBPeripheral,
+        advertisementData: [String: Any],
+        rssi RSSI: NSNumber
     ) {
 
         if let deviceName = peripheral.name {
@@ -255,7 +270,10 @@ extension NetworkConnection: GattBearerDelegate, BearerDataDelegate {
         if isStarted && isConnectionModeAutomatic
             && proxies.count < NetworkConnection.maxConnections
         {
-            centralManager.scanForPeripherals(withServices: [MeshProxyService.uuid], options: nil)
+            centralManager.scanForPeripherals(
+                withServices: [MeshProxyService.uuid],
+                options: nil
+            )
         }
         if proxies.isEmpty {
             isOpen = false
@@ -275,7 +293,11 @@ extension NetworkConnection: GattBearerDelegate, BearerDataDelegate {
         }
     }
 
-    func bearer(_ bearer: Bearer, didDeliverData data: Data, ofType type: PduType) {
+    func bearer(
+        _ bearer: Bearer,
+        didDeliverData data: Data,
+        ofType type: PduType
+    ) {
         dataDelegate?.bearer(self, didDeliverData: data, ofType: type)
     }
 

@@ -3,7 +3,6 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, TargetPlatform;
-import 'dart:io';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -35,21 +34,23 @@ class DefaultFirebaseOptions {
   }
 
   static final FirebaseOptions android = FirebaseOptions(
-    apiKey: Platform.environment['FIREBASE_ANDROID_API_KEY'] ?? '',
-    appId: Platform.environment['FIREBASE_ANDROID_APP_ID'] ?? '',
-    messagingSenderId:
-        Platform.environment['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
-    projectId: Platform.environment['FIREBASE_PROJECT_ID'] ?? '',
-    storageBucket: Platform.environment['FIREBASE_STORAGE_BUCKET'] ?? '',
+    apiKey: const String.fromEnvironment('FIREBASE_ANDROID_API_KEY'),
+    appId: const String.fromEnvironment('FIREBASE_ANDROID_APP_ID'),
+    messagingSenderId: const String.fromEnvironment(
+      'FIREBASE_MESSAGING_SENDER_ID',
+    ),
+    projectId: const String.fromEnvironment('FIREBASE_PROJECT_ID'),
+    storageBucket: const String.fromEnvironment('FIREBASE_STORAGE_BUCKET'),
   );
 
   static final FirebaseOptions ios = FirebaseOptions(
-    apiKey: Platform.environment['FIREBASE_IOS_API_KEY'] ?? '',
-    appId: Platform.environment['FIREBASE_IOS_APP_ID'] ?? '',
-    messagingSenderId:
-        Platform.environment['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
-    projectId: Platform.environment['FIREBASE_PROJECT_ID'] ?? '',
-    storageBucket: Platform.environment['FIREBASE_STORAGE_BUCKET'] ?? '',
+    apiKey: const String.fromEnvironment('FIREBASE_IOS_API_KEY'),
+    appId: const String.fromEnvironment('FIREBASE_IOS_APP_ID'),
+    messagingSenderId: const String.fromEnvironment(
+      'FIREBASE_MESSAGING_SENDER_ID',
+    ),
+    projectId: const String.fromEnvironment('FIREBASE_PROJECT_ID'),
+    storageBucket: const String.fromEnvironment('FIREBASE_STORAGE_BUCKET'),
     iosBundleId: 'jp.ac.saitama-u.mech.human.soccerAppFlutter',
   );
 }
