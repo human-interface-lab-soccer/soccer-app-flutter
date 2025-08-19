@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:soccer_app_flutter/pages/main_navigation_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
+import 'package:soccer_app_flutter/shared/providers/menu_filter_provider.dart';
 
 void main() {
   testWidgets('MainNavigationPage 初期状態は接続ページ', (WidgetTester tester) async {
@@ -8,7 +11,17 @@ void main() {
     expect(find.byKey(const Key('connectionPage')), findsOneWidget);
   });
   testWidgets('BottomNavigationBarで各ページへ遷移', (WidgetTester tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainNavigationPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          // 必要に応じてプロバイダーをモック化
+          isLoadingProvider.overrideWith((ref) => false),
+          errorMessageProvider.overrideWith((ref) => null),
+          filteredMenusProvider.overrideWith((ref) => []),
+        ],
+        child: const MaterialApp(home: MainNavigationPage()),
+      ),
+    );
 
     await tester.tap(find.byIcon(Icons.menu_book));
     await tester.pumpAndSettle();
