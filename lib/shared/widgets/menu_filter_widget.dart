@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:soccer_app_flutter/shared/service/practice_menu_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
 
 /// デフォルトフィルタ値
 const defaultFilterValue = 'すべて';
 
-// メニューのフィルタリングウィジェット
-class MenuFilterWidget extends StatelessWidget {
+// メニューのフィルタリングウィジェット（Riverpod対応版）
+class MenuFilterWidget extends ConsumerWidget {
   final String selectedCategory;
   final String selectedType;
   final String selectedDifficulty;
@@ -24,7 +25,12 @@ class MenuFilterWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // プロバイダーから各リストを取得
+    final categories = ref.watch(categoriesProvider);
+    final types = ref.watch(typesProvider);
+    final difficulties = ref.watch(difficultiesProvider);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -41,10 +47,7 @@ class MenuFilterWidget extends StatelessWidget {
                   value: selectedCategory,
                   isExpanded: true,
                   items:
-                      [
-                            defaultFilterValue,
-                            ...PracticeMenuService.getCategories(),
-                          ]
+                      [defaultFilterValue, ...categories]
                           .map(
                             (String category) => DropdownMenuItem(
                               value: category,
@@ -73,7 +76,7 @@ class MenuFilterWidget extends StatelessWidget {
                   value: selectedType,
                   isExpanded: true,
                   items:
-                      [defaultFilterValue, ...PracticeMenuService.getTypes()]
+                      [defaultFilterValue, ...types]
                           .map(
                             (String type) => DropdownMenuItem(
                               value: type,
@@ -102,10 +105,7 @@ class MenuFilterWidget extends StatelessWidget {
                   value: selectedDifficulty,
                   isExpanded: true,
                   items:
-                      [
-                            defaultFilterValue,
-                            ...PracticeMenuService.getDifficulties(),
-                          ]
+                      [defaultFilterValue, ...difficulties]
                           .map(
                             (String difficulty) => DropdownMenuItem(
                               value: difficulty,
