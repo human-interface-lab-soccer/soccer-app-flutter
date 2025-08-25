@@ -2,7 +2,7 @@
 /// ノードのUUID、プライマリユニキャストアドレス、名前、および設定状態を含みます。
 /// このクラスは、メッシュネットワーク内のノードの管理と表現に使用され、
 /// ノードの設定や識別などの操作を可能にします。
-/// 
+///
 /// # Example:
 /// ```dart
 /// var node = MeshNode.fromMap({
@@ -13,7 +13,7 @@
 /// });
 /// print(node); // MeshNode(uuid: XXXX-XXXX, primaryUnicastAddress: 12345, name: My Node, isConfigured: true)
 /// ```
-/// 
+///
 class MeshNode {
   final String uuid;
   final int primaryUnicastAddress;
@@ -32,6 +32,8 @@ class MeshNode {
   }
 
   factory MeshNode.fromMap(final Map<String, dynamic> map) {
+    // TODO: 適当にやってるから、後で修正する
+    // - guard節を使って、必要な値がない場合はデフォルト値を設定する
     return MeshNode(
       uuid: map['uuid'] as String? ?? 'Unknown UUID',
       primaryUnicastAddress: map['primaryUnicastAddress'] as int? ?? 1,
@@ -48,7 +50,8 @@ class MeshNode {
   }) {
     return MeshNode(
       uuid: uuid ?? this.uuid,
-      primaryUnicastAddress: primaryUnicastAddress ?? this.primaryUnicastAddress,
+      primaryUnicastAddress:
+          primaryUnicastAddress ?? this.primaryUnicastAddress,
       name: name ?? this.name,
       isConfigured: isConfigured ?? this.isConfigured,
     );
