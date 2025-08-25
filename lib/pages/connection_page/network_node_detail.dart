@@ -10,7 +10,6 @@ class NetworkNodeDetail extends StatefulWidget {
 }
 
 class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
-
   void _resetNode({required String uuid}) {
     // TODO: - Reset logic for the node
     // ignore: avoid_print
@@ -30,7 +29,9 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
       contentPadding: const EdgeInsets.all(16.0),
       children: [
         Text('UUID: ${widget.meshNode.uuid}'),
-        Text('Primary Unicast Address: ${widget.meshNode.primaryUnicastAddress}'),
+        Text(
+          'Primary Unicast Address: ${widget.meshNode.primaryUnicastAddress}',
+        ),
         Text('Is Configured: ${widget.meshNode.isConfigured ? "Yes" : "No"}'),
         const SizedBox(height: 16.0),
         Row(
@@ -40,9 +41,7 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
               onPressed: () {
                 _resetNode(uuid: widget.meshNode.uuid);
               },
-              style: ElevatedButton.styleFrom(
-                iconColor: Colors.red,
-              ),
+              style: ElevatedButton.styleFrom(iconColor: Colors.red),
               child: const Icon(Icons.delete),
             ),
             const SizedBox(width: 8.0),
@@ -51,9 +50,9 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
                 _configureNode(uuid: widget.meshNode.uuid);
               },
               child: const Icon(Icons.settings),
-            )
+            ),
           ],
-        )
+        ),
       ],
     );
   }
