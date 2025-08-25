@@ -34,9 +34,28 @@ class MeshNode {
   factory MeshNode.fromMap(final Map<String, dynamic> map) {
     // TODO: 適当にやってるから、後で修正する
     // - guard節を使って、必要な値がない場合はデフォルト値を設定する
+
+    // int型への変換を試行し、失敗した場合やプリミティブ型でない場合はArgumentErrorをスロー
+    final primaryUnicastAddressValue = map['primaryUnicastAddress'];
+    int convertedAddress;
+    
+    if (primaryUnicastAddressValue is int) {
+      convertedAddress = primaryUnicastAddressValue;
+    } else if (primaryUnicastAddressValue is String) {
+      convertedAddress = int.tryParse(primaryUnicastAddressValue) ?? -1;
+    } else {
+      convertedAddress = -1;
+    }
+    
+    if (convertedAddress < 1) {
+      throw ArgumentError(
+      'Invalid primaryUnicastAddress: $primaryUnicastAddressValue',
+      );
+    }
+
     return MeshNode(
       uuid: map['uuid'] as String? ?? 'Unknown UUID',
-      primaryUnicastAddress: map['primaryUnicastAddress'] as int? ?? 1,
+      primaryUnicastAddress: convertedAddress,
       name: map['name'] as String? ?? 'Unknown Node',
       isConfigured: map['isConfigured'] as bool? ?? false,
     );
