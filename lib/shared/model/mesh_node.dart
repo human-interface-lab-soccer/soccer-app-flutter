@@ -38,7 +38,7 @@ class MeshNode {
     // int型への変換を試行し、失敗した場合やプリミティブ型でない場合はArgumentErrorをスロー
     final primaryUnicastAddressValue = map['primaryUnicastAddress'];
     int convertedAddress;
-    
+
     if (primaryUnicastAddressValue is int) {
       convertedAddress = primaryUnicastAddressValue;
     } else if (primaryUnicastAddressValue is String) {
@@ -46,10 +46,10 @@ class MeshNode {
     } else {
       convertedAddress = -1;
     }
-    
+
     if (convertedAddress < 1) {
       throw ArgumentError(
-      'Invalid primaryUnicastAddress: $primaryUnicastAddressValue',
+        'Invalid primaryUnicastAddress: $primaryUnicastAddressValue',
       );
     }
 
