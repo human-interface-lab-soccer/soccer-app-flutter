@@ -47,6 +47,7 @@ class MeshNode {
       convertedAddress = -1;
     }
 
+    // 1未満の値は無効とみなす
     if (convertedAddress < 1) {
       throw ArgumentError(
         'Invalid primaryUnicastAddress: $primaryUnicastAddressValue',
@@ -74,5 +75,11 @@ class MeshNode {
       name: name ?? this.name,
       isConfigured: isConfigured ?? this.isConfigured,
     );
+  }
+
+  /// LocalNodeかどうかを判定
+  /// primaryUnicastAddressが1の場合、LocalNodeとみなす
+  bool isLocalNode() {
+    return primaryUnicastAddress == 1;
   }
 }
