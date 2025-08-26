@@ -34,7 +34,7 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     print("Configure Node: $uuid");
 
     Navigator.of(context).pop();
-    
+
     var response = await Provisioning.configureNode(uuid);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(

@@ -51,7 +51,7 @@ class Provisioning {
     });
     bool isSuccess = respnse['isSuccess'] ?? false;
     String message = respnse['message'] ?? 'No message provided';
-    
+
     return {'isSuccess': isSuccess, 'message': message};
   }
 
