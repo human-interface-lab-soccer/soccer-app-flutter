@@ -28,10 +28,24 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     );
   }
 
-  void _configureNode({required String uuid}) {
+  Future<void> _configureNode({required String uuid}) async {
     // TODO: - Configuration logic for the node
     // ignore: avoid_print
     print("Configure Node: $uuid");
+
+    Navigator.of(context).pop();
+    
+    var response = await Provisioning.configureNode(uuid);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          response['isSuccess']
+              ? 'Node configuration successful: ${response['message']}'
+              : 'Node configuration failed: ${response['message']}',
+        ),
+      ),
+    );
   }
 
   @override

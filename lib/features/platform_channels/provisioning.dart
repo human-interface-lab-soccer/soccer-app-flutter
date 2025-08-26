@@ -45,6 +45,16 @@ class Provisioning {
     return {'isSuccess': isSuccess, 'message': message};
   }
 
+  static Future<Map<String, dynamic>> configureNode(String uuid) async {
+    final respnse = await _methodChannel.invokeMethod('configureNode', {
+      'uuid': uuid,
+    });
+    bool isSuccess = respnse['isSuccess'] ?? false;
+    String message = respnse['message'] ?? 'No message provided';
+    
+    return {'isSuccess': isSuccess, 'message': message};
+  }
+
   /// プロビジョニングの進捗を受け取るストリーム
   Stream<Map<String, dynamic>> get provisioningStream {
     return _eventChannel.receiveBroadcastStream().map(

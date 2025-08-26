@@ -168,6 +168,24 @@ class FlutterChannelManager {
                 ])
             }
 
+        case "configureNode":
+            // パラメータに `uuid` が含まれているかを確認
+            guard let args = call.arguments as? [String: Any],
+                let uuidString = args["uuid"]
+            else {
+                result([
+                    "isSuccess": false,
+                    "message": "uuid key not found in arguments.",
+                ])
+                return
+            }
+
+            // FIXME: mockでテキトーなメッセージを返してます
+            result([
+                "isSuccess": true,
+                "message": "This is a mock of `configureNode` method. UUID: \(uuidString)",
+            ])
+
         default:
             result(FlutterMethodNotImplemented)
         }
