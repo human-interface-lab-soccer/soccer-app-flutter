@@ -79,7 +79,9 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
             const SizedBox(width: 8.0),
             ElevatedButton(
               onPressed: () {
-                _configureNode(unicastAddress: widget.meshNode.primaryUnicastAddress);
+                _configureNode(
+                  unicastAddress: widget.meshNode.primaryUnicastAddress,
+                );
               },
               child: const Icon(Icons.settings),
             ),

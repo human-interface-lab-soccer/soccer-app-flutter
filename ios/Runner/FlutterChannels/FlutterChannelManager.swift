@@ -168,6 +168,7 @@ class FlutterChannelManager {
                 ])
             }
 
+        // TODO: ロジックを別のclassなりに書き出す！！
         case "configureNode":
             // パラメータに `unicastAddress` が含まれているかを確認
             guard let args = call.arguments as? [String: Any],
@@ -180,21 +181,66 @@ class FlutterChannelManager {
                 return
             }
 
-//            guard let uuid = UUID(from: uuidString as! Decoder) else {
-//                result(["isSuccess": false, "message": "invalid uuid string"])
-//                return
-//            }
-
-            // TOOD: ここにConfigurationの処理が入る
-            // hogehoge
+            // unicast Address からノードを指定
+            // TODO: 上記の `resetNode` と処理が重複しているため，まとめたい
             let manager = MeshNetworkManager.instance
-            guard let node = manager.meshNetwork?.node(withAddress: unicastAddress as! Address)
+            guard
+                let node = manager.meshNetwork?.node(
+                    withAddress: unicastAddress as! Address
+                )
             else {
-                print("Counldn't find node")
+                result([
+                    "isSuccess": false,
+                    "message": "Couldn't identified the node.",
+                ])
                 return
             }
-            print(node)
-            // FIXME: mockでテキトーなメッセージを返してます
+
+            // ApplicationKey の取得．無ければ生成する
+            var applicationKey: ApplicationKey?
+            if let availableKeys = manager.meshNetwork?.applicationKeys
+                .notKnownTo(node: node), !availableKeys.isEmpty
+            {
+                let keys = availableKeys.filter {
+                    node.knows(networkKey: $0.boundNetworkKey)
+                }
+                if !keys.isEmpty {
+                    applicationKey = keys[0]
+                }
+            }
+
+            if applicationKey == nil {
+                // applicationKeyを新しく生成
+                do {
+                    applicationKey = try manager.meshNetwork?.add(
+                        applicationKey: Data.random128BitKey(),
+                        name: "Main Application Key"
+                    )
+                } catch {
+                    print(error)
+                    print("Faild to add new ApplicationKey")
+                    return
+                }
+            }
+
+            guard let selectedAppKey = applicationKey else {
+                print("no application key available")
+                return
+            }
+            // ノードにApplicationKey を追加
+            do {
+                try manager.send(
+                    ConfigAppKeyAdd(applicationKey: selectedAppKey),
+                    to: node
+                )
+                print("Successfully add AppKey to node")
+            } catch {
+                print("Faild to Add AppKey...")
+            }
+
+            // モデルに ApplicationKey をバインド
+
+            // FIXME: mockなのでテキトーなメッセージを返してます
             result([
                 "isSuccess": true,
                 "message":
