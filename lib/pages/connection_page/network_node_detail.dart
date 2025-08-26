@@ -28,14 +28,14 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     );
   }
 
-  Future<void> _configureNode({required String uuid}) async {
+  Future<void> _configureNode({required int unicastAddress}) async {
     // TODO: - Configuration logic for the node
     // ignore: avoid_print
-    print("Configure Node: $uuid");
+    print("Configure Node: $unicastAddress");
 
     Navigator.of(context).pop();
 
-    var response = await Provisioning.configureNode(uuid);
+    var response = await Provisioning.configureNode(unicastAddress);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -79,7 +79,7 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
             const SizedBox(width: 8.0),
             ElevatedButton(
               onPressed: () {
-                _configureNode(uuid: widget.meshNode.uuid);
+                _configureNode(unicastAddress: widget.meshNode.primaryUnicastAddress);
               },
               child: const Icon(Icons.settings),
             ),

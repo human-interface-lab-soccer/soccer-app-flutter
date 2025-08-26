@@ -45,9 +45,10 @@ class Provisioning {
     return {'isSuccess': isSuccess, 'message': message};
   }
 
-  static Future<Map<String, dynamic>> configureNode(String uuid) async {
+  /// ノードを設定するメソッド
+  static Future<Map<String, dynamic>> configureNode(int unicastAddress) async {
     final respnse = await _methodChannel.invokeMethod('configureNode', {
-      'uuid': uuid,
+      'unicastAddress': unicastAddress,
     });
     bool isSuccess = respnse['isSuccess'] ?? false;
     String message = respnse['message'] ?? 'No message provided';

@@ -169,21 +169,36 @@ class FlutterChannelManager {
             }
 
         case "configureNode":
-            // パラメータに `uuid` が含まれているかを確認
+            // パラメータに `unicastAddress` が含まれているかを確認
             guard let args = call.arguments as? [String: Any],
-                let uuidString = args["uuid"]
+                let unicastAddress = args["unicastAddress"]
             else {
                 result([
                     "isSuccess": false,
-                    "message": "uuid key not found in arguments.",
+                    "message": "unicastAddress key not found in arguments.",
                 ])
                 return
             }
 
+//            guard let uuid = UUID(from: uuidString as! Decoder) else {
+//                result(["isSuccess": false, "message": "invalid uuid string"])
+//                return
+//            }
+
+            // TOOD: ここにConfigurationの処理が入る
+            // hogehoge
+            let manager = MeshNetworkManager.instance
+            guard let node = manager.meshNetwork?.node(withAddress: unicastAddress as! Address)
+            else {
+                print("Counldn't find node")
+                return
+            }
+            print(node)
             // FIXME: mockでテキトーなメッセージを返してます
             result([
                 "isSuccess": true,
-                "message": "This is a mock of `configureNode` method. UUID: \(uuidString)",
+                "message":
+                    "This is a mock of `configureNode` method. UUID: \(unicastAddress)",
             ])
 
         default:
