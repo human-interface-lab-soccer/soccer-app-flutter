@@ -116,10 +116,10 @@ class FlutterChannelManager {
             guard let args = call.arguments as? [String: String],
                 let uuidString = args["uuid"]
             else {
-                result([
-                    "isSuccess": false,
-                    "body": "UUID key not found in arguments.",
-                ])
+                handleMethodResponse(
+                    isSuccess: false,
+                    message: "UUID key not found in arguments."
+                )
                 return
             }
             provisioningService?.startProvisioningProcess(
@@ -131,10 +131,10 @@ class FlutterChannelManager {
             guard let args = call.arguments as? [String: Any],
                 let unicastAddress = args["unicastAddress"]
             else {
-                result([
-                    "isSuccess": false,
-                    "message": "unicastAddress key not found in arguments.",
-                ])
+                handleMethodResponse(
+                    isSuccess: false,
+                    message: "unicastAddress not found in arguments."
+                )
                 return
             }
 
@@ -145,11 +145,11 @@ class FlutterChannelManager {
                     withAddress: unicastAddress as! Address
                 )
             else {
-                result([
-                    "isSuccess": false,
-                    "message":
-                        "Couldn't identify the node with address \(unicastAddress).",
-                ])
+                handleMethodResponse(
+                    isSuccess: false,
+                    message:
+                        "Couldn't identify the node wit address \(unicastAddress)."
+                )
                 return
             }
 
@@ -157,15 +157,16 @@ class FlutterChannelManager {
             let message = ConfigNodeReset()
             do {
                 try manager.send(message, to: node)
-                result([
-                    "isSuccess": true,
-                    "message": "Successfully reset the node!",
-                ])
+                handleMethodResponse(
+                    isSuccess: true,
+                    message: "Successfully reset the node!"
+                )
             } catch {
-                result([
-                    "isSuccess": false,
-                    "message": "Fail to reset the node. \(error)",
-                ])
+                handleMethodResponse(
+                    isSuccess: false,
+                    message:
+                        "Failed to reset the node. \(error.localizedDescription)"
+                )
             }
 
         // TODO: ロジックを別のclassなりに書き出す！！
@@ -174,10 +175,10 @@ class FlutterChannelManager {
             guard let args = call.arguments as? [String: Any],
                 let unicastAddress = args["unicastAddress"]
             else {
-                result([
-                    "isSuccess": false,
-                    "message": "unicastAddress key not found in arguments.",
-                ])
+                handleMethodResponse(
+                    isSuccess: false,
+                    message: "unicastAddress not found in arguments."
+                )
                 return
             }
 
@@ -189,10 +190,10 @@ class FlutterChannelManager {
                     withAddress: unicastAddress as! Address
                 )
             else {
-                result([
-                    "isSuccess": false,
-                    "message": "Couldn't identified the node.",
-                ])
+                handleMethodResponse(
+                    isSuccess: false,
+                    message: "Couldn't identify the node."
+                )
                 return
             }
 
@@ -217,14 +218,20 @@ class FlutterChannelManager {
                         name: "Main Application Key"
                     )
                 } catch {
-                    print(error)
-                    print("Faild to add new ApplicationKey")
+                    handleMethodResponse(
+                        isSuccess: false,
+                        message:
+                            "Failed to add new ApplicationKey: \(error.localizedDescription)"
+                    )
                     return
                 }
             }
 
             guard let selectedAppKey = applicationKey else {
-                print("no application key available")
+                handleMethodResponse(
+                    isSuccess: false,
+                    message: "No ApplicationKey available"
+                )
                 return
             }
             // ノードにApplicationKey を追加
@@ -233,19 +240,18 @@ class FlutterChannelManager {
                     ConfigAppKeyAdd(applicationKey: selectedAppKey),
                     to: node
                 )
-                print("Successfully add AppKey to node")
+                print("Successfully added AppKey to node")
             } catch {
-                print("Faild to Add AppKey...")
+                print("Faild to Add AppKey: \(error.localizedDescription)")
             }
 
-            // モデルに ApplicationKey をバインド
+            // モデルに ApplicationKey をバインド（次のPRでやります）
 
-            // FIXME: mockなのでテキトーなメッセージを返してます
-            result([
-                "isSuccess": true,
-                "message":
-                    "This is a mock of `configureNode` method. UUID: \(unicastAddress)",
-            ])
+            // FIXME: mockなのでテキトーなメッセージを返してます（バインドまで終わったら考えます）
+            handleMethodResponse(
+                isSuccess: true,
+                message: "This is a mock response for `configureNode."
+            )
 
         default:
             result(FlutterMethodNotImplemented)
@@ -275,5 +281,17 @@ class FlutterChannelManager {
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+
+    /// メソッド呼び出しの結果を，成功/失敗のステータスとメッセージを含めてFlutter側に返す
+    /// - Parameters:
+    ///   - isSuccess: 処理が成功したかどうかを示す真偽値
+    ///   - message: 処理結果の詳細な情報を含む文字列
+    ///
+    /// この関数は，プラットフォームチャンネルを介した非同期処理の完了をFlutterに通知するために使用される
+    /// 戻り値はMap形式で，Flutter側の`MethodChannel.invokeMethod`の`result`引数に渡される
+    ///
+    private func handleMethodResponse(isSuccess: bool, message: String) {
+        result(["isSuccess": isSuccess, "message": message])
     }
 }

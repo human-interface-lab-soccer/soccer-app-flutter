@@ -69,7 +69,7 @@ class Provisioning {
       'uuid': uuid,
     });
     bool isSuccess = response['isSuccess'] ?? false;
-    String message = response['body'] ?? 'No message provided';
+    String message = response['message'] ?? 'No message provided';
 
     return {'isSuccess': isSuccess, 'message': message};
   }
