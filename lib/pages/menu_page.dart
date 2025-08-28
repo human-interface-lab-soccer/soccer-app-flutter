@@ -10,6 +10,7 @@ import 'package:soccer_app_flutter/shared/widgets/loading_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/error_display_widget.dart';
 import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
 import 'package:soccer_app_flutter/shared/providers/menu_filter_provider.dart';
+import 'package:soccer_app_flutter/shared/utils/color_helpers.dart';
 
 // メニューページ（Riverpod版）
 class MenuPage extends ConsumerStatefulWidget {
@@ -153,11 +154,14 @@ class MenuPageWithErrorHandling extends ConsumerWidget {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(next),
-              backgroundColor: Colors.red,
+              content: Text(
+                next,
+                style: TextStyle(color: ColorHelpers.getErrorTextColor()),
+              ),
+              backgroundColor: ColorHelpers.getErrorBackgroundColor(),
               action: SnackBarAction(
                 label: '再試行',
-                textColor: Colors.white,
+                textColor: ColorHelpers.getErrorActionTextColor(),
                 onPressed: () {
                   ref.read(practiceMenuProvider.notifier).reloadMenus();
                 },

@@ -41,4 +41,17 @@ class ColorHelpers {
       Colors.amber,
     ];
   }
+
+  // エラー時のSnackBar用カラーを取得
+  static Color getErrorBackgroundColor() {
+    return Colors.red;
+  }
+
+  static Color getErrorTextColor() {
+    return Colors.white;
+  }
+
+  static Color getErrorActionTextColor() {
+    return Colors.white;
+  }
 }
