@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanner.dart';
+import 'package:soccer_app_flutter/shared/models/ble_device.dart';
 import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
-import 'package:soccer_app_flutter/shared/model/ble_device.dart';
 
 /// 検出されたBLEデバイスのリストを表示するウィジェット
 ///
