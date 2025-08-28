@@ -22,11 +22,14 @@ class ConfigurationServiceResponse {
 
 class ConfigurationService {
 
+    static let shared = ConfigurationService()
+
     private let manager = MeshNetworkManager.instance
 
+    private init() {}
     /// MeshNetwork内のノードをリセットするメソッド
     /// - Parameters:
-    ///     - unicastAddress (Address): ノードのユニキャストアドレス
+    ///     - unicastAddress): ノードのユニキャストアドレス
     ///
     func resetNode(unicastAddress: Address) -> ConfigurationServiceResponse {
         do {
@@ -56,7 +59,7 @@ class ConfigurationService {
 
     /// Provisioning済みのノードをConfigurationするメソッド
     /// - Parameters:
-    ///     - unicastAddress (Address0: ノードのユニキャストアドレス
+    ///     - unicastAddress: ノードのユニキャストアドレス
     ///
     func configureNode(unicastAddress: Address) -> ConfigurationServiceResponse
     {
