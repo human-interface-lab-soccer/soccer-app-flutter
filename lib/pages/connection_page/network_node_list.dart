@@ -46,13 +46,6 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
     });
   }
 
-  /// ノードのConfigurationを行うメソッド
-  Future<void> _configureNode(final int unicastAddress) async {
-    // TODO: - Configuration logic for the node
-    // ignore: avoid_print
-    print("Configure node with unicast address $unicastAddress");
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,16 +65,16 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
                           subtitle: Text(
                             'UUID: ${node.uuid}, Unicast Address: ${node.primaryUnicastAddress}',
                           ),
-                          trailing:
-                              node.isConfigured
-                                  ? const Icon(Icons.check, color: Colors.green)
-                                  : ElevatedButton(
-                                    onPressed:
-                                        () => _configureNode(
-                                          node.primaryUnicastAddress,
-                                        ),
-                                    child: const Text('Configure'),
-                                  ),
+                          // trailing:
+                          //     node.isConfigured
+                          //         ? const Icon(Icons.check, color: Colors.green)
+                          //         : ElevatedButton(
+                          //           onPressed:
+                          //               () => _configureNode(
+                          //                 node.primaryUnicastAddress,
+                          //               ),
+                          //           child: const Text('Configure'),
+                          //         ),
                           onTap: () {
                             showDialog(
                               context: context,
