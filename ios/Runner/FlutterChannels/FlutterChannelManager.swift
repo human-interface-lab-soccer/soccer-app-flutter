@@ -116,10 +116,11 @@ class FlutterChannelManager {
             guard let args = call.arguments as? [String: String],
                 let uuidString = args["uuid"]
             else {
-                result([
-                    "isSuccess": false,
-                    "body": "UUID key not found in arguments.",
-                ])
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "UUID key not found in arguments."
+                )
                 return
             }
             provisioningService?.startProvisioningProcess(
@@ -131,42 +132,43 @@ class FlutterChannelManager {
             guard let args = call.arguments as? [String: Any],
                 let unicastAddress = args["unicastAddress"]
             else {
-                result([
-                    "isSuccess": false,
-                    "message": "unicastAddress key not found in arguments.",
-                ])
-                return
-            }
-
-            // Unicast Address からノードを指定
-            let manager = MeshNetworkManager.instance
-            guard
-                let node = manager.meshNetwork?.node(
-                    withAddress: unicastAddress as! Address
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress not found in arguments."
                 )
+                return
+            }
+            let response = ConfigurationService.shared.resetNode(
+                unicastAddress: unicastAddress as! Address
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message
+            )
+
+        case "configureNode":
+            // パラメータに `unicastAddress` が含まれているかを確認
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"]
             else {
-                result([
-                    "isSuccess": false,
-                    "message":
-                        "Couldn't identify the node with address \(unicastAddress).",
-                ])
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress not found in arguments."
+                )
                 return
             }
 
-            // ノードをProvisioning前の状態にリセット
-            let message = ConfigNodeReset()
-            do {
-                try manager.send(message, to: node)
-                result([
-                    "isSuccess": true,
-                    "message": "Successfully reset the node!",
-                ])
-            } catch {
-                result([
-                    "isSuccess": false,
-                    "message": "Fail to reset the node. \(error)",
-                ])
-            }
+            let response = ConfigurationService.shared.configureNode(
+                unicastAddress: unicastAddress as! Address
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message
+            )
 
         default:
             result(FlutterMethodNotImplemented)
@@ -196,5 +198,22 @@ class FlutterChannelManager {
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+
+    /// メソッド呼び出しの結果を，成功/失敗のステータスとメッセージを含めてFlutter側に返す
+    /// - Parameters:
+    ///     - result: FlutterResult
+    ///     - isSuccess: 処理が成功したかどうかを示す真偽値
+    ///     - message: 処理結果の詳細な情報を含む文字列
+    ///
+    /// この関数は，プラットフォームチャンネルを介した非同期処理の完了をFlutterに通知するために使用される
+    /// 戻り値はMap形式で，Flutter側の`MethodChannel.invokeMethod`の`result`引数に渡される
+    ///
+    private func handleMethodResponse(
+        result: @escaping FlutterResult,
+        isSuccess: Bool,
+        message: String
+    ) {
+        result(["isSuccess": isSuccess, "message": message])
     }
 }

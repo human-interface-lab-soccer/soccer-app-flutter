@@ -16,6 +16,7 @@
 		7595FF862E374E8100127591 /* FlutterChannelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7595FF852E374E8100127591 /* FlutterChannelManager.swift */; };
 		7595FF882E374F2600127591 /* ProvisioningEventStreamHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7595FF872E374F2600127591 /* ProvisioningEventStreamHandler.swift */; };
 		7595FFA22E37663C00127591 /* ProvisioningService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7595FFA12E37663C00127591 /* ProvisioningService.swift */; };
+		75A4D2B42E6019CF0029D34F /* ConfigurationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A4D2B32E6019CF0029D34F /* ConfigurationService.swift */; };
 		75CF3CB62E09AEB900EA146E /* NordicMesh in Frameworks */ = {isa = PBXBuildFile; productRef = 75CF3CB52E09AEB900EA146E /* NordicMesh */; };
 		75F213342DF8026B006D37CD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75F213332DF8026B006D37CD /* GoogleService-Info.plist */; };
 		75F213352DF8026B006D37CD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75F213332DF8026B006D37CD /* GoogleService-Info.plist */; };
@@ -64,6 +65,7 @@
 		7595FF852E374E8100127591 /* FlutterChannelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FlutterChannelManager.swift; path = FlutterChannels/FlutterChannelManager.swift; sourceTree = "<group>"; };
 		7595FF872E374F2600127591 /* ProvisioningEventStreamHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProvisioningEventStreamHandler.swift; path = FlutterChannels/ProvisioningEventStreamHandler.swift; sourceTree = "<group>"; };
 		7595FFA12E37663C00127591 /* ProvisioningService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProvisioningService.swift; path = Bluetooth/ProvisioningService.swift; sourceTree = "<group>"; };
+		75A4D2B32E6019CF0029D34F /* ConfigurationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ConfigurationService.swift; path = Bluetooth/ConfigurationService.swift; sourceTree = "<group>"; };
 		75F213332DF8026B006D37CD /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		75FE7BC02E0D509300A40785 /* GeneralBleScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GeneralBleScanner.swift; path = Bluetooth/GeneralBleScanner.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -187,6 +189,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7595FF852E374E8100127591 /* FlutterChannelManager.swift */,
+				75A4D2B32E6019CF0029D34F /* ConfigurationService.swift */,
 				7595FFA12E37663C00127591 /* ProvisioningService.swift */,
 				7595FF872E374F2600127591 /* ProvisioningEventStreamHandler.swift */,
 				75FE7BC02E0D509300A40785 /* GeneralBleScanner.swift */,
@@ -417,6 +420,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75A4D2B42E6019CF0029D34F /* ConfigurationService.swift in Sources */,
 				7595FFA22E37663C00127591 /* ProvisioningService.swift in Sources */,
 				7595FF862E374E8100127591 /* FlutterChannelManager.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,

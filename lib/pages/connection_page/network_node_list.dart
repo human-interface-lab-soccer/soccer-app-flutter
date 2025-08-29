@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
-import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
+import 'package:soccer_app_flutter/shared/model/mesh_node.dart';
+import 'package:soccer_app_flutter/pages/connection_page/network_node_detail.dart';
 
 class NetworkNodeList extends StatefulWidget {
   const NetworkNodeList({super.key});
@@ -10,8 +11,8 @@ class NetworkNodeList extends StatefulWidget {
 }
 
 class _NetworkNodeListState extends State<NetworkNodeList> {
-  /// ネットワークノードのリスト
-  List<Map<String, String>> _networkNodes = [];
+  /// MeshNetworkから取得したノードを格納するリスト
+  List<MeshNode> _meshNodes = [];
 
   /// ロード中のフラグ
   bool _isLoading = true;
@@ -31,33 +32,15 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
 
   /// ネットワークノードのリストを取得するメソッド
   Future<void> _fetchNodeList() async {
-    var networkNodes = await MeshNetwork.getNodeList();
+    _meshNodes = await MeshNetwork.getNodeList();
     if (_isDebugMode) {
       await Future.delayed(
         const Duration(seconds: 1),
       ); // Simulate loading delay
     }
     setState(() {
-      _networkNodes = networkNodes;
       _isLoading = false;
     });
-  }
-
-  /// ノードをリセットするメソッド
-  Future<void> _resetNode(int unicastAddress) async {
-    var response = await Provisioning.resetNode(unicastAddress);
-    if (!mounted) return;
-    if (response['isSuccess']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Node reset successful: ${response['message']}'),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Node reset failed: ${response['message']}')),
-      );
-    }
   }
 
   @override
@@ -71,29 +54,22 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
                 _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : ListView.builder(
-                      itemCount: _networkNodes.length,
+                      itemCount: _meshNodes.length,
                       itemBuilder: (context, index) {
-                        int unicastAddress = int.parse(
-                          _networkNodes[index]["primaryUnicastAddress"] ?? "0",
-                        );
+                        final node = _meshNodes[index];
                         return ListTile(
-                          title: Text(
-                            _networkNodes[index]["name"] ?? "unknown",
-                          ),
+                          title: Text(node.name),
                           subtitle: Text(
-                            'UUID: ${_networkNodes[index]["uuid"]}, Unicast Address: ${_networkNodes[index]["primaryUnicastAddress"]}',
+                            'UUID: ${node.uuid}, Unicast Address: ${node.primaryUnicastAddress}',
                           ),
-                          leading: const Icon(Icons.network_check),
-                          trailing:
-                              unicastAddress == 1
-                                  ? const SizedBox()
-                                  : ElevatedButton(
-                                    child: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () => _resetNode(unicastAddress),
-                                  ),
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (context) =>
+                                      NetworkNodeDetail(meshNode: node),
+                            );
+                          },
                         );
                       },
                     ),
