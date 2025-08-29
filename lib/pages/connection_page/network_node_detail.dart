@@ -29,12 +29,10 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   }
 
   Future<void> _configureNode({required int unicastAddress}) async {
-    // TODO: - Configuration logic for the node
-    // ignore: avoid_print
-    print("Configure Node: $unicastAddress");
+
+
 
     Navigator.of(context).pop();
-
     var response = await Provisioning.configureNode(unicastAddress);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
