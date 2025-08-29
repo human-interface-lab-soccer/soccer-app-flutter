@@ -29,9 +29,6 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   }
 
   Future<void> _configureNode({required int unicastAddress}) async {
-
-
-
     Navigator.of(context).pop();
     var response = await Provisioning.configureNode(unicastAddress);
     if (!mounted) return;
