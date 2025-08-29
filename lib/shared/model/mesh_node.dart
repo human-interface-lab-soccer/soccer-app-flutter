@@ -32,7 +32,7 @@ class MeshNode {
     required this.name,
     required this.isConfigured,
   }) {
-    if (primaryUnicastAddress < 1) {
+    if (primaryUnicastAddress < _minimumUnicastAddress) {
       throw ArgumentError('Unicast addresses must be positive integers.');
     }
   }
