@@ -40,7 +40,6 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
       ); // Simulate loading delay
     }
     setState(() {
-      // _networkNodes = networkNodes;
       _isLoading = false;
     });
   }
