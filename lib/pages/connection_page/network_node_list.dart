@@ -65,16 +65,6 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
                           subtitle: Text(
                             'UUID: ${node.uuid}, Unicast Address: ${node.primaryUnicastAddress}',
                           ),
-                          // trailing:
-                          //     node.isConfigured
-                          //         ? const Icon(Icons.check, color: Colors.green)
-                          //         : ElevatedButton(
-                          //           onPressed:
-                          //               () => _configureNode(
-                          //                 node.primaryUnicastAddress,
-                          //               ),
-                          //           child: const Text('Configure'),
-                          //         ),
                           onTap: () {
                             showDialog(
                               context: context,
