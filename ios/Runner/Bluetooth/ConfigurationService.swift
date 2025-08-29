@@ -40,20 +40,12 @@ class ConfigurationService {
                 isSuccess: true,
                 message: "Successfully reset the node!"
             )
-            //            return [
-            //                "isSuccess": true, "message": "Successfully reset the node!",
-            //            ]
         } catch {
             return ConfigurationServiceResponse(
                 isSuccess: false,
                 message:
                     "Failed to reset the node: \(error.localizedDescription)"
             )
-            //            return [
-            //                "isSuccess": false,
-            //                "message":
-            //                    "Failed to reset the node: \(error.localizedDescription)",
-            //            ]
         }
     }
 
@@ -85,18 +77,6 @@ class ConfigurationService {
                     applicationKey: Data.random128BitKey(),
                     name: "Main Application Key"
                 )
-                //                do {
-                //                    applicationKey = try manager.meshNetwork?.add(
-                //                        applicationKey: Data.random128BitKey(),
-                //                        name: "Main Application Key"
-                //                    )
-                //                } catch {
-                //                    return [
-                //                        "isSuccess": false,
-                //                        "message":
-                //                            "Failed to add new ApplicationKey: \(error.localizedDescription)",
-                //                    ]
-                //                }
             }
 
             guard let selectedAppKey = applicationKey else {
@@ -104,10 +84,6 @@ class ConfigurationService {
                     isSuccess: false,
                     message: "No ApplicationKey available"
                 )
-                //                return [
-                //                    "isSuccess": false,
-                //                    "message": "No ApplicationKey available",
-                //                ]
             }
 
             // AppKeyの追加
@@ -123,21 +99,12 @@ class ConfigurationService {
                 isSuccess: true,
                 message: "This is a mock response for `configureNode`"
             )
-            //            return [
-            //                "isSuccess": true,
-            //                "message": "This is a mock response for `configureNode",
-            //            ]
         } catch {
             return ConfigurationServiceResponse(
                 isSuccess: false,
                 message:
                     "Failed to configure the node: \(error.localizedDescription)"
             )
-            //            return [
-            //                "isSuccess": false,
-            //                "message":
-            //                    "Failed to configure the node: \(error.localizedDescription)",
-            //            ]
         }
     }
 
