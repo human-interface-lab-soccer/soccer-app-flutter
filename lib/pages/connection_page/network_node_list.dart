@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
-// import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
 import 'package:soccer_app_flutter/shared/model/mesh_node.dart';
 import 'package:soccer_app_flutter/pages/connection_page/network_node_detail.dart';
 
