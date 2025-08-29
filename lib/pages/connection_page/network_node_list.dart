@@ -34,7 +34,6 @@ class _NetworkNodeListState extends State<NetworkNodeList> {
   /// ネットワークノードのリストを取得するメソッド
   Future<void> _fetchNodeList() async {
     _meshNodes = await MeshNetwork.getNodeList();
-    // print(networkNodes);
     if (_isDebugMode) {
       await Future.delayed(
         const Duration(seconds: 1),
