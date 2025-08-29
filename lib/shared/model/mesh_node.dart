@@ -20,6 +20,12 @@ class MeshNode {
   final String name;
   final bool isConfigured;
 
+  /// 有効なユニキャストアドレスの最小値
+  static const int _minimumUnicastAddress = 1;
+
+  /// 無効なユニキャストアドレス
+  static const int _invalidUnicastAddress = -1;
+
   MeshNode({
     required this.uuid,
     required this.primaryUnicastAddress,
@@ -32,9 +38,6 @@ class MeshNode {
   }
 
   factory MeshNode.fromMap(final Map<String, dynamic> map) {
-    // TODO: 適当にやってるから、後で修正する
-    // - guard節を使って、必要な値がない場合はデフォルト値を設定する
-
     // int型への変換を試行し、失敗した場合やプリミティブ型でない場合はArgumentErrorをスロー
     final primaryUnicastAddressValue = map['primaryUnicastAddress'];
     int convertedAddress;
@@ -42,13 +45,14 @@ class MeshNode {
     if (primaryUnicastAddressValue is int) {
       convertedAddress = primaryUnicastAddressValue;
     } else if (primaryUnicastAddressValue is String) {
-      convertedAddress = int.tryParse(primaryUnicastAddressValue) ?? -1;
+      convertedAddress =
+          int.tryParse(primaryUnicastAddressValue) ?? _invalidUnicastAddress;
     } else {
-      convertedAddress = -1;
+      convertedAddress = _invalidUnicastAddress;
     }
 
     // 1未満の値は無効とみなす
-    if (convertedAddress < 1) {
+    if (convertedAddress < _minimumUnicastAddress) {
       throw ArgumentError(
         'Invalid primaryUnicastAddress: $primaryUnicastAddressValue',
       );
@@ -80,6 +84,6 @@ class MeshNode {
   /// LocalNodeかどうかを判定
   /// primaryUnicastAddressが1の場合、LocalNodeとみなす
   bool isLocalNode() {
-    return primaryUnicastAddress == 1;
+    return primaryUnicastAddress == _minimumUnicastAddress;
   }
 }
