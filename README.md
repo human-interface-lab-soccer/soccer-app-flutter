@@ -44,3 +44,4 @@ flutter test
 ## 貢献について
 効果的なチーム開発のために，[CONTRIBUTING.md](https://github.com/human-interface-lab-soccer/soccer-app-flutter/blob/main/CONTRIBUTING.md) に記載されている開発ルール，ブランチ戦略などのガイドラインを必ず確認してください．
 <!-- 川崎です -->
+<!-- Hello world -->
