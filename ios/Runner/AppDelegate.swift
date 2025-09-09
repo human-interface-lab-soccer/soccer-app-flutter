@@ -32,6 +32,7 @@ import UIKit
         initializeMeshNetworkManager()
         initializeProvisioningService()
         setupFlutterChannels(with: controller.binaryMessenger)
+        meshNetworkManager.delegate = self
 
         GeneratedPluginRegistrant.register(with: self)
         return super.application(
@@ -117,6 +118,88 @@ import UIKit
             provisioningService: provisioningService
         )
         flutterChannelManager.setupChannels()
+    }
+}
+
+extension AppDelegate: MeshNetworkDelegate {
+    func meshNetworkManager(
+        _ manager: NordicMesh.MeshNetworkManager,
+        didReceiveMessage message: any NordicMesh.MeshMessage,
+        sentFrom source: NordicMesh.Address,
+        to destination: NordicMesh.MeshAddress
+    ) {
+        print("================================")
+
+        if message is ConfigCompositionDataStatus {
+            print("Received Composition Data from \(source)")
+            //            if let node = manager.meshNetwork?.node(withAddress: source) {
+            //                // まず AppKey を追加
+            //                if let appKey = manager.meshNetwork?.applicationKeys.first {
+            //                    try manager.send(
+            //                        ConfigAppKeyAdd(applicationKey: appKey),
+            //                        to: node
+            //                    )
+            //                }
+            //            }
+
+            // TODO: リファクタリング
+            // 分岐が多すぎるから，do-catch とか guard使って綺麗にしたい(?)
+        } else if let appKeyStatus = message as? ConfigAppKeyStatus {
+            print("Received AppKeyStatus: \(appKeyStatus.status)")
+            if appKeyStatus.status == .success {
+                // AppKey の追加が成功したのでモデルにバインド
+                if let node = manager.meshNetwork?.node(withAddress: source),
+                    let availableKeys = manager.meshNetwork?.applicationKeys
+                {
+                    var appKey: ApplicationKey?
+                    let keys = availableKeys.filter {
+                        node.knows(networkKey: $0.boundNetworkKey)
+                    }
+                    if !keys.isEmpty {
+                        appKey = keys[0]
+                    }
+                    guard let selectedAppKey = appKey else {
+                        print("Failed to select AppKey")
+                        return
+                    }
+
+                    for element in node.elements {
+                        if let model = element.models.first(where: {
+                            $0.name == "Generic OnOff Server"
+                        }) {
+                            if let bindMessage = ConfigModelAppBind(
+                                applicationKey: selectedAppKey,
+                                to: model
+                            ) {
+                                print("Model: \(model.name)")
+                                do {
+                                    try manager.send(
+                                        bindMessage,
+                                        to: node
+                                    )
+                                    print(
+                                        "Sent ConfigModelAppBind to \(model.name ?? "Unknown Model")"
+                                    )
+                                } catch {
+                                    print(
+                                        "Failed to bind AppKey to model: \(error.localizedDescription)"
+                                    )
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
+        } else if let modelStatus = message as? ConfigModelAppStatus {
+            print("ModelAppBind status: \(modelStatus.status)")
+            if modelStatus.status == .success {
+                print("AppKey successfully bound to model!")
+            }
+        }
+        // else の処理が実装されていない
+        // else {}
     }
 }
 

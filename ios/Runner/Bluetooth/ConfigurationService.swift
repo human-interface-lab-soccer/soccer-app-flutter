@@ -24,6 +24,8 @@ class ConfigurationService {
 
     static let shared = ConfigurationService()
 
+    var selectedKey: ApplicationKey?
+
     private let manager = MeshNetworkManager.instance
 
     private init() {}
@@ -85,6 +87,7 @@ class ConfigurationService {
                     message: "No ApplicationKey available"
                 )
             }
+            self.selectedKey = selectedAppKey
 
             // AppKeyの追加
             try manager.send(
@@ -92,13 +95,18 @@ class ConfigurationService {
                 to: node
             )
 
-            // AppKeyのバインド（次のPRでやります）
+            // AppKeyのバインド
 
-            // FIXME: モックのため，仮でメッセージを設定しています．
+            // Nodeの情報をリクエスト
+            try manager.send(ConfigCompositionDataGet(), to: node)
+
+            // 一旦仮のメッセージを返す．
+            // TODO: managerでメッセージを受け取った後に，こっちでエラーメッセージとかを返せるようにしたい
             return ConfigurationServiceResponse(
                 isSuccess: true,
-                message: "This is a mock response for `configureNode`"
+                message: "Wait to response"
             )
+
         } catch {
             return ConfigurationServiceResponse(
                 isSuccess: false,
