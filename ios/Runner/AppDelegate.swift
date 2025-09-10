@@ -130,76 +130,136 @@ extension AppDelegate: MeshNetworkDelegate {
     ) {
         print("================================")
 
-        if message is ConfigCompositionDataStatus {
+        // nodeを探す
+        guard let node = manager.meshNetwork?.node(withAddress: source) else {
+            print("Couldn't find node.")
+            return
+        }
+
+        switch message {
+        case is ConfigCompositionDataStatus:
+            // TODO: applicationKeyの追加の処理をこっちに移行する
             print("Received Composition Data from \(source)")
-            //            if let node = manager.meshNetwork?.node(withAddress: source) {
-            //                // まず AppKey を追加
-            //                if let appKey = manager.meshNetwork?.applicationKeys.first {
-            //                    try manager.send(
-            //                        ConfigAppKeyAdd(applicationKey: appKey),
-            //                        to: node
-            //                    )
-            //                }
-            //            }
 
-            // TODO: リファクタリング
-            // 分岐が多すぎるから，do-catch とか guard使って綺麗にしたい(?)
-        } else if let appKeyStatus = message as? ConfigAppKeyStatus {
+        // AppKey追加後のモデルバインド処理を行う
+        case let appKeyStatus as ConfigAppKeyStatus:
             print("Received AppKeyStatus: \(appKeyStatus.status)")
-            if appKeyStatus.status == .success {
-                // AppKey の追加が成功したのでモデルにバインド
-                if let node = manager.meshNetwork?.node(withAddress: source),
-                    let availableKeys = manager.meshNetwork?.applicationKeys
-                {
-                    var appKey: ApplicationKey?
-                    let keys = availableKeys.filter {
-                        node.knows(networkKey: $0.boundNetworkKey)
-                    }
-                    if !keys.isEmpty {
-                        appKey = keys[0]
-                    }
-                    guard let selectedAppKey = appKey else {
-                        print("Failed to select AppKey")
-                        return
-                    }
+            handleAppKeyStatus(
+                appKeyStatus: appKeyStatus,
+                manager: manager,
+                node: node
+            )
 
-                    for element in node.elements {
-                        if let model = element.models.first(where: {
-                            $0.name == "Generic OnOff Server"
-                        }) {
-                            if let bindMessage = ConfigModelAppBind(
-                                applicationKey: selectedAppKey,
-                                to: model
-                            ) {
-                                print("Model: \(model.name)")
-                                do {
-                                    try manager.send(
-                                        bindMessage,
-                                        to: node
-                                    )
-                                    print(
-                                        "Sent ConfigModelAppBind to \(model.name ?? "Unknown Model")"
-                                    )
-                                } catch {
-                                    print(
-                                        "Failed to bind AppKey to model: \(error.localizedDescription)"
-                                    )
-                                }
+        // モデルバインドの成否を確認する
+        case let modelStatus as ConfigModelAppStatus:
+            print("Recieved ConfigModelAppStatus: \(modelStatus.status)")
+            handleModelAppStatus(
+                modelAppStatus: modelStatus,
+                manager: manager,
+                node: node
+            )
 
-                            }
-                        }
-                    }
-                }
-            }
+        default:
+            print("Message type : \(type(of: message))")
+        }
+    }
 
-        } else if let modelStatus = message as? ConfigModelAppStatus {
-            print("ModelAppBind status: \(modelStatus.status)")
-            if modelStatus.status == .success {
-                print("AppKey successfully bound to model!")
+    private func handleAppKeyStatus(
+        appKeyStatus: ConfigAppKeyStatus,
+        manager: MeshNetworkManager,
+        node: Node
+    ) {
+        var appKey: ApplicationKey?
+        do {
+            appKey = try findApplicationKey(manager: manager, node: node)
+        } catch {
+            print("Failed to find applicationKey")
+            return
+        }
+
+        guard
+            let genericOnOffServerModel = node.elements
+                .flatMap({ $0.models })
+                .first(where: { $0.name == "Generic OnOff Server" })
+        else {
+            print("Model not found")
+            return
+        }
+
+        bindModel(
+            model: genericOnOffServerModel,
+            appKey: appKey!,  // TODO: guard let でappKeyの強制アンラップを外す処理を追加
+            manager: manager,
+            node: node
+        )
+    }
+
+    private func findApplicationKey(manager: MeshNetworkManager, node: Node)
+        throws -> ApplicationKey
+    {
+        guard let availableKeys = manager.meshNetwork?.applicationKeys,
+            !availableKeys.isEmpty
+        else {
+            print("No available applicationKeys")
+            throw FindApplicationKeyError.noAvailableApplicationKeys
+        }
+        guard
+            let selectedAppKey = availableKeys.first(where: {
+                node.knows(networkKey: $0.boundNetworkKey)
+            })
+        else {
+            throw FindApplicationKeyError.noSuitableApplicationKeyFound
+        }
+        return selectedAppKey
+    }
+
+    /// ApplicationKey を探す際のエラー
+    private enum FindApplicationKeyError: Error, LocalizedError {
+        case noAvailableApplicationKeys
+        case noSuitableApplicationKeyFound
+
+        var errorDescription: String? {
+            switch self {
+            case .noAvailableApplicationKeys:
+                return "No available ApplicationKeys"
+            case .noSuitableApplicationKeyFound:
+                return "No suitable ApplicationKey found"
             }
         }
-        // else の処理が実装されていない
-        // else {}
+    }
+
+    private func bindModel(
+        model: Model,
+        appKey: ApplicationKey,
+        manager: MeshNetworkManager,
+        node: Node
+    ) {
+        guard
+            let bindMessage = ConfigModelAppBind(
+                applicationKey: appKey,
+                to: model
+            )
+        else {
+            print("Message Create Error")
+            return
+        }
+        do {
+            try manager.send(bindMessage, to: node)
+            print("Sent ConfigModelAppBind to \(model.name ?? "Unknown Model")")
+        } catch {
+            print(
+                "Failed to bind AppKey to model: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    // TODO: 中身を実装する
+    private func handleModelAppStatus(
+        modelAppStatus: ConfigModelAppStatus,
+        manager: MeshNetworkManager,
+        node: Node
+    ) {
+
     }
 }
 
