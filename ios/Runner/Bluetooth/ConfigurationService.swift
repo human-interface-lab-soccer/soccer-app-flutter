@@ -94,9 +94,6 @@ class ConfigurationService {
                 ConfigAppKeyAdd(applicationKey: selectedAppKey),
                 to: node
             )
-
-            // AppKeyのバインド
-
             // Nodeの情報をリクエスト
             try manager.send(ConfigCompositionDataGet(), to: node)
 
