@@ -125,7 +125,7 @@ extension AppDelegate: MeshNetworkDelegate {
         manager: MeshNetworkManager
     ) {
         // Use constant for Generic OnOff Server model name
-        let serverModelName = NordicMesh.ModelName.genericOnOffServer
+        let serverModelName = "Generic OnOff Server"
         // AppKeyとGeneric OnOff Serverモデルを見つける
         guard
             let appKey = manager.meshNetwork?.applicationKeys.first(where: {

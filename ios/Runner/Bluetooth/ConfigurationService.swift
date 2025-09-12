@@ -97,7 +97,7 @@ class ConfigurationService {
             // TODO: managerでメッセージを受け取った後に，こっちでエラーメッセージとかを返せるようにしたい
             return ConfigurationServiceResponse(
                 isSuccess: true,
-                message: "Wait to response"
+                message: "Configuration process started. Awaiting node response..."
             )
 
         } catch {
