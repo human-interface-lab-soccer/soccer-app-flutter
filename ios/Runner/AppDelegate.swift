@@ -205,7 +205,9 @@ extension AppDelegate: MeshNetworkDelegate {
             sendCompositionDataRequest(to: node)
 
         } else {
-            print("Failed to add AppKey: \(appKeyStatus.status.debugDescription)")
+            print(
+                "Failed to add AppKey: \(appKeyStatus.status.debugDescription)"
+            )
             return
         }
     }
