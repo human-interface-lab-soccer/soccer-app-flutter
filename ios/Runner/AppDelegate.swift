@@ -18,6 +18,7 @@ import UIKit
     var compositionDataTimer: Timer?
     var compositionDataRetries = 0
     let maxCompositionDataRetries = 3
+    let retryTimeInterval = 5.0
 
     // MARK: - Application Lifecycle
 

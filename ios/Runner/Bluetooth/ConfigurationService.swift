@@ -23,9 +23,6 @@ class ConfigurationServiceResponse {
 class ConfigurationService {
 
     static let shared = ConfigurationService()
-
-    var selectedKey: ApplicationKey?
-
     private let manager = MeshNetworkManager.instance
 
     private init() {}
@@ -87,7 +84,6 @@ class ConfigurationService {
                     message: "No ApplicationKey available"
                 )
             }
-            self.selectedKey = selectedAppKey
 
             // AppKeyの追加
             try manager.send(

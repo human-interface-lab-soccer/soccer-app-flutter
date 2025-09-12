@@ -10,32 +10,12 @@ import NordicMesh
 
 extension AppDelegate: MeshNetworkDelegate {
 
-    // MARK: GATT Proxy接続成功時の処理
-    func meshNetworkManager(
-        _ manager: MeshNetworkManager,
-        didConnectToProxy: Node
-    ) {
-        print(
-            "Connected to GATT Proxy: \(didConnectToProxy.name ?? "Unknown Proxy")"
-        )
-
-        // 接続成功後、ConfigurationServiceを呼び出す前に遅延を入れる
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            // ConfigurationServiceのシングルトンインスタンスを直接使用する
-            _ = ConfigurationService.shared.configureNode(
-                unicastAddress: didConnectToProxy.primaryUnicastAddress
-            )
-        }
-    }
-
     func meshNetworkManager(
         _ manager: NordicMesh.MeshNetworkManager,
         didReceiveMessage message: any NordicMesh.MeshMessage,
         sentFrom source: NordicMesh.Address,
         to destination: NordicMesh.MeshAddress
     ) {
-        print("================================")
-
         // nodeを探す
         guard let node = manager.meshNetwork?.node(withAddress: source) else {
             print("Couldn't find node.")
@@ -80,17 +60,14 @@ extension AppDelegate: MeshNetworkDelegate {
         manager: MeshNetworkManager,
         node: Node
     ) {
-        // AppKeyが正常に追加されたことをFlutterに通知
         if appKeyStatus.status == .success {
             print("AppKey added successfully.")
-            // AppKeyの追加成功後、Composition Dataをリクエストする（リトライあり）
+            // AppKeyの追加成功後，Composition Dataをリクエスト
             sendCompositionDataRequest(to: node)
-
         } else {
             print(
                 "Failed to add AppKey: \(appKeyStatus.status.debugDescription)"
             )
-            return
         }
     }
 
@@ -107,7 +84,7 @@ extension AppDelegate: MeshNetworkDelegate {
 
         // タイマーを開始
         compositionDataTimer = Timer.scheduledTimer(
-            withTimeInterval: 5.0,
+            withTimeInterval: retryTimeInterval,
             repeats: true
         ) { [weak self] _ in
             guard let self = self else { return }
@@ -147,6 +124,7 @@ extension AppDelegate: MeshNetworkDelegate {
         node: Node,
         manager: MeshNetworkManager
     ) {
+        let serverModelName = "Generic OnOff Server"
         // AppKeyとGeneric OnOff Serverモデルを見つける
         guard
             let appKey = manager.meshNetwork?.applicationKeys.first(where: {
@@ -154,7 +132,7 @@ extension AppDelegate: MeshNetworkDelegate {
             }),
             let genericOnOffServerModel = node.elements
                 .flatMap({ $0.models })
-                .first(where: { $0.name == "Generic OnOff Server" })
+                .first(where: { $0.name == serverModelName })
         else {
             print("AppKey or 'Generic OnOff Server' model not found")
             return
