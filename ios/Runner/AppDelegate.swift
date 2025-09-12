@@ -14,6 +14,11 @@ import UIKit
     private var provisioningService: ProvisioningService!
     private var flutterChannelManager: FlutterChannelManager!
 
+    // Retry variables for ConfigCompositionDataGet
+    private var compositionDataTimer: Timer?
+    private var compositionDataRetries = 0
+    private let maxCompositionDataRetries = 3
+
     // MARK: - Application Lifecycle
 
     override func application(
@@ -121,7 +126,26 @@ import UIKit
     }
 }
 
+// MARK: - MeshNetworkDelegate
 extension AppDelegate: MeshNetworkDelegate {
+    // MARK: GATT Proxy接続成功時の処理
+    func meshNetworkManager(
+        _ manager: MeshNetworkManager,
+        didConnectToProxy: Node
+    ) {
+        print(
+            "Connected to GATT Proxy: \(didConnectToProxy.name ?? "Unknown Proxy")"
+        )
+
+        // 接続成功後、ConfigurationServiceを呼び出す前に遅延を入れる
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // ConfigurationServiceのシングルトンインスタンスを直接使用する
+            _ = ConfigurationService.shared.configureNode(
+                unicastAddress: didConnectToProxy.primaryUnicastAddress
+            )
+        }
+    }
+
     func meshNetworkManager(
         _ manager: NordicMesh.MeshNetworkManager,
         didReceiveMessage message: any NordicMesh.MeshMessage,
@@ -139,6 +163,9 @@ extension AppDelegate: MeshNetworkDelegate {
         switch message {
         case is ConfigCompositionDataStatus:
             print("Received Composition Data from \(source)")
+            // タイマーを停止
+            compositionDataTimer?.invalidate()
+            compositionDataTimer = nil
             // 構成データ取得後、モデルバインドに進む
             handleCompositionDataStatus(
                 node: node,
@@ -171,23 +198,64 @@ extension AppDelegate: MeshNetworkDelegate {
         manager: MeshNetworkManager,
         node: Node
     ) {
+        // AppKeyが正常に追加されたことをFlutterに通知
         if appKeyStatus.status == .success {
-            // AppKeyの追加成功後、Composition Dataをリクエストする
-            do {
-                try manager.send(ConfigCompositionDataGet(), to: node)
+            print("AppKey added successfully.")
+            // AppKeyの追加成功後、Composition Dataをリクエストする（リトライあり）
+            sendCompositionDataRequest(to: node)
+
+        } else {
+            print("Failed to add AppKey: \(appKeyStatus.status.debugDescription)")
+            return
+        }
+    }
+
+    // ConfigCompositionDataGet を送信するリトライロジック
+    private func sendCompositionDataRequest(to node: Node) {
+        // すでにタイマーが動いていれば何もしない
+        guard compositionDataTimer == nil else { return }
+
+        // リトライカウントをリセット
+        compositionDataRetries = 0
+
+        // 最初のメッセージを送信
+        sendCompositionDataMessage(to: node)
+
+        // タイマーを開始
+        compositionDataTimer = Timer.scheduledTimer(
+            withTimeInterval: 5.0,
+            repeats: true
+        ) { [weak self] _ in
+            guard let self = self else { return }
+
+            self.compositionDataRetries += 1
+            print(
+                "Composition Data Get timeout. Retry \(self.compositionDataRetries)/\(self.maxCompositionDataRetries)..."
+            )
+
+            if self.compositionDataRetries <= self.maxCompositionDataRetries {
+                self.sendCompositionDataMessage(to: node)
+            } else {
+                self.compositionDataTimer?.invalidate()
+                self.compositionDataTimer = nil
                 print(
-                    "Sent ConfigCompositionDataGet to \(node.name ?? "Unknown Node")"
-                )
-            } catch {
-                print(
-                    "Failed to send ConfigCompositionDataGet: \(error.localizedDescription)"
+                    "Failed to get Composition Data after \(self.maxCompositionDataRetries) retries."
                 )
             }
-        } else {
+        }
+    }
+
+    // 実際に ConfigCompositionDataGet を送信するヘルパーメソッド
+    private func sendCompositionDataMessage(to node: Node) {
+        do {
+            try meshNetworkManager.send(ConfigCompositionDataGet(), to: node)
             print(
-                "Failed to add AppKey: \(appKeyStatus.status.debugDescription)"
+                "Sent ConfigCompositionDataGet to \(node.name ?? "Unknown Node")"
             )
-            return
+        } catch {
+            print(
+                "Failed to send ConfigCompositionDataGet: \(error.localizedDescription)"
+            )
         }
     }
 
@@ -250,7 +318,6 @@ extension AppDelegate: MeshNetworkDelegate {
             print("Model bind successful!")
         } else {
             print("Model bind failed with status: \(modelAppStatus.status)")
-
         }
     }
 }
