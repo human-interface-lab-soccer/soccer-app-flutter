@@ -318,6 +318,46 @@ extension AppDelegate: MeshNetworkDelegate {
     ) {
         if modelAppStatus.status == .success {
             print("Model bind successful!")
+
+            // TODO: Configuration完了時にLEDの色を変えるようにしたい
+            // テキトーになんか送ってみる（ダメだった）
+            // ファームウェアのモデルをLEDの色を変えるようにカスタムしている
+            // → ServerModel と ClientModel もそれぞれ変える必要
+            guard
+                let clientModel = manager.localElements
+                    .first?.models
+                    .first(
+                        where: {
+                            UInt16($0.modelId) == .genericOnOffClientModelId
+                        }
+                    ),
+                let serverModel = node.elements.first?.models.first(where: {
+                    UInt16($0.modelId) == .genericOnOffServerModelId
+                })
+            else {
+                print("Failed to find client model or node.")
+                return
+            }
+
+            // GenericOnOffSetメッセージを作成
+            // TODO: GenericOnOfSetで色を指定できるようにする
+            let message = GenericOnOffSet(false)
+
+            do {
+                try manager.send(
+                    message,
+                    from: clientModel,
+                    to: serverModel
+                )
+                print(
+                    "Sent GenericOnOffSet(true) to \(node.name ?? "Unknown Node")."
+                )
+            } catch {
+                print(
+                    "Failed to send GenericOnOffSet: \(error.localizedDescription)"
+                )
+            }
+
         } else {
             print("Model bind failed with status: \(modelAppStatus.status)")
         }
