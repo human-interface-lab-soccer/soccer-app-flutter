@@ -179,11 +179,19 @@ extension AppDelegate: MeshNetworkDelegate {
     ) {
         if modelAppStatus.status == .success {
             print("Model bind successful!")
+            sendFlutterEvent(status: .success, message: "Successfully bind AppKey to Model")
             // Configuration完了後に色を変える場合は，ここに処理を追加
             // ex. manager.send(message, from: clientModel, to: serverModel)
 
         } else {
             print("Model bind failed with status: \(modelAppStatus.status)")
         }
+    }
+
+    private func sendFlutterEvent(status: MeshNetworkStatus, message: String?) {
+        MeshNetworkEventStreamHandler.shared.sendEvent(
+            status: status,
+            data: ["message": message ?? "No message"]
+        )
     }
 }

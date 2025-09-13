@@ -93,11 +93,10 @@ class ConfigurationService {
             // Nodeの情報をリクエスト
             try manager.send(ConfigCompositionDataGet(), to: node)
 
-            // 一旦仮のメッセージを返す．
-            // TODO: managerでメッセージを受け取った後に，こっちでエラーメッセージとかを返せるようにしたい
             return ConfigurationServiceResponse(
                 isSuccess: true,
-                message: "Configuration process started. Awaiting node response..."
+                message:
+                    "Configuration process started. Awaiting node response..."
             )
 
         } catch {

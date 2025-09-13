@@ -10,6 +10,7 @@ import UIKit
     // Manager Instances
     var meshNetworkManager: MeshNetworkManager!
     var connection: NetworkConnection?
+//    var meshNetworkEventStreamHandler: MeshNetworkEventStreamHandler?
     private var bleScanner: GeneralBleScanner?
     private var provisioningService: ProvisioningService!
     private var flutterChannelManager: FlutterChannelManager!
@@ -38,6 +39,7 @@ import UIKit
         initializeMeshNetworkManager()
         initializeProvisioningService()
         setupFlutterChannels(with: controller.binaryMessenger)
+//        meshNetworkEventStreamHandler = MeshNetworkEventStreamHandler()
         meshNetworkManager.delegate = self
 
         GeneratedPluginRegistrant.register(with: self)
@@ -121,7 +123,8 @@ import UIKit
         flutterChannelManager = FlutterChannelManager(
             messenger: messenger,
             bleScanner: bleScanner!,
-            provisioningService: provisioningService
+            provisioningService: provisioningService,
+//            meshNetowrkEventStreamHandler: meshNetworkEventStreamHandler!
         )
         flutterChannelManager.setupChannels()
     }

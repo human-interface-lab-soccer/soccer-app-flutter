@@ -16,27 +16,32 @@ enum ChannelName {
     static let provisioningMethod = "\(domain)/provisioningMethodChannel"
     static let provisioningEvent = "\(domain)/provisioningEventChannel"
     static let meshNetworkMethod = "\(domain)/meshNetworkMethodChannel"
+    static let meshNetworkEvent = "\(domain)/meshNetworkEventChannel"
 }
 
 class FlutterChannelManager {
     private let messenger: FlutterBinaryMessenger
     private weak var bleScanner: GeneralBleScanner?
     private weak var provisioningService: ProvisioningService?
+//    private weak var meshNetworkEventStreamHandler: MeshNetworkEventStreamHandler?
 
     private var scannerMethodChannel: FlutterMethodChannel!
     private var scannerEventChannel: FlutterEventChannel!
     private var provisioningMethodChannel: FlutterMethodChannel!
     private var provisioningEventChannel: FlutterEventChannel!
     private var meshNetworkMethodChannel: FlutterMethodChannel!
+    private var meshNetworkEventChannel: FlutterEventChannel!
 
     init(
         messenger: FlutterBinaryMessenger,
         bleScanner: GeneralBleScanner,
-        provisioningService: ProvisioningService
+        provisioningService: ProvisioningService,
+//        meshNetowrkEventStreamHandler: MeshNetworkEventStreamHandler
     ) {
         self.messenger = messenger
         self.bleScanner = bleScanner
         self.provisioningService = provisioningService
+//        self.meshNetworkEventStreamHandler = meshNetowrkEventStreamHandler
     }
 
     func setupChannels() {
@@ -80,6 +85,7 @@ class FlutterChannelManager {
             name: ChannelName.scannerEvent,
             binaryMessenger: messenger
         )
+        scannerEventChannel.setStreamHandler(bleScanner)
 
         provisioningEventChannel = FlutterEventChannel(
             name: ChannelName.provisioningEvent,
@@ -88,7 +94,14 @@ class FlutterChannelManager {
         provisioningEventChannel.setStreamHandler(
             provisioningService?.provisioningEventStreamHandlerInstance
         )
-        scannerEventChannel.setStreamHandler(bleScanner)
+
+        meshNetworkEventChannel = FlutterEventChannel(
+            name: ChannelName.meshNetworkEvent,
+            binaryMessenger: messenger
+        )
+        meshNetworkEventChannel.setStreamHandler(
+            MeshNetworkEventStreamHandler.shared
+        )
     }
 
     private func handleScannerMethod(
