@@ -18,7 +18,7 @@ extension AppDelegate: MeshNetworkDelegate {
     ) {
         // nodeを探す
         guard let node = manager.meshNetwork?.node(withAddress: source) else {
-            print("Couldn't find node.")
+            print("Couldn't fild node with address \(source)")
             return
         }
 
@@ -124,8 +124,8 @@ extension AppDelegate: MeshNetworkDelegate {
         node: Node,
         manager: MeshNetworkManager
     ) {
-        // Use constant for Generic OnOff Server model name
         let serverModelName = "Generic OnOff Server"
+
         // AppKeyとGeneric OnOff Serverモデルを見つける
         guard
             let appKey = manager.meshNetwork?.applicationKeys.first(where: {
@@ -178,13 +178,19 @@ extension AppDelegate: MeshNetworkDelegate {
         node: Node
     ) {
         if modelAppStatus.status == .success {
-            print("Model bind successful!")
-            sendFlutterEvent(status: .success, message: "Successfully bind AppKey to Model")
+            sendFlutterEvent(
+                status: .success,
+                message: "Successfully bind AppKey to Model"
+            )
             // Configuration完了後に色を変える場合は，ここに処理を追加
             // ex. manager.send(message, from: clientModel, to: serverModel)
 
         } else {
-            print("Model bind failed with status: \(modelAppStatus.status)")
+            sendFlutterEvent(
+                status: .error,
+                message:
+                    "Model bind failed with status: \(modelAppStatus.status)"
+            )
         }
     }
 

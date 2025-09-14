@@ -52,7 +52,20 @@ class ConnectionPageState extends State<ConnectionPage> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text("${event["status"] ?? "No Status"}"),
-            content: Text("${event['message'] ?? "No Data"}"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // TODO: l10n
+                Text(
+                  event["status"] == "error"
+                      ? "Please retry again."
+                      : "Operation completed successfully.",
+                ),
+                Text("Detail: ${event['message'] ?? "No Data"}"),
+              ],
+            ),
+
             actions: [
               TextButton(
                 onPressed: () {
