@@ -23,7 +23,6 @@ class FlutterChannelManager {
     private let messenger: FlutterBinaryMessenger
     private weak var bleScanner: GeneralBleScanner?
     private weak var provisioningService: ProvisioningService?
-//    private weak var meshNetworkEventStreamHandler: MeshNetworkEventStreamHandler?
 
     private var scannerMethodChannel: FlutterMethodChannel!
     private var scannerEventChannel: FlutterEventChannel!
