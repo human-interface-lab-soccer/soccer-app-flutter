@@ -44,15 +44,27 @@ class ConnectionPageState extends State<ConnectionPage> {
   void initState() {
     super.initState();
     _meshNetworkStream = MeshNetwork.meshNetworkStream;
-    _meshNetworkStream.listen(
-      (event) {
-        // イベントデータを処理
-        print('MeshNetwork Event: $event');
-      },
-      onError: (error) {
-        print('MeshNetwork Stream Error: $error');
-      },
-    );
+    _meshNetworkStream.listen((event) {
+      // ポップアップを表示
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("${event["status"] ?? "No Status"}"),
+            content: Text("${event['message'] ?? "No Data"}"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("Close"),
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   @override
