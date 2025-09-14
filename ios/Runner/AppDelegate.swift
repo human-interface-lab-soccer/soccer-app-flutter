@@ -122,7 +122,6 @@ import UIKit
             messenger: messenger,
             bleScanner: bleScanner!,
             provisioningService: provisioningService,
-//            meshNetowrkEventStreamHandler: meshNetworkEventStreamHandler!
         )
         flutterChannelManager.setupChannels()
     }
