@@ -10,7 +10,6 @@ import UIKit
     // Manager Instances
     var meshNetworkManager: MeshNetworkManager!
     var connection: NetworkConnection?
-//    var meshNetworkEventStreamHandler: MeshNetworkEventStreamHandler?
     private var bleScanner: GeneralBleScanner?
     private var provisioningService: ProvisioningService!
     private var flutterChannelManager: FlutterChannelManager!
