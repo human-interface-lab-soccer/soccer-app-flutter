@@ -38,7 +38,6 @@ import UIKit
         initializeMeshNetworkManager()
         initializeProvisioningService()
         setupFlutterChannels(with: controller.binaryMessenger)
-//        meshNetworkEventStreamHandler = MeshNetworkEventStreamHandler()
         meshNetworkManager.delegate = self
 
         GeneratedPluginRegistrant.register(with: self)
