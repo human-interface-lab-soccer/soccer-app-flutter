@@ -35,7 +35,6 @@ class FlutterChannelManager {
         messenger: FlutterBinaryMessenger,
         bleScanner: GeneralBleScanner,
         provisioningService: ProvisioningService,
-//        meshNetowrkEventStreamHandler: MeshNetworkEventStreamHandler
     ) {
         self.messenger = messenger
         self.bleScanner = bleScanner
