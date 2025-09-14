@@ -39,7 +39,6 @@ class FlutterChannelManager {
         self.messenger = messenger
         self.bleScanner = bleScanner
         self.provisioningService = provisioningService
-//        self.meshNetworkEventStreamHandler = meshNetowrkEventStreamHandler
     }
 
     func setupChannels() {
