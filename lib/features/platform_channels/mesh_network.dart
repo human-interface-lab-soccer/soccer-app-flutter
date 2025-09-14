@@ -6,6 +6,9 @@ class MeshNetwork {
   static const MethodChannel _methodChannel = MethodChannel(
     'human.mech.saitama-u.ac.jp/meshNetworkMethodChannel',
   );
+  static const EventChannel _eventChannel = EventChannel(
+    'human.mech.saitama-u.ac.jp/meshNetworkEventChannel',
+  );
 
   static Future<List<MeshNode>> getNodeList() async {
     final response = await _methodChannel.invokeMethod('getNodeList');
@@ -16,5 +19,16 @@ class MeshNetwork {
     } else {
       throw Exception('Failed to fetch node list');
     }
+  }
+
+  /// MeshNetworkのイベントストリームを取得
+  static Stream<Map<String, dynamic>> get meshNetworkStream {
+    return _eventChannel.receiveBroadcastStream().map((event) {
+      if (event is Map) {
+        return Map<String, dynamic>.from(event);
+      } else {
+        throw Exception('Invalid event data');
+      }
+    });
   }
 }

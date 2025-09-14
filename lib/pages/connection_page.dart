@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
 import 'package:soccer_app_flutter/shared/models/ble_device.dart';
 import 'package:soccer_app_flutter/shared/themes/button_theme_extension.dart';
 import 'package:soccer_app_flutter/shared/utils/layout_helpers.dart';
@@ -35,6 +36,29 @@ class ConnectionPageState extends State<ConnectionPage> {
   bool hasCheckedDevice = false;
 
   bool isScannerVisible = false;
+
+  // MeshNetworkのイベントストリーム購読
+  late final Stream<Map<String, dynamic>> _meshNetworkStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _meshNetworkStream = MeshNetwork.meshNetworkStream;
+    _meshNetworkStream.listen(
+      (event) {
+        // イベントデータを処理
+        print('MeshNetwork Event: $event');
+      },
+      onError: (error) {
+        print('MeshNetwork Stream Error: $error');
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   // アクションを更新して画面に反映する関数
   void updateAction(String message) {
