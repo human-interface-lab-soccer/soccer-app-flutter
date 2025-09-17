@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
 import 'package:soccer_app_flutter/shared/models/ble_device.dart';
 import 'package:soccer_app_flutter/shared/themes/button_theme_extension.dart';
 import 'package:soccer_app_flutter/shared/utils/layout_helpers.dart';
@@ -35,6 +36,54 @@ class ConnectionPageState extends State<ConnectionPage> {
   bool hasCheckedDevice = false;
 
   bool isScannerVisible = false;
+
+  // MeshNetworkのイベントストリーム購読
+  late final Stream<Map<String, dynamic>> _meshNetworkStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _meshNetworkStream = MeshNetwork.meshNetworkStream;
+    _meshNetworkStream.listen((event) {
+      // ポップアップを表示
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("${event["status"] ?? "No Status"}"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // TODO: l10n
+                Text(
+                  event["status"] == "error"
+                      ? "Please retry again."
+                      : "Operation completed successfully.",
+                ),
+                Text("Detail: ${event['message'] ?? "No Data"}"),
+              ],
+            ),
+
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("Close"),
+              ),
+            ],
+          );
+        },
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   // アクションを更新して画面に反映する関数
   void updateAction(String message) {

@@ -14,6 +14,12 @@ import UIKit
     private var provisioningService: ProvisioningService!
     private var flutterChannelManager: FlutterChannelManager!
 
+    // Retry variables for ConfigCompositionDataGet
+    var compositionDataTimer: Timer?
+    var compositionDataRetries = 0
+    let maxCompositionDataRetries = 3
+    let retryTimeInterval = 5.0
+
     // MARK: - Application Lifecycle
 
     override func application(
@@ -32,6 +38,7 @@ import UIKit
         initializeMeshNetworkManager()
         initializeProvisioningService()
         setupFlutterChannels(with: controller.binaryMessenger)
+        meshNetworkManager.delegate = self
 
         GeneratedPluginRegistrant.register(with: self)
         return super.application(
@@ -114,7 +121,7 @@ import UIKit
         flutterChannelManager = FlutterChannelManager(
             messenger: messenger,
             bleScanner: bleScanner!,
-            provisioningService: provisioningService
+            provisioningService: provisioningService,
         )
         flutterChannelManager.setupChannels()
     }

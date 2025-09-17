@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soccer_app_flutter/shared/model/mesh_node.dart';
+import 'package:soccer_app_flutter/shared/models/mesh_node.dart';
 import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
 
 class NetworkNodeDetail extends StatefulWidget {

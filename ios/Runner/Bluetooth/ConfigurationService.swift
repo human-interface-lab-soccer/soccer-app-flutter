@@ -23,7 +23,6 @@ class ConfigurationServiceResponse {
 class ConfigurationService {
 
     static let shared = ConfigurationService()
-
     private let manager = MeshNetworkManager.instance
 
     private init() {}
@@ -91,14 +90,15 @@ class ConfigurationService {
                 ConfigAppKeyAdd(applicationKey: selectedAppKey),
                 to: node
             )
+            // Nodeの情報をリクエスト
+            try manager.send(ConfigCompositionDataGet(), to: node)
 
-            // AppKeyのバインド（次のPRでやります）
-
-            // FIXME: モックのため，仮でメッセージを設定しています．
             return ConfigurationServiceResponse(
                 isSuccess: true,
-                message: "This is a mock response for `configureNode`"
+                message:
+                    "Configuration process started. Awaiting node response..."
             )
+
         } catch {
             return ConfigurationServiceResponse(
                 isSuccess: false,
