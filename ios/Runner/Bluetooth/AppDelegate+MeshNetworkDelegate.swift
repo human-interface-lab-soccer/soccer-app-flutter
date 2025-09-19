@@ -44,14 +44,17 @@ extension AppDelegate: MeshNetworkDelegate {
 
         case let modelStatus as ConfigModelAppStatus:
             print("Recieved ConfigModelAppStatus: \(modelStatus.status)")
-            handleModelAppStatus(
-                modelAppStatus: modelStatus,
-                manager: manager,
-                node: node
-            )
+            Task {
+                await handleModelAppStatus(
+                    modelAppStatus: modelStatus,
+                    manager: manager,
+                    node: node
+                )
+            }
 
         default:
             print("Message type : \(type(of: message))")
+            print(message)
         }
     }
 
@@ -65,8 +68,10 @@ extension AppDelegate: MeshNetworkDelegate {
             // AppKeyの追加成功後，Composition Dataをリクエスト
             sendCompositionDataRequest(to: node)
         } else {
-            print(
-                "Failed to add AppKey: \(appKeyStatus.status.debugDescription)"
+            sendFlutterEvent(
+                status: .error,
+                message:
+                    "Failed to add AppKey: \(appKeyStatus.status.debugDescription)"
             )
         }
     }
@@ -124,7 +129,7 @@ extension AppDelegate: MeshNetworkDelegate {
         node: Node,
         manager: MeshNetworkManager
     ) {
-        let serverModelName = "Generic OnOff Server"
+        let clientUnicastAddress = Address(0x0001)
 
         // AppKeyとGeneric OnOff Serverモデルを見つける
         guard
@@ -133,7 +138,9 @@ extension AppDelegate: MeshNetworkDelegate {
             }),
             let genericOnOffServerModel = node.elements
                 .flatMap({ $0.models })
-                .first(where: { $0.name == serverModelName })
+                .first(where: {
+                    UInt16($0.modelId) == .genericOnOffServerModelId
+                })
         else {
             print("AppKey or 'Generic OnOff Server' model not found")
             return
@@ -145,6 +152,36 @@ extension AppDelegate: MeshNetworkDelegate {
             manager: manager,
             node: node
         )
+
+        // Generic OnOff Clientモデルを見つける
+        guard
+            let clientModel = manager.localElements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .genericOnOffClientModelId
+                })
+        else {
+            print("Failed to find client model.")
+            return
+        }
+        do {
+            guard
+                let clientBindMessage = ConfigModelAppBind(
+                    applicationKey: appKey,
+                    to: clientModel
+                )
+            else {
+                print("Failed to create client-model-bind message")
+                return
+            }
+            try manager.send(clientBindMessage, to: clientUnicastAddress)
+
+        } catch {
+            print("Failed to bind Client Model")
+            print("\(error.localizedDescription)")
+            return
+        }
+        print("Successfully bind client model")
     }
 
     private func bindModel(
@@ -176,20 +213,86 @@ extension AppDelegate: MeshNetworkDelegate {
         modelAppStatus: ConfigModelAppStatus,
         manager: MeshNetworkManager,
         node: Node
-    ) {
+    ) async {
         if modelAppStatus.status == .success {
             sendFlutterEvent(
                 status: .success,
                 message: "Successfully bind AppKey to Model"
             )
-            // Configuration完了後に色を変える場合は，ここに処理を追加
-            // ex. manager.send(message, from: clientModel, to: serverModel)
-
+            guard
+                let appKey = manager.meshNetwork?.applicationKeys.first(where: {
+                    node.knows(networkKey: $0.boundNetworkKey)
+                })
+            else {
+                print("Failed to get app key")
+                return
+            }
         } else {
             sendFlutterEvent(
                 status: .error,
                 message:
                     "Model bind failed with status: \(modelAppStatus.status)"
+            )
+        }
+    }
+
+    private func setColor(
+        _ manager: MeshNetworkManager,
+        node: Node,
+        appKey: ApplicationKey
+    ) async {
+        guard
+            let clientModel = manager.localElements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .genericOnOffClientModelId
+                })
+        else {
+            print("Failed to find Client Model")
+            return
+
+        }
+        guard
+            let serverModel = node.elements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .genericOnOffServerModelId
+                })
+        else {
+            print("Failed to find Server model.")
+            sendFlutterEvent(
+                status: .error,
+                message: "Failed to find models"
+            )
+            return
+        }
+
+        //        let message = GenericColorSet(
+        //            UInt16(0x0001),
+        //            color: UInt16(0x1111),
+        //            color2: UInt16(0x1111),
+        //        )
+
+        let message = GenericOnOffSet(true)
+
+        do {
+            let result = try await manager.send(
+                message,
+                from: clientModel,
+                to: serverModel,
+                withTtl: UInt8(5),
+                using: appKey
+            )
+            print(result)
+            sendFlutterEvent(
+                status: .success,
+                message: "Successfully sent message"
+            )
+        } catch {
+            sendFlutterEvent(
+                status: .error,
+                message:
+                    "Failed to send message: \(error.localizedDescription)"
             )
         }
     }
