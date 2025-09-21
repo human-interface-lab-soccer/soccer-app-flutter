@@ -82,41 +82,44 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
         const SizedBox(height: 16.0),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed:
-                  // local node の場合は削除できないようにする
-                  !widget.meshNode.isLocalNode()
-                      ? () {
+          children:
+              // localNodeの場合は、リセット・設定・GenericOnOffSetのボタンを表示しない
+              widget.meshNode.isLocalNode()
+                  ? []
+                  : [
+                    ElevatedButton(
+                      onPressed: () {
                         _resetNode(
                           unicastAddress: widget.meshNode.primaryUnicastAddress,
                         );
-                      }
-                      : null,
-              style: ElevatedButton.styleFrom(iconColor: Colors.red),
-              child: const Icon(Icons.delete),
-            ),
-            const SizedBox(width: 8.0),
-            ElevatedButton(
-              onPressed: () {
-                _configureNode(
-                  unicastAddress: widget.meshNode.primaryUnicastAddress,
-                );
-              },
-              child: const Icon(Icons.settings),
-            ),
-            const SizedBox(width: 8.0),
-            ToggleButtons(
-              onPressed: (int index) {
-                _genericOnOffSet(state: index == 0);
-              },
-              isSelected: [isSelected, !isSelected],
-              children: [
-                const Icon(Icons.lightbulb),
-                const Icon(Icons.lightbulb_outlined, color: Colors.grey),
-              ],
-            ),
-          ],
+                      },
+                      style: ElevatedButton.styleFrom(iconColor: Colors.red),
+                      child: const Icon(Icons.delete),
+                    ),
+                    const SizedBox(width: 8.0),
+                    ElevatedButton(
+                      onPressed: () {
+                        _configureNode(
+                          unicastAddress: widget.meshNode.primaryUnicastAddress,
+                        );
+                      },
+                      child: const Icon(Icons.settings),
+                    ),
+                    const SizedBox(width: 8.0),
+                    ToggleButtons(
+                      onPressed: (int index) {
+                        _genericOnOffSet(state: index == 0);
+                      },
+                      isSelected: [isSelected, !isSelected],
+                      children: [
+                        const Icon(Icons.lightbulb),
+                        const Icon(
+                          Icons.lightbulb_outlined,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
+                  ],
         ),
       ],
     );
