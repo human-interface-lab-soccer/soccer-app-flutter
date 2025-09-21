@@ -11,6 +11,8 @@ class NetworkNodeDetail extends StatefulWidget {
 }
 
 class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
+  bool isSelected = false;
+
   Future<void> _resetNode({required int unicastAddress}) async {
     // Close the dialog after resetting
     Navigator.of(context).pop();
@@ -41,6 +43,13 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
         ),
       ),
     );
+  }
+
+  Future<void> _genericOnOffSet({required bool state}) async {
+    print("GenericOnOffSet: $state");
+    setState(() {
+      isSelected = state;
+    });
   }
 
   @override
@@ -79,6 +88,17 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
                 );
               },
               child: const Icon(Icons.settings),
+            ),
+            const SizedBox(width: 8.0),
+            ToggleButtons(
+              onPressed: (int index) {
+                _genericOnOffSet(state: index == 0);
+              },
+              isSelected: [isSelected, !isSelected],
+              children: [
+                const Icon(Icons.lightbulb),
+                const Icon(Icons.lightbulb_outlined, color: Colors.grey),
+              ],
             ),
           ],
         ),
