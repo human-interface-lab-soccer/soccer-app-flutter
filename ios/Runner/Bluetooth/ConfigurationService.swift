@@ -108,6 +108,59 @@ class ConfigurationService {
         }
     }
 
+    // TODO: ここにあるの良くない気がする
+    func setGenericOnOffState(unicastAddress: Address, state: Bool)
+        -> ConfigurationServiceResponse
+    {
+        var node: Node?
+        // ノードを探す
+        do {
+            node = try findNode(withUnicastAddress: unicastAddress)
+        } catch {
+            print("Failed to find node")
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Failed to find node."
+            )
+        }
+
+        // clientモデルを探す
+        guard
+            let clientModel = manager.localElements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .genericOnOffClientModelId
+                })
+        else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Couldn't find Client-Model"
+            )
+        }
+
+        // Serverモデルを探す
+        guard let node,
+            let serverModel = node.elements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .genericOnOffServerModelId
+                })
+        else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Couldn't find Server-Model"
+            )
+        }
+        
+        // メッセージを作成
+        let message = GenericOnOffSet(state)
+        Task {
+            let result = try await manager.send(message, from: clientModel, to: serverModel)
+            print(result)
+        }
+        return ConfigurationServiceResponse(isSuccess: true, message: "Successfully start!")
+    }
+
     private func findNode(withUnicastAddress unicastAddress: Address) throws
         -> Node
     {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
 import 'package:soccer_app_flutter/shared/models/mesh_node.dart';
 import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
 
@@ -11,6 +12,7 @@ class NetworkNodeDetail extends StatefulWidget {
 }
 
 class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
+  // GenericOnOffSetの状態を保持するための変数
   bool isSelected = false;
 
   Future<void> _resetNode({required int unicastAddress}) async {
@@ -46,10 +48,24 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   }
 
   Future<void> _genericOnOffSet({required bool state}) async {
-    print("GenericOnOffSet: $state");
+    var response = await MeshNetwork.genericOnOffSet(
+      unicastAddress: widget.meshNode.primaryUnicastAddress,
+      state: state,
+    );
     setState(() {
       isSelected = state;
     });
+    if (!mounted) return;
+
+    // 失敗した時のみにダイアログを表示
+    if (!response['isSuccess']) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('GenericOnOffSet failed: ${response['message']}'),
+        ),
+      );
+    }
   }
 
   @override
