@@ -21,7 +21,6 @@ public struct GenericColorStatus: StaticMeshResponse, TransitionStatusMessage {
     }
 
     /// The present state of Generic OnOff Server.
-    // public let isOn: Bool
     public let color: UInt8
     /// The target state of Generic OnOff Server.
     public let targetState: UInt8?

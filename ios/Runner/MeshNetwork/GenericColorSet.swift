@@ -12,7 +12,6 @@ public struct GenericColorSet: StaticAcknowledgedMeshMessage,
     TransactionMessage,
     TransitionMessage
 {
-    
     public static let opCode: UInt32 = 0x8202
     public static let responseType: StaticMeshResponse.Type = GenericColorStatus
         .self
@@ -48,7 +47,7 @@ public struct GenericColorSet: StaticAcknowledgedMeshMessage,
         self.phase = phase
         self.color = color
         self.color2 = color2
-        self.color3 = UInt16(0x1111)
+        self.color3 = nil
         self.color4 = nil
         self.color5 = nil
         self.transitionTime = nil
