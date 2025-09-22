@@ -208,9 +208,10 @@ class FlutterChannelManager {
 
         case "genericOnOffSet":
             // パラメータに `unicastAddress`, `state` が含まれているかを確認
+            // FIXME: 強制アンラップを使いたくない
             guard let args = call.arguments as? [String: Any],
-                let unicastAddress = args["unicastAddress"],
-                let state = args["state"]
+                let unicastAddress = args["unicastAddress"] as! Address,
+                let state = args["state"] as! Bool
             else {
                 handleMethodResponse(
                     result: result,
@@ -220,14 +221,15 @@ class FlutterChannelManager {
                 return
             }
 
-            let response = ConfigurationService.shared.setGenericOnOffState(
-                unicastAddress: unicastAddress as! Address,
-                state: state as! Bool
+            let response = MeshNetworkService.shared.setGenericOnOffState(
+                unicastAddress: unicastAddress,
+                state: state
             )
             handleMethodResponse(
                 result: result,
                 isSuccess: response.isSuccess,
-                message: response.message
+                // FIXME: 英語間違ってるかも，ごめん
+                message: response.message ?? "No message provided"
             )
         default:
             result(FlutterMethodNotImplemented)
