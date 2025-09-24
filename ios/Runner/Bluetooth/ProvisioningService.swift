@@ -40,7 +40,7 @@ class ProvisioningService: NSObject {
     }
 
     // MARK: - Public Properties
-    
+
     var provisioningEventStreamHandlerInstance: ProvisioningEventStreamHandler {
         return _provisioningEventStreamHandler
     }
@@ -312,6 +312,15 @@ extension ProvisioningService: ProvisioningDelegate {
                 self.startProvisioning()
 
             case .complete:
+                do {
+                    try self.bearer?.close()
+                } catch {
+                    self._provisioningEventStreamHandler.sendEvent(
+                        status: .error,
+                        data: ["message": "\(error.localizedDescription)"]
+                    )
+                    return
+                }
                 self._provisioningEventStreamHandler.sendEvent(
                     status: .provisioning,
                     data: ["message": "Finalizing..."]

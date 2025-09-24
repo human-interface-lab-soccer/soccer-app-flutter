@@ -205,6 +205,30 @@ class FlutterChannelManager {
             }
             print(returnList)
             result(returnList)
+
+        case "genericOnOffSet":
+            // パラメータに `unicastAddress`, `state` が含まれているかを確認
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"] as? Address,
+                let state = args["state"] as? Bool
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress or state not found"
+                )
+                return
+            }
+
+            let response = MeshNetworkService.shared.setGenericOnOffState(
+                unicastAddress: unicastAddress,
+                state: state
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message ?? "No message provided"
+            )
         default:
             result(FlutterMethodNotImplemented)
         }

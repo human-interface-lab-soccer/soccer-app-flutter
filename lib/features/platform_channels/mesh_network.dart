@@ -31,4 +31,18 @@ class MeshNetwork {
       }
     });
   }
+
+  /// GenericOnOffSetの状態を変更するメソッド
+  static Future<Map<String, dynamic>> genericOnOffSet({
+    required int unicastAddress,
+    required bool state,
+  }) async {
+    final response = await _methodChannel.invokeMethod('genericOnOffSet', {
+      'unicastAddress': unicastAddress,
+      'state': state,
+    });
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['message'] ?? 'No message provided';
+    return {'isSuccess': isSuccess, 'message': message};
+  }
 }
