@@ -13,7 +13,9 @@ class NetworkNodeDetail extends StatefulWidget {
 
 class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   // GenericOnOffSetの状態を保持するための変数
-  bool isSelected = false;
+  bool onOffState = false;
+  // GenericColorSetの状態を保持するための変数
+  int colorIndex = 0;
 
   Future<void> _resetNode({required int unicastAddress}) async {
     // Close the dialog after resetting
@@ -32,7 +34,8 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     );
   }
 
-  Future<void> _configureNode({required int unicastAddress}) async {
+  /// GenericOnOffノードを設定するメソッド
+  Future<void> _configureOnOffNode({required int unicastAddress}) async {
     Navigator.of(context).pop();
     var response = await Provisioning.configureNode(unicastAddress);
     if (!mounted) return;
@@ -47,13 +50,19 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     );
   }
 
+  /// GenericColorノードを設定するメソッド
+  /// TODO: 実装
+  Future<void> _configureColorNode({required int unicastAddress}) async {
+    print("Configuring Color Node...");
+  }
+
   Future<void> _genericOnOffSet({required bool state}) async {
     var response = await MeshNetwork.genericOnOffSet(
       unicastAddress: widget.meshNode.primaryUnicastAddress,
       state: state,
     );
     setState(() {
-      isSelected = state;
+      onOffState = state;
     });
     if (!mounted) return;
 
@@ -68,58 +77,138 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     }
   }
 
+  /// GenericColorNodeの色を変更するメソッド
+  /// TODO: 実装
+  Future<void> _genericColorSet({
+    required int unicastAddress,
+    required int color,
+  }) async {
+    print("Setting color to $color");
+
+    setState(() {
+      colorIndex = color;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
       title: Text(widget.meshNode.name),
       contentPadding: const EdgeInsets.all(16.0),
       children: [
-        Text('UUID: ${widget.meshNode.uuid}'),
+        // Text('UUID: ${widget.meshNode.uuid}'),
         Text(
           'Primary Unicast Address: ${widget.meshNode.primaryUnicastAddress}',
         ),
-        Text('Is Configured: ${widget.meshNode.isConfigured ? "Yes" : "No"}'),
-        const SizedBox(height: 16.0),
-        Row(
+        const SizedBox(height: 8.0),
+        Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children:
-              // localNodeの場合は、リセット・設定・GenericOnOffSetのボタンを表示しない
-              widget.meshNode.isLocalNode()
-                  ? []
-                  : [
-                    ElevatedButton(
-                      onPressed: () {
-                        _resetNode(
-                          unicastAddress: widget.meshNode.primaryUnicastAddress,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(iconColor: Colors.red),
-                      child: const Icon(Icons.delete),
-                    ),
-                    const SizedBox(width: 8.0),
-                    ElevatedButton(
-                      onPressed: () {
-                        _configureNode(
-                          unicastAddress: widget.meshNode.primaryUnicastAddress,
-                        );
-                      },
-                      child: const Icon(Icons.settings),
-                    ),
-                    const SizedBox(width: 8.0),
-                    ToggleButtons(
-                      onPressed: (int index) {
-                        _genericOnOffSet(state: index == 0);
-                      },
-                      isSelected: [isSelected, !isSelected],
-                      children: [
-                        const Icon(Icons.lightbulb),
-                        const Icon(
-                          Icons.lightbulb_outlined,
-                          color: Colors.grey,
-                        ),
-                      ],
-                    ),
-                  ],
+          // localNodeの場合は、リセット・設定・GenericOnOffSetのボタンを表示しない
+          // widget.meshNode.isLocalNode()
+          //     ? []
+          //     : [
+          [
+            const Divider(thickness: 1.0),
+            const SizedBox(height: 8.0),
+            Text(
+              "GenericOnOff (nRF54L15)",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Configure (GenericOnOff)"),
+                ElevatedButton(
+                  onPressed: () {
+                    _configureOnOffNode(
+                      unicastAddress: widget.meshNode.primaryUnicastAddress,
+                    );
+                  },
+                  child: const Icon(Icons.settings),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8.0),
+
+            ToggleButtons(
+              onPressed: (int index) {
+                _genericOnOffSet(state: index == 0);
+              },
+              isSelected: [onOffState, !onOffState],
+              children: [
+                const Icon(Icons.lightbulb),
+                const Icon(Icons.lightbulb_outlined, color: Colors.grey),
+              ],
+            ),
+
+            const SizedBox(height: 8.0),
+            const Divider(thickness: 1.0),
+            const SizedBox(height: 8.0),
+            Text(
+              "GenericColor (nRF52x)",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Configure (GenericColor)"),
+                ElevatedButton(
+                  onPressed: () {
+                    _configureColorNode(
+                      unicastAddress: widget.meshNode.primaryUnicastAddress,
+                    );
+                  },
+                  child: const Icon(Icons.settings),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8.0),
+            ToggleButtons(
+              onPressed: (int index) {
+                // 0: none, 1: Red, 2: Green, 3: Blue
+                int color = index;
+                _genericColorSet(
+                  unicastAddress: widget.meshNode.primaryUnicastAddress,
+                  color: color,
+                );
+              },
+
+              // TODO: 綺麗にする
+              isSelected: [
+                colorIndex == 0,
+                colorIndex == 1,
+                colorIndex == 2,
+                colorIndex == 3,
+              ],
+              children: const [
+                Icon(Icons.circle, color: Colors.grey),
+                Icon(Icons.circle, color: Colors.red),
+                Icon(Icons.circle, color: Colors.green),
+                Icon(Icons.circle, color: Colors.blue),
+              ],
+            ),
+            const SizedBox(height: 8.0),
+            const Divider(thickness: 1.0),
+            const SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Reset Node"),
+                ElevatedButton(
+                  onPressed: () {
+                    _resetNode(
+                      unicastAddress: widget.meshNode.primaryUnicastAddress,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(iconColor: Colors.red),
+                  child: const Icon(Icons.delete),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     );
