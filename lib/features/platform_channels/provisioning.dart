@@ -46,13 +46,27 @@ class Provisioning {
   }
 
   /// ノードを設定するメソッド
-  static Future<Map<String, dynamic>> configureNode(int unicastAddress) async {
-    final response = await _methodChannel.invokeMethod('configureNode', {
+  static Future<Map<String, dynamic>> configureOnOffNode(
+    int unicastAddress,
+  ) async {
+    final response = await _methodChannel.invokeMethod('configureOnOffNode', {
       'unicastAddress': unicastAddress,
     });
     bool isSuccess = response['isSuccess'] ?? false;
     String message = response['message'] ?? 'No message provided';
 
+    return {'isSuccess': isSuccess, 'message': message};
+  }
+
+  /// ColorNodeを設定するメソッド
+  static Future<Map<String, dynamic>> configureColorNode(
+    int unicastAddress,
+  ) async {
+    final response = await _methodChannel.invokeMethod('configureColorNode', {
+      'unicastAddress': unicastAddress,
+    });
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['message'] ?? 'No message provided';
     return {'isSuccess': isSuccess, 'message': message};
   }
 

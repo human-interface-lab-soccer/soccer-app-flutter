@@ -45,4 +45,18 @@ class MeshNetwork {
     String message = response['message'] ?? 'No message provided';
     return {'isSuccess': isSuccess, 'message': message};
   }
+
+  /// GenericColorSetの状態を変更するメソッド
+  static Future<Map<String, dynamic>> genericColorSet({
+    required int unicastAddress,
+    required int color,
+  }) async {
+    final response = await _methodChannel.invokeMethod('genericColorSet', {
+      'unicastAddress': unicastAddress,
+      'color': color,
+    });
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['message'] ?? 'No message provided';
+    return {'isSuccess': isSuccess, 'message': message};
+  }
 }

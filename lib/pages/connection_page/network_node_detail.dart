@@ -37,7 +37,7 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   /// GenericOnOffノードを設定するメソッド
   Future<void> _configureOnOffNode({required int unicastAddress}) async {
     Navigator.of(context).pop();
-    var response = await Provisioning.configureNode(unicastAddress);
+    var response = await Provisioning.configureOnOffNode(unicastAddress);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -51,9 +51,19 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   }
 
   /// GenericColorノードを設定するメソッド
-  /// TODO: 実装
   Future<void> _configureColorNode({required int unicastAddress}) async {
-    print("Configuring Color Node...");
+    Navigator.of(context).pop();
+    var response = await Provisioning.configureColorNode(unicastAddress);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          response['isSuccess']
+              ? 'Node configuration successful: ${response['message']}'
+              : 'Node configuration failed: ${response['message']}',
+        ),
+      ),
+    );
   }
 
   Future<void> _genericOnOffSet({required bool state}) async {
@@ -83,11 +93,22 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     required int unicastAddress,
     required int color,
   }) async {
-    print("Setting color to $color");
-
+    var response = await MeshNetwork.genericColorSet(
+      unicastAddress: unicastAddress,
+      color: color,
+    );
     setState(() {
       colorIndex = color;
     });
+    if (!mounted) return;
+    if (!response['isSuccess']) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('GenericColorSet failed: ${response['message']}'),
+        ),
+      );
+    }
   }
 
   @override
