@@ -37,7 +37,7 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   /// GenericOnOffノードを設定するメソッド
   Future<void> _configureOnOffNode({required int unicastAddress}) async {
     Navigator.of(context).pop();
-    var response = await Provisioning.configureOnOffNode(unicastAddress);
+    var response = await Provisioning.configureNode(unicastAddress);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -53,7 +53,7 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   /// GenericColorノードを設定するメソッド
   Future<void> _configureColorNode({required int unicastAddress}) async {
     Navigator.of(context).pop();
-    var response = await Provisioning.configureColorNode(unicastAddress);
+    var response = await Provisioning.configureNode(unicastAddress);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
