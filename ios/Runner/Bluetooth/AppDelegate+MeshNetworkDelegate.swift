@@ -130,35 +130,57 @@ extension AppDelegate: MeshNetworkDelegate {
         manager: MeshNetworkManager
     ) {
         let clientUnicastAddress = Address(0x0001)
+        var serverModel: Model?
+        var clientModelID: UInt16?
 
+        // elementとmodelを書き出す
+        let models = node.elements.flatMap({ $0.models })
+
+        // GenericOnOffServerがいるとき
+        if let genericOnOffServerModel = models.first(where: {
+            UInt16($0.modelId) == .genericOnOffServerModelId
+        }) {
+            serverModel = genericOnOffServerModel
+            clientModelID = .genericOnOffClientModelId
+        }
+        // GenericColorServerがいるとき
+        else if let genericColorServerModel = models.first(where: {
+            UInt16($0.modelId) == .genericColorServerModelID
+        }) {
+            serverModel = genericColorServerModel
+            clientModelID = .genericColorClientModelID
+        }
+        // Configuration可能なサーバーが見つからないとき
+        else {
+            sendFlutterEvent(
+                status: .error,
+                message: "Valid server model not found"
+            )
+            return
+        }
         // AppKeyとGeneric OnOff Serverモデルを見つける
         guard
             let appKey = manager.meshNetwork?.applicationKeys.first(where: {
                 node.knows(networkKey: $0.boundNetworkKey)
-            }),
-            let genericOnOffServerModel = node.elements
-                .flatMap({ $0.models })
-                .first(where: {
-                    UInt16($0.modelId) == .genericOnOffServerModelId
-                })
+            }), let serverModel
         else {
-            print("AppKey or 'Generic OnOff Server' model not found")
+            print("AppKey or server model not found")
             return
         }
 
         bindModel(
-            model: genericOnOffServerModel,
+            model: serverModel,
             appKey: appKey,
             manager: manager,
             node: node
         )
 
-        // Generic OnOff Clientモデルを見つける
+        // localElementから対応するモデルを見つける
         guard
             let clientModel = manager.localElements
                 .flatMap({ $0.models })
                 .first(where: {
-                    $0.modelIdentifier == .genericOnOffClientModelId
+                    $0.modelIdentifier == clientModelID
                 })
         else {
             print("Failed to find client model.")
@@ -220,9 +242,9 @@ extension AppDelegate: MeshNetworkDelegate {
                 message: "Successfully bind AppKey to Model"
             )
             guard
-                let appKey = manager.meshNetwork?.applicationKeys.first(where: {
+                (manager.meshNetwork?.applicationKeys.first(where: {
                     node.knows(networkKey: $0.boundNetworkKey)
-                })
+                })) != nil
             else {
                 print("Failed to get app key")
                 return
@@ -303,4 +325,11 @@ extension AppDelegate: MeshNetworkDelegate {
             data: ["message": message ?? "No message"]
         )
     }
+}
+
+// TODO: GenericColorのクラスに移動させる
+// GenericColorのModelIDを設定
+extension UInt16 {
+    public static let genericColorServerModelID: UInt16 = 0xffff
+    public static let genericColorClientModelID: UInt16 = 0xfffe
 }

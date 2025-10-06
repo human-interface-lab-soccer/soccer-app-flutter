@@ -20,6 +20,11 @@ class ConfigurationServiceResponse {
     }
 }
 
+enum ConfigurationSupportModels: String {
+    case genericOnOffModel = "GenericOnOffModel"
+    case genericColorModel = "GenericColorModel"
+}
+
 class ConfigurationService {
 
     static let shared = ConfigurationService()
@@ -52,7 +57,11 @@ class ConfigurationService {
     /// - Parameters:
     ///     - unicastAddress: ノードのユニキャストアドレス
     ///
-    func configureNode(unicastAddress: Address) -> ConfigurationServiceResponse
+    func configureNode(
+        unicastAddress: Address,
+        model: ConfigurationSupportModels = .genericOnOffModel
+    )
+        -> ConfigurationServiceResponse
     {
         do {
             let node = try findNode(withUnicastAddress: unicastAddress)

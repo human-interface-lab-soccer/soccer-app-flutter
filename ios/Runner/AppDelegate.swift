@@ -93,7 +93,11 @@ import UIKit
                 Model(
                     sigModelId: .genericOnOffClientModelId,
                     delegate: GenericOnOffClientDelegate()
-                )
+                ),
+                Model(
+                    sigModelId: .genericColorClientModelID,
+                    delegate: GenericOnOffClientDelegate()
+                ),
             ]
         )
         meshNetworkManager.localElements = [primaryElement]
