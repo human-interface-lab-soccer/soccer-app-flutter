@@ -35,23 +35,7 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   }
 
   /// GenericOnOffノードを設定するメソッド
-  Future<void> _configureOnOffNode({required int unicastAddress}) async {
-    Navigator.of(context).pop();
-    var response = await Provisioning.configureNode(unicastAddress);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          response['isSuccess']
-              ? 'Node configuration successful: ${response['message']}'
-              : 'Node configuration failed: ${response['message']}',
-        ),
-      ),
-    );
-  }
-
-  /// GenericColorノードを設定するメソッド
-  Future<void> _configureColorNode({required int unicastAddress}) async {
+  Future<void> _configureNode({required int unicastAddress}) async {
     Navigator.of(context).pop();
     var response = await Provisioning.configureNode(unicastAddress);
     if (!mounted) return;
@@ -130,20 +114,15 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
           //     ? []
           //     : [
           [
-            const Divider(thickness: 1.0),
-            const SizedBox(height: 8.0),
-            Text(
-              "GenericOnOff (nRF54L15)",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8.0),
+            // const Divider(thickness: 1.0),
+            // const SizedBox(height: 8.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Configure (GenericOnOff)"),
+                Text("Configure Node"),
                 ElevatedButton(
                   onPressed: () {
-                    _configureOnOffNode(
+                    _configureNode(
                       unicastAddress: widget.meshNode.primaryUnicastAddress,
                     );
                   },
@@ -151,7 +130,13 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
                 ),
               ],
             ),
-            const SizedBox(width: 8.0),
+            const SizedBox(height: 8.0),
+            const Divider(thickness: 1.0),
+            Text(
+              "GenericOnOff (nRF54L15)",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8.0),
 
             ToggleButtons(
               onPressed: (int index) {
@@ -172,21 +157,7 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Configure (GenericColor)"),
-                ElevatedButton(
-                  onPressed: () {
-                    _configureColorNode(
-                      unicastAddress: widget.meshNode.primaryUnicastAddress,
-                    );
-                  },
-                  child: const Icon(Icons.settings),
-                ),
-              ],
-            ),
-            const SizedBox(width: 8.0),
+
             ToggleButtons(
               onPressed: (int index) {
                 // 0: none, 1: Red, 2: Green, 3: Blue
