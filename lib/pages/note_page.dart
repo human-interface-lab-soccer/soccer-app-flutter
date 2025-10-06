@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/pages/note_page/color_setting_page.dart'; 
 
 class NotePage extends StatefulWidget {
   const NotePage({super.key});
@@ -31,7 +32,6 @@ class _NotePageState extends State<NotePage> {
           key: _formKey,
           child: ListView(
             children: [
-              // タイトル入力
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'タイトル（20字以内）',
@@ -39,16 +39,11 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 20,
                 onSaved: (value) => _title = value ?? '',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'タイトルを入力してください';
-                  }
-                  return null;
-                },
+                validator: (value) =>
+                    (value == null || value.isEmpty) ? 'タイトルを入力してください' : null,
               ),
               const SizedBox(height: 16),
 
-              // 説明入力
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: '説明（50字以内）',
@@ -56,16 +51,11 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 50,
                 onSaved: (value) => _description = value ?? '',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '説明を入力してください';
-                  }
-                  return null;
-                },
+                validator: (value) =>
+                    (value == null || value.isEmpty) ? '説明を入力してください' : null,
               ),
               const SizedBox(height: 16),
 
-              // カテゴリー入力
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'カテゴリー（10字以内）',
@@ -73,31 +63,24 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 10,
                 onSaved: (value) => _category = value ?? '',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'カテゴリーを入力してください';
-                  }
-                  return null;
-                },
+                validator: (value) =>
+                    (value == null || value.isEmpty) ? 'カテゴリーを入力してください' : null,
               ),
               const SizedBox(height: 16),
 
-              // 難易度（ドロップダウン）
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(
                   labelText: '難易度',
                   border: OutlineInputBorder(),
                 ),
                 value: _difficulty,
-                items:
-                    ['初級', '中級', '上級']
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
+                items: ['初級', '中級', '上級']
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
                 onChanged: (value) => setState(() => _difficulty = value!),
               ),
               const SizedBox(height: 16),
 
-              // フェーズ（1〜8）
               DropdownButtonFormField<int>(
                 decoration: const InputDecoration(
                   labelText: 'フェーズ（1〜8）',
@@ -115,7 +98,6 @@ class _NotePageState extends State<NotePage> {
               ),
               const SizedBox(height: 16),
 
-              // LED数（1〜24）
               DropdownButtonFormField<int>(
                 decoration: const InputDecoration(
                   labelText: 'LED数（1〜24）',
@@ -133,32 +115,24 @@ class _NotePageState extends State<NotePage> {
               ),
               const SizedBox(height: 24),
 
-              // 保存ボタン
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
 
-                    showDialog(
-                      context: context,
-                      builder:
-                          (_) => AlertDialog(
-                            title: const Text('入力内容確認'),
-                            content: Text(
-                              'タイトル: $_title\n'
-                              '説明: $_description\n'
-                              'カテゴリー: $_category\n'
-                              '難易度: $_difficulty\n'
-                              'フェーズ: $_phase\n'
-                              'LED数: $_ledCount',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
+                    // 遷移時に入力内容を渡す
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ColorSettingPage(
+                          title: _title,
+                          description: _description,
+                          category: _category,
+                          difficulty: _difficulty,
+                          phaseCount: _phase,
+                          ledCount: _ledCount,
+                        ),
+                      ),
                     );
                   }
                 },
