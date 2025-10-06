@@ -158,7 +158,7 @@ class FlutterChannelManager {
                 message: response.message
             )
 
-        case "configureNode":
+        case "configureOnOffNode":
             // パラメータに `unicastAddress` が含まれているかを確認
             guard let args = call.arguments as? [String: Any],
                 let unicastAddress = args["unicastAddress"]
@@ -180,6 +180,15 @@ class FlutterChannelManager {
                 message: response.message
             )
 
+        case "configureColorNode":
+
+            // TODO: 実装
+            // モックでメッセージを返す
+            handleMethodResponse(
+                result: result,
+                isSuccess: true,
+                message: "ConfigureColorNode method was successfully sent!"
+            )
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -229,6 +238,17 @@ class FlutterChannelManager {
                 isSuccess: response.isSuccess,
                 message: response.message ?? "No message provided"
             )
+
+        case "genericColorSet":
+
+            // TODO: 実装
+            // モックでメッセージを返す
+            handleMethodResponse(
+                result: result,
+                isSuccess: true,
+                message: "Mock response"
+            )
+
         default:
             result(FlutterMethodNotImplemented)
         }
