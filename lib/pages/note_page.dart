@@ -148,20 +148,25 @@ class _NotePageState extends State<NotePage> {
                     final shouldNavigateToMenu = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ColorSettingPage(
-                          title: _title,
-                          description: _description,
-                          category: _category,
-                          difficulty: _difficulty,
-                          phaseCount: _phase,
-                          ledCount: _ledCount,
-                        ),
+                        builder:
+                            (context) => ColorSettingPage(
+                              title: _title,
+                              description: _description,
+                              category: _category,
+                              difficulty: _difficulty,
+                              phaseCount: _phase,
+                              ledCount: _ledCount,
+                            ),
                       ),
                     );
 
                     // 保存ボタンが押されてtrueが返された場合，メニューに遷移
                     if (shouldNavigateToMenu == true && mounted) {
-                      final mainNavState = context.findAncestorStateOfType<MainNavigationBarState>();
+                      final mainNavState =
+                          context
+                              .findAncestorStateOfType<
+                                MainNavigationBarState
+                              >();
                       mainNavState?.onItemTapped(NavigationItems.menu.index);
                     }
                   }
