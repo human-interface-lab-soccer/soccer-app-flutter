@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soccer_app_flutter/pages/main_navigation_page.dart';
+import 'package:soccer_app_flutter/pages/main_navigation_bar.dart';
 import 'package:soccer_app_flutter/shared/themes/button_theme_extension.dart';
 
 void main() {
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
           ),
         ],
       ),
-      home: const MainNavigationPage(),
+      home: const MainNavigationBar(),
     );
   }
 }
