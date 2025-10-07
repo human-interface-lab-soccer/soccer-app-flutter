@@ -144,7 +144,6 @@ class _NotePageState extends State<NotePage> {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
 
-                    // 遷移時に入力内容を渡す
                     final shouldNavigateToMenu = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
@@ -160,14 +159,10 @@ class _NotePageState extends State<NotePage> {
                       ),
                     );
 
-                    // 保存ボタンが押されてtrueが返された場合，メニューに遷移
-                    if (shouldNavigateToMenu == true && mounted) {
-                      final mainNavState =
-                          context
-                              .findAncestorStateOfType<
-                                MainNavigationBarState
-                              >();
-                      mainNavState?.onItemTapped(NavigationItems.menu.index);
+                    if (shouldNavigateToMenu == true) {
+                      mainNavigationBarKey.currentState?.onItemTapped(
+                        NavigationItems.menu.index,
+                      );
                     }
                   }
                 },

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/enums/navigation_items.dart';
 
+// GlobalKeyを作成
+final GlobalKey<MainNavigationBarState> mainNavigationBarKey =
+    GlobalKey<MainNavigationBarState>();
+
 class MainNavigationBar extends StatefulWidget {
   const MainNavigationBar({super.key});
 
@@ -9,7 +13,7 @@ class MainNavigationBar extends StatefulWidget {
 }
 
 class MainNavigationBarState extends State<MainNavigationBar> {
-  int _selectedIndex = NavigationItems.connection.index; // デフォルトは接続画面（インデックス1）
+  int _selectedIndex = NavigationItems.connection.index;
 
   void onItemTapped(int index) {
     setState(() {
