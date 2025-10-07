@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/pages/note_page/color_setting_page.dart';
+import 'package:soccer_app_flutter/shared/enums/navigation_items.dart';
+import 'package:soccer_app_flutter/pages/main_navigation_bar.dart';
 
 class NotePage extends StatefulWidget {
   const NotePage({super.key});
@@ -138,25 +140,30 @@ class _NotePageState extends State<NotePage> {
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
 
                     // 遷移時に入力内容を渡す
-                    Navigator.push(
+                    final shouldNavigateToMenu = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (context) => ColorSettingPage(
-                              title: _title,
-                              description: _description,
-                              category: _category,
-                              difficulty: _difficulty,
-                              phaseCount: _phase,
-                              ledCount: _ledCount,
-                            ),
+                        builder: (context) => ColorSettingPage(
+                          title: _title,
+                          description: _description,
+                          category: _category,
+                          difficulty: _difficulty,
+                          phaseCount: _phase,
+                          ledCount: _ledCount,
+                        ),
                       ),
                     );
+
+                    // 保存ボタンが押されてtrueが返された場合，メニューに遷移
+                    if (shouldNavigateToMenu == true && mounted) {
+                      final mainNavState = context.findAncestorStateOfType<MainNavigationBarState>();
+                      mainNavState?.onItemTapped(NavigationItems.menu.index);
+                    }
                   }
                 },
                 child: const Text('つぎへ'),

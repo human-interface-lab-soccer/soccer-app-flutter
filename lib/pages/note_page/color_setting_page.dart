@@ -212,7 +212,7 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('設定を保存しました')));
-          Navigator.pop(context);
+          Navigator.pop(context, true);
         },
         label: const Text('保存'),
         icon: const Icon(Icons.save),

@@ -11,7 +11,7 @@ class MainNavigationBar extends StatefulWidget {
 class MainNavigationBarState extends State<MainNavigationBar> {
   int _selectedIndex = NavigationItems.connection.index; // デフォルトは接続画面（インデックス1）
 
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -30,7 +30,7 @@ class MainNavigationBarState extends State<MainNavigationBar> {
               );
             }).toList(),
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: onItemTapped,
       ),
     );
   }
