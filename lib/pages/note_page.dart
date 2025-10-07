@@ -39,11 +39,15 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 20,
                 onSaved: (value) => _title = value ?? '',
-                validator:
-                    (value) =>
-                        (value == null || value.isEmpty)
-                            ? 'タイトルを入力してください'
-                            : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'タイトルを入力してください';
+                  }
+                  if (value.length > 20) {
+                    return 'タイトルは20字以内で入力してください';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
@@ -54,9 +58,15 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 50,
                 onSaved: (value) => _description = value ?? '',
-                validator:
-                    (value) =>
-                        (value == null || value.isEmpty) ? '説明を入力してください' : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '説明を入力してください';
+                  }
+                  if (value.length > 50) {
+                    return '説明は50字以内で入力してください';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
@@ -67,11 +77,15 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 10,
                 onSaved: (value) => _category = value ?? '',
-                validator:
-                    (value) =>
-                        (value == null || value.isEmpty)
-                            ? 'カテゴリーを入力してください'
-                            : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'カテゴリーを入力してください';
+                  }
+                  if (value.length > 10) {
+                    return 'カテゴリーは10字以内で入力してください';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
