@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soccer_app_flutter/pages/note_page/color_setting_page.dart'; 
+import 'package:soccer_app_flutter/pages/note_page/color_setting_page.dart';
 
 class NotePage extends StatefulWidget {
   const NotePage({super.key});
@@ -39,8 +39,11 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 20,
                 onSaved: (value) => _title = value ?? '',
-                validator: (value) =>
-                    (value == null || value.isEmpty) ? 'タイトルを入力してください' : null,
+                validator:
+                    (value) =>
+                        (value == null || value.isEmpty)
+                            ? 'タイトルを入力してください'
+                            : null,
               ),
               const SizedBox(height: 16),
 
@@ -51,8 +54,9 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 50,
                 onSaved: (value) => _description = value ?? '',
-                validator: (value) =>
-                    (value == null || value.isEmpty) ? '説明を入力してください' : null,
+                validator:
+                    (value) =>
+                        (value == null || value.isEmpty) ? '説明を入力してください' : null,
               ),
               const SizedBox(height: 16),
 
@@ -63,8 +67,11 @@ class _NotePageState extends State<NotePage> {
                 ),
                 maxLength: 10,
                 onSaved: (value) => _category = value ?? '',
-                validator: (value) =>
-                    (value == null || value.isEmpty) ? 'カテゴリーを入力してください' : null,
+                validator:
+                    (value) =>
+                        (value == null || value.isEmpty)
+                            ? 'カテゴリーを入力してください'
+                            : null,
               ),
               const SizedBox(height: 16),
 
@@ -74,9 +81,10 @@ class _NotePageState extends State<NotePage> {
                   border: OutlineInputBorder(),
                 ),
                 value: _difficulty,
-                items: ['初級', '中級', '上級']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
+                items:
+                    ['初級', '中級', '上級']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
                 onChanged: (value) => setState(() => _difficulty = value!),
               ),
               const SizedBox(height: 16),
@@ -124,14 +132,15 @@ class _NotePageState extends State<NotePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ColorSettingPage(
-                          title: _title,
-                          description: _description,
-                          category: _category,
-                          difficulty: _difficulty,
-                          phaseCount: _phase,
-                          ledCount: _ledCount,
-                        ),
+                        builder:
+                            (context) => ColorSettingPage(
+                              title: _title,
+                              description: _description,
+                              category: _category,
+                              difficulty: _difficulty,
+                              phaseCount: _phase,
+                              ledCount: _ledCount,
+                            ),
                       ),
                     );
                   }

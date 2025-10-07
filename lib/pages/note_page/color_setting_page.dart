@@ -25,7 +25,7 @@ class ColorSettingPage extends StatefulWidget {
 class _ColorSettingPageState extends State<ColorSettingPage> {
   late List<List<String>> colorSettings;
   final List<String> colors = ['赤', '青', '緑', 'クリア'];
-  
+
   final ScrollController _horizontalControllerHeader = ScrollController();
   final ScrollController _horizontalControllerData = ScrollController();
   final ScrollController _verticalControllerLeft = ScrollController();
@@ -38,19 +38,21 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
       widget.ledCount,
       (_) => List.generate(widget.phaseCount, (_) => 'クリア'),
     );
-    
+
     // 横スクロールの同期
     _horizontalControllerHeader.addListener(() {
-      if (_horizontalControllerData.offset != _horizontalControllerHeader.offset) {
+      if (_horizontalControllerData.offset !=
+          _horizontalControllerHeader.offset) {
         _horizontalControllerData.jumpTo(_horizontalControllerHeader.offset);
       }
     });
     _horizontalControllerData.addListener(() {
-      if (_horizontalControllerHeader.offset != _horizontalControllerData.offset) {
+      if (_horizontalControllerHeader.offset !=
+          _horizontalControllerData.offset) {
         _horizontalControllerHeader.jumpTo(_horizontalControllerData.offset);
       }
     });
-    
+
     // 縦スクロールの同期
     _verticalControllerLeft.addListener(() {
       if (_verticalControllerData.offset != _verticalControllerLeft.offset) {
@@ -118,12 +120,13 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
         value: colorSettings[ledIndex][phaseIndex],
         isExpanded: true,
         underline: const SizedBox(),
-        items: colors
-            .map((c) => DropdownMenuItem(
-                  value: c,
-                  child: Center(child: Text(c)),
-                ))
-            .toList(),
+        items:
+            colors
+                .map(
+                  (c) =>
+                      DropdownMenuItem(value: c, child: Center(child: Text(c))),
+                )
+                .toList(),
         onChanged: (value) {
           setState(() {
             colorSettings[ledIndex][phaseIndex] = value!;
@@ -187,7 +190,9 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
                       child: Column(
                         children: List.generate(widget.ledCount, (ledIndex) {
                           return Row(
-                            children: List.generate(widget.phaseCount, (phaseIndex) {
+                            children: List.generate(widget.phaseCount, (
+                              phaseIndex,
+                            ) {
                               return _buildDropdownCell(ledIndex, phaseIndex);
                             }),
                           );
@@ -204,9 +209,9 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           debugPrint('色設定データ: $colorSettings');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('設定を保存しました')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('設定を保存しました')));
           Navigator.pop(context);
         },
         label: const Text('保存'),
