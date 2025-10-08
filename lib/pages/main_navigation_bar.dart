@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/enums/navigation_items.dart';
 
-class MainNavigationPage extends StatefulWidget {
-  const MainNavigationPage({super.key});
+// GlobalKeyを作成
+final GlobalKey<MainNavigationBarState> mainNavigationBarKey =
+    GlobalKey<MainNavigationBarState>();
+
+class MainNavigationBar extends StatefulWidget {
+  const MainNavigationBar({super.key});
 
   @override
-  State<MainNavigationPage> createState() => MainNavigationPageState();
+  State<MainNavigationBar> createState() => MainNavigationBarState();
 }
 
-class MainNavigationPageState extends State<MainNavigationPage> {
-  int _selectedIndex = NavigationItems.connection.index; // デフォルトは接続画面（インデックス1）
+class MainNavigationBarState extends State<MainNavigationBar> {
+  int _selectedIndex = NavigationItems.connection.index;
 
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -30,7 +34,7 @@ class MainNavigationPageState extends State<MainNavigationPage> {
               );
             }).toList(),
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: onItemTapped,
       ),
     );
   }

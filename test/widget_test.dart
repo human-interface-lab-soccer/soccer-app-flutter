@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:soccer_app_flutter/pages/main_navigation_page.dart';
+import 'package:soccer_app_flutter/pages/main_navigation_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
 import 'package:soccer_app_flutter/shared/providers/menu_filter_provider.dart';
 
 void main() {
-  testWidgets('MainNavigationPage 初期状態は接続ページ', (WidgetTester tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainNavigationPage()));
+  testWidgets('MainNavigationBar 初期状態は接続ページ', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: MainNavigationBar()));
     expect(find.byKey(const Key('connectionPage')), findsOneWidget);
   });
   testWidgets('BottomNavigationBarで各ページへ遷移', (WidgetTester tester) async {
@@ -19,7 +19,7 @@ void main() {
           errorMessageProvider.overrideWith((ref) => null),
           filteredMenusProvider.overrideWith((ref) => []),
         ],
-        child: const MaterialApp(home: MainNavigationPage()),
+        child: const MaterialApp(home: MainNavigationBar()),
       ),
     );
 
@@ -38,7 +38,7 @@ void main() {
 
   group('ConnectionPage内のボタン挙動確認', () {
     Future<void> pumpConnectionPage(WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: MainNavigationPage()));
+      await tester.pumpWidget(const MaterialApp(home: MainNavigationBar()));
       await tester.tap(find.byIcon(Icons.bluetooth_connected));
       await tester.pumpAndSettle();
     }
