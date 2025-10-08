@@ -150,6 +150,7 @@ class _NotePageState extends State<NotePage> {
                       name: _name,
                       description: _description,
                       category: _category,
+                      type: '自由帳',
                       difficulty: _difficulty,
                       phaseCount: _phaseCount,
                       ledCount: _ledCount,
