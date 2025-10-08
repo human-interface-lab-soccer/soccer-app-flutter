@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/pages/note_page/color_setting_page.dart';
 import 'package:soccer_app_flutter/shared/enums/navigation_items.dart';
 import 'package:soccer_app_flutter/pages/main_navigation_bar.dart';
+import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
 class NotePage extends StatefulWidget {
   const NotePage({super.key});
@@ -13,11 +14,11 @@ class NotePage extends StatefulWidget {
 class _NotePageState extends State<NotePage> {
   final _formKey = GlobalKey<FormState>();
 
-  String _title = '';
+  String _name = '';
   String _description = '';
   String _category = '';
   String _difficulty = '初級';
-  int _phase = 1;
+  int _phaseCount = 1;
   int _ledCount = 1;
 
   @override
@@ -40,7 +41,7 @@ class _NotePageState extends State<NotePage> {
                   border: OutlineInputBorder(),
                 ),
                 maxLength: 20,
-                onSaved: (value) => _title = value ?? '',
+                onSaved: (value) => _name = value ?? '',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'タイトルを入力してください';
@@ -110,7 +111,7 @@ class _NotePageState extends State<NotePage> {
                   labelText: 'フェーズ（1〜8）',
                   border: OutlineInputBorder(),
                 ),
-                value: _phase,
+                value: _phaseCount,
                 items: List.generate(
                   8,
                   (index) => DropdownMenuItem(
@@ -118,7 +119,7 @@ class _NotePageState extends State<NotePage> {
                     child: Text('${index + 1}'),
                   ),
                 ),
-                onChanged: (value) => setState(() => _phase = value!),
+                onChanged: (value) => setState(() => _phaseCount = value!),
               ),
               const SizedBox(height: 16),
 
@@ -144,22 +145,31 @@ class _NotePageState extends State<NotePage> {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
 
-                    final shouldNavigateToMenu = await Navigator.push<bool>(
+                    // PracticeMenuオブジェクトを作成
+                    final practiceMenu = PracticeMenu(
+                      name: _name,
+                      description: _description,
+                      category: _category,
+                      difficulty: _difficulty,
+                      phaseCount: _phaseCount,
+                      ledCount: _ledCount,
+                    );
+
+                    // ColorSettingPageに遷移
+                    final updatedMenu = await Navigator.push<PracticeMenu>(
                       context,
                       MaterialPageRoute(
                         builder:
-                            (context) => ColorSettingPage(
-                              title: _title,
-                              description: _description,
-                              category: _category,
-                              difficulty: _difficulty,
-                              phaseCount: _phase,
-                              ledCount: _ledCount,
-                            ),
+                            (context) =>
+                                ColorSettingPage(practiceMenu: practiceMenu),
                       ),
                     );
 
-                    if (shouldNavigateToMenu == true) {
+                    // 保存が完了した場合，メニュー画面に戻る
+                    if (updatedMenu != null) {
+                      // ここでデータベースに保存する処理を追加可能
+                      // 例: await savePracticeMenu(updatedMenu);
+
                       mainNavigationBarKey.currentState?.onItemTapped(
                         NavigationItems.menu.index,
                       );

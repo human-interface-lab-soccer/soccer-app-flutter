@@ -1,22 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
 class ColorSettingPage extends StatefulWidget {
-  final String title;
-  final String description;
-  final String category;
-  final String difficulty;
-  final int phaseCount;
-  final int ledCount;
+  final PracticeMenu practiceMenu;
 
-  const ColorSettingPage({
-    super.key,
-    required this.title,
-    required this.description,
-    required this.category,
-    required this.difficulty,
-    required this.phaseCount,
-    required this.ledCount,
-  });
+  const ColorSettingPage({super.key, required this.practiceMenu});
 
   @override
   State<ColorSettingPage> createState() => _ColorSettingPageState();
@@ -34,10 +22,11 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
   @override
   void initState() {
     super.initState();
-    colorSettings = List.generate(
-      widget.ledCount,
-      (_) => List.generate(widget.phaseCount, (_) => 'クリア'),
-    );
+    // PracticeMenuから色設定を初期化
+    colorSettings =
+        widget.practiceMenu.colorSettings
+            .map((ledColors) => List<String>.from(ledColors))
+            .toList();
 
     // 横スクロールの同期
     _horizontalControllerHeader.addListener(() {
@@ -140,7 +129,7 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.title} の色設定'),
+        title: Text('${widget.practiceMenu.name} の色設定'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Column(
@@ -157,7 +146,7 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
                   controller: _horizontalControllerHeader,
                   child: Row(
                     children: List.generate(
-                      widget.phaseCount,
+                      widget.practiceMenu.phaseCount,
                       (index) => _buildCell('P${index + 1}', isHeader: true),
                     ),
                   ),
@@ -174,7 +163,7 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
                   controller: _verticalControllerLeft,
                   child: Column(
                     children: List.generate(
-                      widget.ledCount,
+                      widget.practiceMenu.ledCount,
                       (ledIndex) => _buildCell('LED${ledIndex + 1}'),
                     ),
                   ),
@@ -188,13 +177,16 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
                       scrollDirection: Axis.vertical,
                       controller: _verticalControllerData,
                       child: Column(
-                        children: List.generate(widget.ledCount, (ledIndex) {
+                        children: List.generate(widget.practiceMenu.ledCount, (
+                          ledIndex,
+                        ) {
                           return Row(
-                            children: List.generate(widget.phaseCount, (
-                              phaseIndex,
-                            ) {
-                              return _buildDropdownCell(ledIndex, phaseIndex);
-                            }),
+                            children: List.generate(
+                              widget.practiceMenu.phaseCount,
+                              (phaseIndex) {
+                                return _buildDropdownCell(ledIndex, phaseIndex);
+                              },
+                            ),
                           );
                         }),
                       ),
@@ -208,11 +200,19 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          debugPrint('色設定データ: $colorSettings');
+          // 更新されたPracticeMenuオブジェクトを作成
+          final updatedMenu = widget.practiceMenu.copyWith(
+            colorSettings: colorSettings,
+          );
+
+          debugPrint('保存されたPracticeMenu: ${updatedMenu.toJson()}');
+
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('設定を保存しました')));
-          Navigator.pop(context, true);
+
+          // 更新されたPracticeMenuを返す
+          Navigator.pop(context, updatedMenu);
         },
         label: const Text('保存'),
         icon: const Icon(Icons.save),
