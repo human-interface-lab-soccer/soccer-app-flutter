@@ -51,6 +51,14 @@ class _NotePageState extends ConsumerState<NotePage> {
                   if (value.length > 20) {
                     return 'タイトルは20字以内で入力してください';
                   }
+                  // ✅ タイトル重複チェック
+                  final allMenus = ref.read(allMenusProvider);
+                  final isDuplicate = allMenus.any(
+                    (menu) => menu.name == value,
+                  );
+                  if (isDuplicate) {
+                    return 'このタイトルは既に存在します';
+                  }
                   return null;
                 },
               ),
