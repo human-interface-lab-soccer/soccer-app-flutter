@@ -40,12 +40,6 @@ class PracticeMenuNotifier extends StateNotifier<PracticeMenuState> {
 
   PracticeMenuNotifier() : super(const PracticeMenuState());
 
-  // Hiveボックスを初期化（アプリ起動時に呼ぶ）
-  static Future<void> initHive() async {
-    await Hive.initFlutter();
-    await Hive.openBox(_boxName);
-  }
-
   // アセットファイル + Hive からデータを読み込む
   Future<void> loadMenus() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
