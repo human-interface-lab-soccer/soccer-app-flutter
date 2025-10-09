@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soccer_app_flutter/pages/note_page/color_setting_page.dart';
 import 'package:soccer_app_flutter/shared/enums/navigation_items.dart';
 import 'package:soccer_app_flutter/pages/main_navigation_bar.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
+import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
 
-class NotePage extends StatefulWidget {
+class NotePage extends ConsumerStatefulWidget {
   const NotePage({super.key});
 
   @override
-  State<NotePage> createState() => _NotePageState();
+  ConsumerState<NotePage> createState() => _NotePageState();
 }
 
-class _NotePageState extends State<NotePage> {
+class _NotePageState extends ConsumerState<NotePage> {
   final _formKey = GlobalKey<FormState>();
 
   String _name = '';
@@ -168,6 +170,12 @@ class _NotePageState extends State<NotePage> {
 
                     // 保存が完了した場合，メニュー画面に戻る
                     if (updatedMenu != null) {
+                      // ✅ Hiveへ保存
+                      await ref.read(practiceMenuProvider.notifier).addMenu(updatedMenu);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('練習メニューを保存しました')),
+                      );
                       // ここでデータベースに保存する処理を追加可能
                       // 例: await savePracticeMenu(updatedMenu);
 

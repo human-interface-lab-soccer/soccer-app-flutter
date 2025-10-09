@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
 // 練習メニューデータの状態を表現するクラス
@@ -35,10 +36,17 @@ class PracticeMenuNotifier extends StateNotifier<PracticeMenuState> {
   // 順序定義を定数として定義
   static const List<String> _typeOrder = ['既存', '自由帳'];
   static const List<String> _difficultyOrder = ['初級', '中級', '上級'];
+  static const _boxName = 'practice_menus';
 
   PracticeMenuNotifier() : super(const PracticeMenuState());
 
-  // アセットファイルからデータを読み込む
+  // Hiveボックスを初期化（アプリ起動時に呼ぶ）
+  static Future<void> initHive() async {
+    await Hive.initFlutter();
+    await Hive.openBox(_boxName);
+  }
+
+  // アセットファイル + Hive からデータを読み込む
   Future<void> loadMenus() async {
     // 既に読み込み済みかつエラーがない場合はスキップ
     if (state.menus.isNotEmpty && state.errorMessage == null) {
@@ -48,7 +56,7 @@ class PracticeMenuNotifier extends StateNotifier<PracticeMenuState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      // アセットファイルからJSONデータを読み込み
+      // ① アセットファイルからJSONデータを読み込み
       final String jsonString = await rootBundle.loadString(
         'assets/data/practice_menus.json',
       );
@@ -58,13 +66,23 @@ class PracticeMenuNotifier extends StateNotifier<PracticeMenuState> {
 
       // メニューリストを作成
       final List<dynamic> menuList = jsonData['menus'] ?? [];
-      final menus =
+      final existingMenus =
           menuList.map((menuData) => PracticeMenu.fromMap(menuData)).toList();
+
+      // ② Hiveからユーザー作成メニュー（自由帳）を読み込み
+      final box = Hive.box(_boxName);
+      final hiveMenus = box.values
+          .map((e) => PracticeMenu.fromMap(Map<String, dynamic>.from(e)))
+          .toList();  
+
+      // ③ 統合
+      final menus = [...hiveMenus, ...existingMenus];
 
       state = state.copyWith(menus: menus, isLoading: false);
 
-      debugPrint('練習メニューを${menus.length}件読み込みました');
-    } on PlatformException catch (e) {
+      debugPrint(
+          '練習メニュー（既存${existingMenus.length}件＋自由帳${hiveMenus.length}件）を読み込みました');
+    }on PlatformException catch (e) {
       debugPrint('練習メニューファイルが見つかりません: $e');
       state = state.copyWith(
         isLoading: false,
@@ -83,6 +101,28 @@ class PracticeMenuNotifier extends StateNotifier<PracticeMenuState> {
         errorMessage: '練習メニューの読み込みエラー: $e',
       );
     }
+  }
+
+  // 新しいメニューをHiveに追加
+  Future<void> addMenu(PracticeMenu menu) async {
+    final box = Hive.box(_boxName);
+    await box.put(menu.id, menu.toJson());
+    state = state.copyWith(menus: [...state.menus, menu]);
+  }
+
+  // メニューを削除
+  Future<void> deleteMenu(String id) async {
+    final box = Hive.box(_boxName);
+    await box.delete(id);
+    state = state.copyWith(
+        menus: state.menus.where((menu) => menu.id != id).toList());
+  }
+
+  // すべて削除
+  Future<void> clearAll() async {
+    final box = Hive.box(_boxName);
+    await box.clear();
+    state = state.copyWith(menus: []);
   }
 
   // メニューの再読み込み
