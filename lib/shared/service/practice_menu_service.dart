@@ -60,15 +60,18 @@ class PracticeMenuService {
 
       // ② Hiveからユーザー作成メニュー（自由帳）を読み込み
       final box = Hive.box(_boxName);
-      final hiveMenus = box.values
-          .map((e) => PracticeMenu.fromMap(Map<String, dynamic>.from(e)))
-          .toList();
+      final hiveMenus =
+          box.values
+              .map((e) => PracticeMenu.fromMap(Map<String, dynamic>.from(e)))
+              .toList();
 
       // ③ 統合
       _allMenus = [...hiveMenus, ...existingMenus];
 
       _isLoaded = true; // 読み込み完了フラグを設定
-      debugPrint('練習メニュー（既存${existingMenus.length}件＋自由帳${hiveMenus.length}件）を読み込みました');
+      debugPrint(
+        '練習メニュー（既存${existingMenus.length}件＋自由帳${hiveMenus.length}件）を読み込みました',
+      );
     } on PlatformException catch (e) {
       // アセットファイルが見つからない場合
       debugPrint('練習メニューファイルが見つかりません: $e');

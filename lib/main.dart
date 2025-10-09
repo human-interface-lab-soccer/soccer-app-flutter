@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:soccer_app_flutter/pages/main_navigation_bar.dart';
 import 'package:soccer_app_flutter/shared/themes/button_theme_extension.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ✅ Hiveの初期化
@@ -12,7 +12,7 @@ void main() async{
 
   // ✅ Box（保存場所）を開く
   await Hive.openBox('practice_menus');
-  
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

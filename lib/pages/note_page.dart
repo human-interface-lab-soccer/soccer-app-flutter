@@ -171,7 +171,9 @@ class _NotePageState extends ConsumerState<NotePage> {
                     // 保存が完了した場合，メニュー画面に戻る
                     if (updatedMenu != null) {
                       // ✅ Hiveへ保存
-                      await ref.read(practiceMenuProvider.notifier).addMenu(updatedMenu);
+                      await ref
+                          .read(practiceMenuProvider.notifier)
+                          .addMenu(updatedMenu);
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('練習メニューを保存しました')),
