@@ -145,13 +145,16 @@ final errorMessageProvider = Provider<String?>((ref) {
 });
 
 final categoriesProvider = Provider<List<String>>((ref) {
-  return ref.watch(practiceMenuProvider.notifier).getCategories();
+  ref.watch(practiceMenuProvider);
+  return ref.read(practiceMenuProvider.notifier).getCategories();
 });
 
 final typesProvider = Provider<List<String>>((ref) {
-  return ref.watch(practiceMenuProvider.notifier).getTypes();
+  ref.watch(practiceMenuProvider);
+  return ref.read(practiceMenuProvider.notifier).getTypes();
 });
 
 final difficultiesProvider = Provider<List<String>>((ref) {
-  return ref.watch(practiceMenuProvider.notifier).getDifficulties();
+  ref.watch(practiceMenuProvider);
+  return ref.read(practiceMenuProvider.notifier).getDifficulties();
 });
