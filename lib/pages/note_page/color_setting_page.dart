@@ -207,10 +207,6 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
 
           debugPrint('保存されたPracticeMenu: ${updatedMenu.toJson()}');
 
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('設定を保存しました')));
-
           // 更新されたPracticeMenuを返す
           Navigator.pop(context, updatedMenu);
         },
