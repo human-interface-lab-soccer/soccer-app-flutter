@@ -168,6 +168,8 @@ class _NotePageState extends ConsumerState<NotePage> {
                       ),
                     );
 
+                    if (!context.mounted) return;
+
                     // 保存が完了した場合，メニュー画面に戻る
                     if (updatedMenu != null) {
                       // ✅ Hiveへ保存
@@ -175,11 +177,11 @@ class _NotePageState extends ConsumerState<NotePage> {
                           .read(practiceMenuProvider.notifier)
                           .addMenu(updatedMenu);
 
+                      if (!context.mounted) return;
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('練習メニューを保存しました')),
                       );
-                      // ここでデータベースに保存する処理を追加可能
-                      // 例: await savePracticeMenu(updatedMenu);
 
                       mainNavigationBarKey.currentState?.onItemTapped(
                         NavigationItems.menu.index,
