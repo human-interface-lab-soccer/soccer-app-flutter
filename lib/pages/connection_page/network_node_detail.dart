@@ -50,6 +50,22 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     );
   }
 
+  Future<void> _setSubscription() async {
+    var response = await Provisioning.setSubscription(
+      unicastAddress: widget.meshNode.primaryUnicastAddress,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          response['isSuccess']
+              ? 'Subscription set successfully: ${response['message']}'
+              : 'Failed to set subscription: ${response['message']}',
+        ),
+      ),
+    );
+  }
+
   Future<void> _genericOnOffSet({required bool state}) async {
     var response = await MeshNetwork.genericOnOffSet(
       unicastAddress: widget.meshNode.primaryUnicastAddress,
@@ -125,6 +141,18 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
                     _configureNode(
                       unicastAddress: widget.meshNode.primaryUnicastAddress,
                     );
+                  },
+                  child: const Icon(Icons.settings),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Set Publication"),
+                ElevatedButton(
+                  onPressed: () {
+                    _setSubscription();
                   },
                   child: const Icon(Icons.settings),
                 ),
