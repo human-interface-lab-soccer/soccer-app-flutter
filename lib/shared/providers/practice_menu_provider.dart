@@ -48,10 +48,6 @@ class PracticeMenuNotifier extends StateNotifier<PracticeMenuState> {
 
   // アセットファイル + Hive からデータを読み込む
   Future<void> loadMenus() async {
-    // 既に読み込み済みかつエラーがない場合はスキップ
-    if (state.menus.isNotEmpty && state.errorMessage == null) {
-      return;
-    }
 
     state = state.copyWith(isLoading: true, errorMessage: null);
 
