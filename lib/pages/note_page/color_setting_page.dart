@@ -28,9 +28,10 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
   void initState() {
     super.initState();
     // PracticeMenuから色設定を初期化
-    colorSettings = widget.practiceMenu.colorSettings
-        .map((ledColors) => List<String>.from(ledColors))
-        .toList();
+    colorSettings =
+        widget.practiceMenu.colorSettings
+            .map((ledColors) => List<String>.from(ledColors))
+            .toList();
 
     // 横スクロールの同期
     _horizontalControllerHeader.addListener(() {
@@ -113,11 +114,13 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
         value: colorSettings[ledIndex][phaseIndex],
         isExpanded: true,
         underline: const SizedBox(),
-        items: colors
-            .map(
-              (c) => DropdownMenuItem(value: c, child: Center(child: Text(c))),
-            )
-            .toList(),
+        items:
+            colors
+                .map(
+                  (c) =>
+                      DropdownMenuItem(value: c, child: Center(child: Text(c))),
+                )
+                .toList(),
         onChanged: (value) {
           setState(() {
             colorSettings[ledIndex][phaseIndex] = value!;
@@ -202,22 +205,18 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
                       scrollDirection: Axis.vertical,
                       controller: _verticalControllerData,
                       child: Column(
-                        children: List.generate(
-                          widget.practiceMenu.ledCount,
-                          (ledIndex) {
-                            return Row(
-                              children: List.generate(
-                                widget.practiceMenu.phaseCount,
-                                (phaseIndex) {
-                                  return _buildDropdownCell(
-                                    ledIndex,
-                                    phaseIndex,
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
+                        children: List.generate(widget.practiceMenu.ledCount, (
+                          ledIndex,
+                        ) {
+                          return Row(
+                            children: List.generate(
+                              widget.practiceMenu.phaseCount,
+                              (phaseIndex) {
+                                return _buildDropdownCell(ledIndex, phaseIndex);
+                              },
+                            ),
+                          );
+                        }),
                       ),
                     ),
                   ),

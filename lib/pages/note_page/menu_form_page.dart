@@ -142,9 +142,10 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
                   border: OutlineInputBorder(),
                 ),
                 value: _difficulty,
-                items: ['初級', '中級', '上級']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
+                items:
+                    ['初級', '中級', '上級']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
                 onChanged: (value) => setState(() => _difficulty = value!),
               ),
               const SizedBox(height: 16),
@@ -200,17 +201,20 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
                       ledCount: _ledCount,
                       // 編集時は既存の色設定を保持
                       colorSettings:
-                          isEditMode ? widget.existingMenu!.colorSettings : null,
+                          isEditMode
+                              ? widget.existingMenu!.colorSettings
+                              : null,
                     );
 
                     // ColorSettingPageに遷移（編集モードフラグを渡す）
                     final updatedMenu = await Navigator.push<PracticeMenu>(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ColorSettingPage(
-                          practiceMenu: practiceMenu,
-                          isEditable: isEditMode,
-                        ),
+                        builder:
+                            (context) => ColorSettingPage(
+                              practiceMenu: practiceMenu,
+                              isEditable: isEditMode,
+                            ),
                       ),
                     );
 

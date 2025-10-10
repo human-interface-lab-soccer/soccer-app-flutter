@@ -151,17 +151,17 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
       await ref.read(practiceMenuProvider.notifier).deleteMenu(widget.menu.id);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('「${widget.menu.name}」を削除しました')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('「${widget.menu.name}」を削除しました')));
         // 前の画面に戻る
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('削除に失敗しました: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('削除に失敗しました: $e')));
       }
     }
   }
