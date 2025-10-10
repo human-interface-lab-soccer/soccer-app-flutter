@@ -123,6 +123,23 @@ class PracticeMenuNotifier extends StateNotifier<PracticeMenuState> {
     await loadMenus();
   }
 
+  /// メニューを更新
+  Future<void> updateMenu(PracticeMenu menu) async {
+    final box = Hive.box(_boxName);
+    
+    // Hiveに保存（既存のキーを上書き）
+    await box.put(menu.id, menu.toJson());
+    
+    // 状態を更新
+    final updatedMenus = state.menus.map((m) {
+      return m.id == menu.id ? menu : m;
+    }).toList();
+    
+    state = state.copyWith(menus: updatedMenus);
+    
+    debugPrint('練習メニュー「${menu.name}」を更新しました');
+  }
+
   // カテゴリーのリストを取得
   List<String> getCategories() {
     return state.menus.map((menu) => menu.category).toSet().toList();

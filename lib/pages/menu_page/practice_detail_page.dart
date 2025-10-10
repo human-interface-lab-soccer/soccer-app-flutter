@@ -6,6 +6,7 @@ import 'package:soccer_app_flutter/shared/widgets/menu_info_card_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/practice_parameter_settings_widget.dart';
 import 'package:soccer_app_flutter/shared/mixins/swipe_navigation_mixin.dart';
 import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
+import 'package:soccer_app_flutter/pages/note_page/menu_form_page.dart';
 
 // 練習メニューの詳細ページ
 class PracticeDetailPage extends ConsumerStatefulWidget {
@@ -108,17 +109,11 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
 
   /// メニューの編集処理
   void _editMenu() {
-    // 編集画面への遷移（実装は編集画面の仕様に合わせて調整してください）
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => EditMenuPage(menu: widget.menu),
-    //   ),
-    // );
-    
-    // 仮実装：編集機能が未実装の場合のメッセージ
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('編集機能は準備中です')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MenuFormPage(existingMenu: widget.menu),
+      ),
     );
   }
 
@@ -178,9 +173,11 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.menu.name),
         actions: [
+          // メニューボタン（・・・）
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: _showMenuOptions,
+            tooltip: 'メニュー',
           ),
         ],
       ),

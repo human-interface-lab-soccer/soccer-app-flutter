@@ -3,8 +3,13 @@ import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
 class ColorSettingPage extends StatefulWidget {
   final PracticeMenu practiceMenu;
+  final bool isEditable;
 
-  const ColorSettingPage({super.key, required this.practiceMenu});
+  const ColorSettingPage({
+    super.key,
+    required this.practiceMenu,
+    this.isEditable = false,
+  });
 
   @override
   State<ColorSettingPage> createState() => _ColorSettingPageState();
@@ -23,10 +28,9 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
   void initState() {
     super.initState();
     // PracticeMenuから色設定を初期化
-    colorSettings =
-        widget.practiceMenu.colorSettings
-            .map((ledColors) => List<String>.from(ledColors))
-            .toList();
+    colorSettings = widget.practiceMenu.colorSettings
+        .map((ledColors) => List<String>.from(ledColors))
+        .toList();
 
     // 横スクロールの同期
     _horizontalControllerHeader.addListener(() {
@@ -109,13 +113,11 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
         value: colorSettings[ledIndex][phaseIndex],
         isExpanded: true,
         underline: const SizedBox(),
-        items:
-            colors
-                .map(
-                  (c) =>
-                      DropdownMenuItem(value: c, child: Center(child: Text(c))),
-                )
-                .toList(),
+        items: colors
+            .map(
+              (c) => DropdownMenuItem(value: c, child: Center(child: Text(c))),
+            )
+            .toList(),
         onChanged: (value) {
           setState(() {
             colorSettings[ledIndex][phaseIndex] = value!;
@@ -129,11 +131,34 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.practiceMenu.name} の色設定'),
+        title: Text(
+          widget.isEditable
+              ? '${widget.practiceMenu.name} の色設定編集'
+              : '${widget.practiceMenu.name} の色設定',
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Column(
         children: [
+          // 編集モードの場合は説明を表示
+          if (widget.isEditable)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12.0),
+              color: Colors.blue.shade50,
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '編集モード：色設定を変更できます',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           // 固定ヘッダー行
           Row(
             children: [
@@ -177,18 +202,22 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
                       scrollDirection: Axis.vertical,
                       controller: _verticalControllerData,
                       child: Column(
-                        children: List.generate(widget.practiceMenu.ledCount, (
-                          ledIndex,
-                        ) {
-                          return Row(
-                            children: List.generate(
-                              widget.practiceMenu.phaseCount,
-                              (phaseIndex) {
-                                return _buildDropdownCell(ledIndex, phaseIndex);
-                              },
-                            ),
-                          );
-                        }),
+                        children: List.generate(
+                          widget.practiceMenu.ledCount,
+                          (ledIndex) {
+                            return Row(
+                              children: List.generate(
+                                widget.practiceMenu.phaseCount,
+                                (phaseIndex) {
+                                  return _buildDropdownCell(
+                                    ledIndex,
+                                    phaseIndex,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -210,8 +239,8 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
           // 更新されたPracticeMenuを返す
           Navigator.pop(context, updatedMenu);
         },
-        label: const Text('保存'),
-        icon: const Icon(Icons.save),
+        label: Text(widget.isEditable ? '更新' : '保存'),
+        icon: Icon(widget.isEditable ? Icons.check : Icons.save),
       ),
     );
   }
