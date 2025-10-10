@@ -34,13 +34,14 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
   void initState() {
     super.initState();
     // 編集モードの場合は既存の値で初期化
-    if (isEditMode) {
-      _name = widget.existingMenu!.name;
-      _description = widget.existingMenu!.description;
-      _category = widget.existingMenu!.category;
-      _difficulty = widget.existingMenu!.difficulty;
-      _phaseCount = widget.existingMenu!.phaseCount;
-      _ledCount = widget.existingMenu!.ledCount;
+    final menu = widget.existingMenu;
+    if (isEditMode && menu != null) {
+      _name = menu.name;
+      _description = menu.description;
+      _category = menu.category;
+      _difficulty = menu.difficulty;
+      _phaseCount = menu.phaseCount;
+      _ledCount = menu.ledCount;
     } else {
       // 新規作成モードの場合はデフォルト値
       _name = '';
