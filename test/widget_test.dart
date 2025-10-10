@@ -4,17 +4,60 @@ import 'package:soccer_app_flutter/pages/main_navigation_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
 import 'package:soccer_app_flutter/shared/providers/menu_filter_provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:io';
 
 void main() {
+  // テスト開始前にHiveを初期化
+  setUpAll(() async {
+    // テスト用の一時ディレクトリを作成
+    final testDir = Directory.systemTemp.createTempSync('hive_test');
+
+    // Hiveを初期化
+    Hive.init(testDir.path);
+
+    // テスト用のボックスを開く
+    try {
+      await Hive.openBox('practice_menus');
+    } catch (e) {
+      // 既に開かれている場合は無視
+      debugPrint('Hive box already open: $e');
+    }
+  });
+
+  // 各テスト後にボックスをクリア
+  tearDown(() async {
+    try {
+      final box = Hive.box('practice_menus');
+      await box.clear();
+    } catch (e) {
+      debugPrint('Failed to clear box: $e');
+    }
+  });
+
+  // テスト終了後にクリーンアップ
+  tearDownAll(() async {
+    try {
+      await Hive.close();
+    } catch (e) {
+      debugPrint('Failed to close Hive: $e');
+    }
+  });
+
   testWidgets('MainNavigationBar 初期状態は接続ページ', (WidgetTester tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainNavigationBar()));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: MainNavigationBar())),
+    );
+
+    // 初期状態で接続ページが表示される
     expect(find.byKey(const Key('connectionPage')), findsOneWidget);
   });
+
   testWidgets('BottomNavigationBarで各ページへ遷移', (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          // 必要に応じてプロバイダーをモック化
+          // プロバイダーをモック化してエラーを防ぐ
           isLoadingProvider.overrideWith((ref) => false),
           errorMessageProvider.overrideWith((ref) => null),
           filteredMenusProvider.overrideWith((ref) => []),
@@ -23,17 +66,55 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.menu_book));
+    // 初期状態を確認
+    expect(find.byKey(const Key('connectionPage')), findsOneWidget);
+
+    // メニューページに遷移
+    final menuIcon = find.byIcon(Icons.menu_book);
+    expect(menuIcon, findsOneWidget);
+    await tester.tap(menuIcon);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('menuPage')), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.settings));
+    // 自由帳ページに遷移
+    final noteIcon = find.byIcon(Icons.settings);
+    expect(noteIcon, findsOneWidget);
+    await tester.tap(noteIcon);
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('notePage')), findsOneWidget);
+    // MenuFormPageのキーを確認
+    expect(find.byKey(const Key('menuFormPage')), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.bluetooth_connected));
+    // 接続ページに戻る
+    final connectionIcon = find.byIcon(Icons.bluetooth_connected);
+    expect(connectionIcon, findsOneWidget);
+    await tester.tap(connectionIcon);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('connectionPage')), findsOneWidget);
+  });
+
+  testWidgets('自由帳ページでフォームが表示される', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          isLoadingProvider.overrideWith((ref) => false),
+          errorMessageProvider.overrideWith((ref) => null),
+          allMenusProvider.overrideWith((ref) => []),
+        ],
+        child: const MaterialApp(home: MainNavigationBar()),
+      ),
+    );
+
+    // 自由帳ページに遷移
+    await tester.tap(find.byIcon(Icons.settings));
+    await tester.pumpAndSettle();
+
+    // フォームの要素が存在することを確認
+    expect(find.text('タイトル（20字以内）'), findsOneWidget);
+    expect(find.text('説明（50字以内）'), findsOneWidget);
+    expect(find.text('カテゴリー（10字以内）'), findsOneWidget);
+    expect(find.text('難易度'), findsOneWidget);
+    expect(find.text('フェーズ（1〜8）'), findsOneWidget);
+    expect(find.text('LED数（1〜24）'), findsOneWidget);
   });
 
   group('ConnectionPage内のボタン挙動確認', () {
