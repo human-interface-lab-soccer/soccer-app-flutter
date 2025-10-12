@@ -96,7 +96,7 @@ import UIKit
                 ),
                 Model(
                     sigModelId: .genericColorClientModelID,
-                    delegate: GenericOnOffClientDelegate()
+                    delegate: GenericColorClientDelegate()
                 ),
             ]
         )
