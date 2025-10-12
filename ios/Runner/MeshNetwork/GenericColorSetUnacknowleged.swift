@@ -14,7 +14,7 @@ public struct GenericColorSetUnacknowleged: StaticUnacknowledgedMeshMessage,
     public static let opCode: UInt32 = 0x8203
 
     public var tid: UInt8!
-    public var parameters: Data?
+    public var parameters: Data? {
         let data = Data() + color + color2 + color3 + tid
         if let transitionTime = transitionTime, let delay = delay {
             return data + transitionTime.rawValue + delay
