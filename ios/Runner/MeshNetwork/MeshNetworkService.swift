@@ -46,7 +46,6 @@ class MeshNetworkService {
     ///         - isSuccess (Bool): メッセージ送信の成否
     ///         - message (String?): エラーメッセージ
     ///
-
     func setGenericOnOffState(unicastAddress: Address, state: Bool)
         -> MeshNetworkServiceResponse
     {
