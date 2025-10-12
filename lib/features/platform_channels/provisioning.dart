@@ -68,6 +68,18 @@ class Provisioning {
     return {'isSuccess': isSuccess, 'message': message};
   }
 
+  static Future<Map<String, dynamic>> setPublication({
+    required int unicastAddress,
+  }) async {
+    final response = await _methodChannel.invokeMethod('setPublication', {
+      'unicastAddress': unicastAddress,
+    });
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['message'] ?? 'No message provided';
+
+    return {'isSuccess': isSuccess, 'message': message};
+  }
+
   /// プロビジョニングの進捗を受け取るストリーム
   Stream<Map<String, dynamic>> get provisioningStream {
     return _eventChannel.receiveBroadcastStream().map(

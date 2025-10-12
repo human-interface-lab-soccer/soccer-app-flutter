@@ -66,6 +66,22 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     );
   }
 
+  Future<void> _setPublication() async {
+    var response = await Provisioning.setPublication(
+      unicastAddress: widget.meshNode.primaryUnicastAddress,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          response['isSuccess']
+              ? 'Subscription set successfully: ${response['message']}'
+              : 'Failed to set subscription: ${response['message']}',
+        ),
+      ),
+    );
+  }
+
   Future<void> _genericOnOffSet({required bool state}) async {
     var response = await MeshNetwork.genericOnOffSet(
       unicastAddress: widget.meshNode.primaryUnicastAddress,
@@ -125,110 +141,126 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children:
-          // localNodeの場合は、リセット・設定・GenericOnOffSetのボタンを表示しない
-          // widget.meshNode.isLocalNode()
-          //     ? []
-          //     : [
-          [
-            // const Divider(thickness: 1.0),
-            // const SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Configure Node"),
-                ElevatedButton(
-                  onPressed: () {
-                    _configureNode(
-                      unicastAddress: widget.meshNode.primaryUnicastAddress,
-                    );
-                  },
-                  child: const Icon(Icons.settings),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Set Publication"),
-                ElevatedButton(
-                  onPressed: () {
-                    _setSubscription();
-                  },
-                  child: const Icon(Icons.settings),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8.0),
-            const Divider(thickness: 1.0),
-            Text(
-              "GenericOnOff (nRF54L15)",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8.0),
+              // localNodeの場合は、リセット・設定・GenericOnOffSetのボタンを表示しない
+              widget.meshNode.isLocalNode()
+                  ? []
+                  : [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Configure Node"),
+                        ElevatedButton(
+                          onPressed: () {
+                            _configureNode(
+                              unicastAddress:
+                                  widget.meshNode.primaryUnicastAddress,
+                            );
+                          },
+                          child: const Icon(Icons.settings),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Set Subscription"),
+                        ElevatedButton(
+                          onPressed: () {
+                            _setSubscription();
+                          },
+                          child: const Icon(Icons.settings),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Set Publication"),
+                        ElevatedButton(
+                          onPressed: () {
+                            _setPublication();
+                          },
+                          child: const Icon(Icons.settings),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.0),
+                    Text(
+                      "GenericOnOff (nRF54L15)",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8.0),
 
-            ToggleButtons(
-              onPressed: (int index) {
-                _genericOnOffSet(state: index == 0);
-              },
-              isSelected: [onOffState, !onOffState],
-              children: [
-                const Icon(Icons.lightbulb),
-                const Icon(Icons.lightbulb_outlined, color: Colors.grey),
-              ],
-            ),
+                    ToggleButtons(
+                      onPressed: (int index) {
+                        _genericOnOffSet(state: index == 0);
+                      },
+                      isSelected: [onOffState, !onOffState],
+                      children: [
+                        const Icon(Icons.lightbulb),
+                        const Icon(
+                          Icons.lightbulb_outlined,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
 
-            const SizedBox(height: 8.0),
-            const Divider(thickness: 1.0),
-            const SizedBox(height: 8.0),
-            Text(
-              "GenericColor (nRF52x)",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8.0),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.0),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      "GenericColor (nRF52x)",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8.0),
 
-            ToggleButtons(
-              onPressed: (int index) {
-                // 0: none, 1: Red, 2: Green, 3: Blue
-                int color = index;
-                _genericColorSet(
-                  unicastAddress: widget.meshNode.primaryUnicastAddress,
-                  color: color,
-                );
-              },
+                    ToggleButtons(
+                      onPressed: (int index) {
+                        // 0: none, 1: Red, 2: Green, 3: Blue
+                        int color = index;
+                        _genericColorSet(
+                          unicastAddress: widget.meshNode.primaryUnicastAddress,
+                          color: color,
+                        );
+                      },
 
-              // TODO: 綺麗にする
-              isSelected: [
-                colorIndex == 0,
-                colorIndex == 1,
-                colorIndex == 2,
-                colorIndex == 3,
-              ],
-              children: const [
-                Icon(Icons.circle, color: Colors.grey),
-                Icon(Icons.circle, color: Colors.red),
-                Icon(Icons.circle, color: Colors.green),
-                Icon(Icons.circle, color: Colors.blue),
-              ],
-            ),
-            const SizedBox(height: 8.0),
-            const Divider(thickness: 1.0),
-            const SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Reset Node"),
-                ElevatedButton(
-                  onPressed: () {
-                    _resetNode(
-                      unicastAddress: widget.meshNode.primaryUnicastAddress,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(iconColor: Colors.red),
-                  child: const Icon(Icons.delete),
-                ),
-              ],
-            ),
-          ],
+                      // TODO: 綺麗にする
+                      isSelected: [
+                        colorIndex == 0,
+                        colorIndex == 1,
+                        colorIndex == 2,
+                        colorIndex == 3,
+                      ],
+                      children: const [
+                        Icon(Icons.circle, color: Colors.grey),
+                        Icon(Icons.circle, color: Colors.red),
+                        Icon(Icons.circle, color: Colors.green),
+                        Icon(Icons.circle, color: Colors.blue),
+                      ],
+                    ),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.0),
+                    const SizedBox(height: 8.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Reset Node"),
+                        ElevatedButton(
+                          onPressed: () {
+                            _resetNode(
+                              unicastAddress:
+                                  widget.meshNode.primaryUnicastAddress,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            iconColor: Colors.red,
+                          ),
+                          child: const Icon(Icons.delete),
+                        ),
+                      ],
+                    ),
+                  ],
         ),
       ],
     );
