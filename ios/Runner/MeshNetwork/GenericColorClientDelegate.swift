@@ -27,8 +27,7 @@ class GenericColorClientDelegate: ModelDelegate {
         }
     }
 
-    /// The current state of the Generic On Off Client model.
-    var state: Array<UInt16> = [UInt16(0000), UInt16(0000), UInt16(0000)] {
+    var state: [UInt16] = [UInt16(0000), UInt16(0000), UInt16(0000)] {
         didSet {
             publish(using: MeshNetworkManager.instance)
         }
@@ -72,7 +71,6 @@ class GenericColorClientDelegate: ModelDelegate {
     }
 
 }
-
 
 // GenericColorのModelIDを設定
 extension UInt16 {
