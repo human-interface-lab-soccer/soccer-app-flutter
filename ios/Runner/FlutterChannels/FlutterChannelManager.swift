@@ -180,6 +180,49 @@ class FlutterChannelManager {
                 message: response.message
             )
 
+        case "setSubscription":
+            // パラメータに `unicastAddress` が含まれているか確認
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"] as? Address
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress not found in arguments."
+                )
+                return
+            }
+
+            let response = ConfigurationService.shared.setSubscription(
+                withAddress: unicastAddress
+            )
+
+            // TODO: メッセージの返し方を修正
+            print(response.isSuccess)
+            print(response.message)
+
+        case "setPublication":
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"] as? Address
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress not found in arguments."
+                )
+                return
+            }
+
+            print("Recieved Publication message")
+
+            let response = ConfigurationService.shared.setPublication(
+                withAddress: unicastAddress
+            )
+
+            // TODO: メッセージを返す
+            print(response.isSuccess)
+            print(response.message)
+
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -231,13 +274,85 @@ class FlutterChannelManager {
             )
 
         case "genericColorSet":
+            // パラメータに `unicastAddress`, `color` が含まれているかを確認
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"] as? Address,
+                let color = args["color"] as? Int
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress or color not found"
+                )
+                return
+            }
 
-            // TODO: 実装
-            // モックでメッセージを返す
+            // TODO: Refactor
+            //            var colorCode: UInt16!
+            //            switch color {
+            //            // red
+            //            case 1:
+            //                colorCode = 2222
+            //            // green
+            //            case 2:
+            //                colorCode = 3333
+            //            // blue
+            //            case 3:
+            //                colorCode = 4444
+            //            // none
+            //            default:
+            //                colorCode = 1111
+            //            }
+            //            let node = MeshNetworkManager.instance.meshNetwork?.node(
+            //                withAddress: unicastAddress
+            //            )
+            //            let msg = GenericColorSetUnacknowleged(
+            //                UInt16(colorCode),
+            //                color2: UInt16(colorCode),
+            //                color3: UInt16(colorCode),
+            //                transitionTime: TransitionTime(0.0),
+            //                delay: 0
+            //            )
+            //            guard
+            //                let clientModel = MeshNetworkManager.instance.localElements
+            //                    .flatMap({ $0.models })
+            //                    .first(where: {
+            //                        $0.modelIdentifier == .genericColorClientModelID
+            //                    })
+            //            else {
+            //                print("Failed to find client model")
+            //                return
+            //            }
+            //            guard let node,
+            //                let serverModel = node.elements.flatMap({ $0.models }).first(
+            //                    where: { $0.modelIdentifier == .genericColorServerModelID })
+            //            else {
+            //                print("Failed to find server model")
+            //                return
+            //            }
+            //
+            //            do {
+            //                let responce = try MeshNetworkManager.instance.send(
+            //                    msg,
+            //                    from: clientModel,
+            //                    to: serverModel
+            //                )
+            //                print("Response of send message...")
+            //                print(responce)
+            //            } catch {
+            //                print("Failed to send color change message")
+            //                return
+            //            }
+
+            let response = MeshNetworkService.shared.setGenericColorState(
+                unicastAddres: unicastAddress,
+                state: color
+            )
+
             handleMethodResponse(
                 result: result,
-                isSuccess: true,
-                message: "Mock response"
+                isSuccess: response.isSuccess,
+                message: response.message
             )
 
         default:
