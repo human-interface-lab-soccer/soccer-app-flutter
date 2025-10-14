@@ -105,6 +105,92 @@ class MeshNetworkService {
         )
     }
 
+    func setGenericColorState(unicastAddres: Address, state: Int)
+        -> MeshNetworkServiceResponse
+    {
+
+        var node: Node?
+        /// メッセージを送信する際のカラーコード
+        var colorCode: UInt16 = 1111
+
+        // ノードを探す
+        do {
+            node = try findNode(withUnicastAddress: unicastAddres)
+        } catch {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to find node."
+            )
+        }
+
+        // colorCodeを生成
+        switch state {
+        case 1:  // red
+            colorCode = 2222
+        case 2:  // green
+            colorCode = 3333
+        case 3:  // blue
+            colorCode = 4444
+        default:  // none
+            colorCode = 1111
+        }
+
+        // clientモデルを探す
+        guard
+            let clientModel = manager.localElements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .genericColorClientModelID
+                })
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to find client model"
+            )
+        }
+
+        // serverモデルを探す
+        guard let node,
+            let serverModel = node.elements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .genericColorServerModelID
+                })
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to find server model"
+            )
+        }
+
+        // メッセージを作成
+        let message = GenericColorSetUnacknowleged(
+            colorCode,
+            color2: colorCode,
+            color3: colorCode
+        )
+
+        // 送信
+        do {
+            try manager.send(
+                message,
+                from: clientModel,
+                to: serverModel,
+                withTtl: UInt8(3)
+            )
+        } catch {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to send message: \(error.localizedDescription)"
+            )
+        }
+
+        return MeshNetworkServiceResponse(
+            isSuccess: true,
+            message: "Successfully send message!"
+        )
+    }
+
     private func findNode(withUnicastAddress unicastAddress: Address) throws
         -> Node
     {
