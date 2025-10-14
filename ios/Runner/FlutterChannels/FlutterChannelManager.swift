@@ -287,63 +287,6 @@ class FlutterChannelManager {
                 return
             }
 
-            // TODO: Refactor
-            //            var colorCode: UInt16!
-            //            switch color {
-            //            // red
-            //            case 1:
-            //                colorCode = 2222
-            //            // green
-            //            case 2:
-            //                colorCode = 3333
-            //            // blue
-            //            case 3:
-            //                colorCode = 4444
-            //            // none
-            //            default:
-            //                colorCode = 1111
-            //            }
-            //            let node = MeshNetworkManager.instance.meshNetwork?.node(
-            //                withAddress: unicastAddress
-            //            )
-            //            let msg = GenericColorSetUnacknowleged(
-            //                UInt16(colorCode),
-            //                color2: UInt16(colorCode),
-            //                color3: UInt16(colorCode),
-            //                transitionTime: TransitionTime(0.0),
-            //                delay: 0
-            //            )
-            //            guard
-            //                let clientModel = MeshNetworkManager.instance.localElements
-            //                    .flatMap({ $0.models })
-            //                    .first(where: {
-            //                        $0.modelIdentifier == .genericColorClientModelID
-            //                    })
-            //            else {
-            //                print("Failed to find client model")
-            //                return
-            //            }
-            //            guard let node,
-            //                let serverModel = node.elements.flatMap({ $0.models }).first(
-            //                    where: { $0.modelIdentifier == .genericColorServerModelID })
-            //            else {
-            //                print("Failed to find server model")
-            //                return
-            //            }
-            //
-            //            do {
-            //                let responce = try MeshNetworkManager.instance.send(
-            //                    msg,
-            //                    from: clientModel,
-            //                    to: serverModel
-            //                )
-            //                print("Response of send message...")
-            //                print(responce)
-            //            } catch {
-            //                print("Failed to send color change message")
-            //                return
-            //            }
-
             let response = MeshNetworkService.shared.setGenericColorState(
                 unicastAddres: unicastAddress,
                 state: color
@@ -352,7 +295,7 @@ class FlutterChannelManager {
             handleMethodResponse(
                 result: result,
                 isSuccess: response.isSuccess,
-                message: response.message
+                message: response.message ?? "No message provided"
             )
 
         default:
