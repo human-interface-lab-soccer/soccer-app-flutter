@@ -2,7 +2,7 @@
 //  GenericColorSetUnackowleged.swift
 //  Runner
 //
-//  Created by lights Winner on 2025/09/18.
+//  Created by naokeyn on 2025/09/18.
 //
 
 import Foundation
