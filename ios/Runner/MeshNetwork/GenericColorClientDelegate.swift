@@ -72,3 +72,10 @@ class GenericColorClientDelegate: ModelDelegate {
     }
 
 }
+
+
+// GenericColorのModelIDを設定
+extension UInt16 {
+    public static let genericColorServerModelID: UInt16 = 0xffff
+    public static let genericColorClientModelID: UInt16 = 0xfffe
+}

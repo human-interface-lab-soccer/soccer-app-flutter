@@ -289,12 +289,6 @@ extension AppDelegate: MeshNetworkDelegate {
             return
         }
 
-        //        let message = GenericColorSet(
-        //            UInt16(0x0001),
-        //            color: UInt16(0x1111),
-        //            color2: UInt16(0x1111),
-        //        )
-
         let message = GenericOnOffSet(true)
 
         do {
@@ -325,11 +319,4 @@ extension AppDelegate: MeshNetworkDelegate {
             data: ["message": message ?? "No message"]
         )
     }
-}
-
-// TODO: GenericColorのクラスに移動させる
-// GenericColorのModelIDを設定
-extension UInt16 {
-    public static let genericColorServerModelID: UInt16 = 0xffff
-    public static let genericColorClientModelID: UInt16 = 0xfffe
 }
