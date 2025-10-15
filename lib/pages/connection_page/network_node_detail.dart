@@ -12,9 +12,9 @@ class NetworkNodeDetail extends StatefulWidget {
 }
 
 class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
-  // GenericOnOffSetの状態を保持するための変数
+  /// GenericOnOffSetの状態を保持するための変数
   bool onOffState = false;
-  // GenericColorSetの状態を保持するための変数
+  /// GenericColorSetの状態を保持するための変数
   int colorIndex = 0;
 
   Future<void> _resetNode({required int unicastAddress}) async {
@@ -55,15 +55,14 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
       unicastAddress: widget.meshNode.primaryUnicastAddress,
     );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          response['isSuccess']
-              ? 'Subscription set successfully: ${response['message']}'
-              : 'Failed to set subscription: ${response['message']}',
+    if (!response['isSuccess']) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to set subscription: ${response['message']}'),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Future<void> _setPublication() async {
@@ -71,15 +70,14 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
       unicastAddress: widget.meshNode.primaryUnicastAddress,
     );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          response['isSuccess']
-              ? 'Subscription set successfully: ${response['message']}'
-              : 'Failed to set subscription: ${response['message']}',
+    if (!response['isSuccess']) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to set publication: ${response['message']}'),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Future<void> _genericOnOffSet({required bool state}) async {
@@ -104,7 +102,6 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   }
 
   /// GenericColorNodeの色を変更するメソッド
-  /// TODO: 実装
   Future<void> _genericColorSet({
     required int unicastAddress,
     required int color,

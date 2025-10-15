@@ -196,6 +196,11 @@ class FlutterChannelManager {
             let response = ConfigurationService.shared.setSubscription(
                 withAddress: unicastAddress
             )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message
+            )
 
             // TODO: メッセージの返し方を修正
             print(response.isSuccess)
@@ -217,6 +222,12 @@ class FlutterChannelManager {
 
             let response = ConfigurationService.shared.setPublication(
                 withAddress: unicastAddress
+            )
+
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message
             )
 
             // TODO: メッセージを返す
@@ -291,7 +302,6 @@ class FlutterChannelManager {
                 unicastAddres: unicastAddress,
                 state: color
             )
-
             handleMethodResponse(
                 result: result,
                 isSuccess: response.isSuccess,
