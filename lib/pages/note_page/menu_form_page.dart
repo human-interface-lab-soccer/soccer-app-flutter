@@ -235,9 +235,8 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
                           const SnackBar(content: Text('練習メニューを更新しました')),
                         );
 
-                        // 詳細ページに戻る（2つ前の画面）
-                        Navigator.pop(context);
-                        Navigator.pop(context);
+                        // メニューページに戻る（2つ前の画面）
+                        Navigator.of(context).popUntil((route) => route.isFirst);
                       } else {
                         // 新規作成モード：追加処理
                         await ref
