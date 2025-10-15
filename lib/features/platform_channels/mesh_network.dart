@@ -61,9 +61,7 @@ class MeshNetwork {
   }
 
   /// colorをpublishするメソッド
-  static Future<Map<String, dynamic>> publishColor({
-    required int color,
-  }) async {
+  static Future<Map<String, dynamic>> publishColor({required int color}) async {
     final response = await _methodChannel.invokeMethod('publishColor', {
       'color': color,
     });
