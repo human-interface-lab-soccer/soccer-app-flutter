@@ -337,7 +337,7 @@ class ConfigurationService {
                 to: node,
                 withTtl: UInt8(3)
             )
-            print("Soccessfully send publication message!")
+            print("Successfully send publication message!")
         } catch {
             return ConfigurationServiceResponse(
                 isSuccess: false,
