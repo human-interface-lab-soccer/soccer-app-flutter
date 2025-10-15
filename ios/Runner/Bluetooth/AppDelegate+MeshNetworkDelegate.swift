@@ -66,7 +66,7 @@ extension AppDelegate: MeshNetworkDelegate {
                 )
             }
 
-        case let configPublicaitionStatus as ConfigModelPublicationStatus:
+        case let configPublicationStatus as ConfigModelPublicationStatus:
             if configPublicaitionStatus.status == .success {
                 sendFlutterEvent(
                     status: .success,
@@ -76,7 +76,7 @@ extension AppDelegate: MeshNetworkDelegate {
                 sendFlutterEvent(
                     status: .error,
                     message:
-                        "Failed to publish model: \(configPublicaitionStatus.message)"
+                        "Failed to publish model: \(configPublicationStatus.message)"
                 )
             }
 
