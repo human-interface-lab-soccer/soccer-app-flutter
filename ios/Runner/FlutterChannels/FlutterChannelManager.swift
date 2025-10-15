@@ -218,7 +218,7 @@ class FlutterChannelManager {
                 return
             }
 
-            print("Recieved Publication message")
+            print("Received Publication message")
 
             let response = ConfigurationService.shared.setPublication(
                 withAddress: unicastAddress
