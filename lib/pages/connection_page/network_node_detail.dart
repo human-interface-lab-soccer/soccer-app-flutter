@@ -14,6 +14,7 @@ class NetworkNodeDetail extends StatefulWidget {
 class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   /// GenericOnOffSetの状態を保持するための変数
   bool onOffState = false;
+
   /// GenericColorSetの状態を保持するための変数
   int colorIndex = 0;
 
