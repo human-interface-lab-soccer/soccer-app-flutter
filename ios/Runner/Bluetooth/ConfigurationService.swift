@@ -238,7 +238,7 @@ class ConfigurationService {
 
         return ConfigurationServiceResponse(
             isSuccess: true,
-            message: "mock Message"
+            message: "Start subscription ..."
         )
     }
 
@@ -347,7 +347,7 @@ class ConfigurationService {
 
         return ConfigurationServiceResponse(
             isSuccess: true,
-            message: "mock Message"
+            message: "start publication ..."
         )
     }
 
