@@ -236,40 +236,6 @@ class ConfigurationService {
             )
         }
 
-        //        let applicationKey = clientModel.boundApplicationKeys.first!
-        //
-        //        let publish = Publish(
-        //            to: targetGroup.address,
-        //            using: applicationKey,
-        //            usingFriendshipMaterial: false,
-        //            ttl: ttl,
-        //            period: Publish.Period(
-        //                steps: periodSteps,
-        //                resolution: periodResolution
-        //            ),
-        //            retransmit: Publish.Retransmit(
-        //                publishRetransmitCount: retransmissionCount,
-        //                intervalSteps: retransmissionIntervalSteps
-        //            )
-        //        )
-        //        let publicationMessage: AcknowledgedConfigMessage =
-        //            ConfigModelPublicationSet(publish, to: serverModel)
-        //            ?? ConfigModelPublicationVirtualAddressSet(
-        //                publish,
-        //                to: serverModel
-        //            )!
-        //        do {
-        //            try MeshNetworkManager.instance.send(
-        //                publicationMessage,
-        //                to: node
-        //            )
-        //        } catch {
-        //            return ConfigurationServiceResponse(
-        //                isSuccess: false,
-        //                message: "Failed to send message"
-        //            )
-        //        }
-
         return ConfigurationServiceResponse(
             isSuccess: true,
             message: "mock Message"
