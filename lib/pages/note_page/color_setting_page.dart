@@ -3,8 +3,13 @@ import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
 class ColorSettingPage extends StatefulWidget {
   final PracticeMenu practiceMenu;
+  final bool isEditable;
 
-  const ColorSettingPage({super.key, required this.practiceMenu});
+  const ColorSettingPage({
+    super.key,
+    required this.practiceMenu,
+    this.isEditable = false,
+  });
 
   @override
   State<ColorSettingPage> createState() => _ColorSettingPageState();
@@ -129,11 +134,34 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.practiceMenu.name} の色設定'),
+        title: Text(
+          widget.isEditable
+              ? '${widget.practiceMenu.name} の色設定編集'
+              : '${widget.practiceMenu.name} の色設定',
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Column(
         children: [
+          // 編集モードの場合は説明を表示
+          if (widget.isEditable)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12.0),
+              color: Colors.blue.shade50,
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '編集モード：色設定を変更できます',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           // 固定ヘッダー行
           Row(
             children: [
@@ -207,15 +235,11 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
 
           debugPrint('保存されたPracticeMenu: ${updatedMenu.toJson()}');
 
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('設定を保存しました')));
-
           // 更新されたPracticeMenuを返す
           Navigator.pop(context, updatedMenu);
         },
-        label: const Text('保存'),
-        icon: const Icon(Icons.save),
+        label: Text(widget.isEditable ? '更新' : '保存'),
+        icon: Icon(widget.isEditable ? Icons.check : Icons.save),
       ),
     );
   }

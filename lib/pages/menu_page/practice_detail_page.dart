@@ -1,28 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/controllers/practice_timer_controller.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_info_card_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/practice_parameter_settings_widget.dart';
 import 'package:soccer_app_flutter/shared/mixins/swipe_navigation_mixin.dart';
+import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
+import 'package:soccer_app_flutter/pages/note_page/menu_form_page.dart';
+
+// 定数定義
+class PracticeDetailConstants {
+  // 初期設定値
+  static const int defaultPhaseSeconds = 10;
+  static const int defaultTimerMinutes = 3;
+  static const int defaultTimerSeconds = 0;
+
+  // メニュータイプ
+  static const String customMenuType = '自由帳';
+
+  // メッセージ
+  static const String editLabel = '編集';
+  static const String deleteLabel = '削除';
+  static const String cancelLabel = 'キャンセル';
+  static const String menuLabel = 'メニュー';
+  static const String deleteDialogTitle = 'メニューの削除';
+  static const String cannotEditMessage = '既存メニューは編集・削除できません';
+
+  // エラーメッセージのテンプレート
+  static String deleteConfirmMessage(String menuName) =>
+      '「$menuName」を削除しますか？\nこの操作は取り消せません．';
+  static String deleteSuccessMessage(String menuName) => '「$menuName」を削除しました';
+  static String deleteErrorMessage(String error) => '削除に失敗しました: $error';
+}
 
 // 練習メニューの詳細ページ
-class PracticeDetailPage extends StatefulWidget {
+class PracticeDetailPage extends ConsumerStatefulWidget {
   final PracticeMenu menu;
 
   const PracticeDetailPage({super.key, required this.menu});
 
   @override
-  State<PracticeDetailPage> createState() => _PracticeDetailPageState();
+  ConsumerState<PracticeDetailPage> createState() => _PracticeDetailPageState();
 }
 
-class _PracticeDetailPageState extends State<PracticeDetailPage>
+class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
     with TickerProviderStateMixin, SwipeNavigationMixin {
   late PracticeTimerController _controller;
-
-  // 初期設定値
-  static const int _initialPhaseSeconds = 10;
-  static const int _initialTimerMinutes = 3;
-  static const int _initialTimerSeconds = 0;
 
   @override
   void initState() {
@@ -41,9 +64,9 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     _controller = PracticeTimerController();
     _controller.initialize(
       widget.menu.phaseCount,
-      _initialPhaseSeconds,
-      _initialTimerMinutes,
-      _initialTimerSeconds,
+      PracticeDetailConstants.defaultPhaseSeconds,
+      PracticeDetailConstants.defaultTimerMinutes,
+      PracticeDetailConstants.defaultTimerSeconds,
       this,
     );
 
@@ -53,12 +76,147 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
     });
   }
 
+  /// 編集可能なメニューかどうかを判定
+  bool get _isCustomMenu =>
+      widget.menu.type == PracticeDetailConstants.customMenuType;
+
+  /// メニューボタンを表示
+  void _showMenuOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 編集オプション（自由帳のみ）
+              if (_isCustomMenu)
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text(PracticeDetailConstants.editLabel),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _editMenu();
+                  },
+                ),
+              // 削除オプション（自由帳のみ）
+              if (_isCustomMenu)
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text(
+                    PracticeDetailConstants.deleteLabel,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _confirmDelete();
+                  },
+                ),
+              // 既存メニューの場合は編集・削除不可のメッセージ
+              if (!_isCustomMenu)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    PracticeDetailConstants.cannotEditMessage,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              // キャンセル
+              ListTile(
+                leading: const Icon(Icons.close),
+                title: const Text(PracticeDetailConstants.cancelLabel),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// メニューの編集処理
+  void _editMenu() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MenuFormPage(existingMenu: widget.menu),
+      ),
+    );
+  }
+
+  /// 削除確認ダイアログを表示
+  void _confirmDelete() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(PracticeDetailConstants.deleteDialogTitle),
+          content: Text(
+            PracticeDetailConstants.deleteConfirmMessage(widget.menu.name),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(PracticeDetailConstants.cancelLabel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteMenu();
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text(PracticeDetailConstants.deleteLabel),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// メニューの削除処理
+  Future<void> _deleteMenu() async {
+    try {
+      // RiverpodのpracticeMenuProviderを使用して削除
+      await ref.read(practiceMenuProvider.notifier).deleteMenu(widget.menu.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              PracticeDetailConstants.deleteSuccessMessage(widget.menu.name),
+            ),
+          ),
+        );
+        // 前の画面に戻る
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              PracticeDetailConstants.deleteErrorMessage(e.toString()),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.menu.name),
+        actions: [
+          // メニューボタン（・・・）
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: _showMenuOptions,
+            tooltip: PracticeDetailConstants.menuLabel,
+          ),
+        ],
       ),
       body: SafeArea(
         child: GestureDetector(
