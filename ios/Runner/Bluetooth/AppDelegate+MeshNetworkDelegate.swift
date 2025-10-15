@@ -52,6 +52,34 @@ extension AppDelegate: MeshNetworkDelegate {
                 )
             }
 
+        case let configSubscriptionState as ConfigModelSubscriptionStatus:
+            if configSubscriptionState.isSuccess {
+                sendFlutterEvent(
+                    status: .success,
+                    message: "Successfully subscribe model"
+                )
+            } else {
+                sendFlutterEvent(
+                    status: .error,
+                    message:
+                        "Failed to subscribe model: \(configSubscriptionState.message)"
+                )
+            }
+
+        case let configPublicaitionStatus as ConfigModelPublicationStatus:
+            if configPublicaitionStatus.status == .success {
+                sendFlutterEvent(
+                    status: .success,
+                    message: "Successfully publish model"
+                )
+            } else {
+                sendFlutterEvent(
+                    status: .error,
+                    message:
+                        "Failed to publish model: \(configPublicaitionStatus.message)"
+                )
+            }
+
         default:
             print("Message type : \(type(of: message))")
             print(message)
