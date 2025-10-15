@@ -299,7 +299,7 @@ class FlutterChannelManager {
             }
 
             let response = MeshNetworkService.shared.setGenericColorState(
-                unicastAddres: unicastAddress,
+                unicastAddress: unicastAddress,
                 state: color
             )
             handleMethodResponse(
