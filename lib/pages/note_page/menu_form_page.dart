@@ -236,7 +236,9 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
                         );
 
                         // メニューページに戻る（2つ前の画面）
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.of(
+                          context,
+                        ).popUntil((route) => route.isFirst);
                       } else {
                         // 新規作成モード：追加処理
                         await ref
