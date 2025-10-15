@@ -247,7 +247,7 @@ class ConfigurationService {
     {
         var node: Node!
         var serverModel: Model!
-        var clientModelID: UInt16!
+        var clientModelID: UInt16?
         var groups: [Group]!
         var specialGroups: [Group]!
         var targetGroup: Group?
