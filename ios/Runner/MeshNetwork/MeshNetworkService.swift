@@ -105,7 +105,7 @@ class MeshNetworkService {
         )
     }
 
-    func setGenericColorState(unicastAddres: Address, state: Int)
+    func setGenericColorState(unicastAddress: Address, state: Int)
         -> MeshNetworkServiceResponse
     {
 
@@ -115,7 +115,7 @@ class MeshNetworkService {
 
         // ノードを探す
         do {
-            node = try findNode(withUnicastAddress: unicastAddres)
+            node = try findNode(withUnicastAddress: unicastAddress)
         } catch {
             return MeshNetworkServiceResponse(
                 isSuccess: false,
