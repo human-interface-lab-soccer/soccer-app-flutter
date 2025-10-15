@@ -67,7 +67,7 @@ extension AppDelegate: MeshNetworkDelegate {
             }
 
         case let configPublicationStatus as ConfigModelPublicationStatus:
-            if configPublicaitionStatus.status == .success {
+            if configPublicationStatus.status == .success {
                 sendFlutterEvent(
                     status: .success,
                     message: "Successfully publish model"
