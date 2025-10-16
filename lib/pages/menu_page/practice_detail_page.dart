@@ -231,7 +231,7 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
               // 中部：空白エリア
               const Expanded(child: SizedBox()),
 
-              // 下部：パラメータ設定エリア
+              // 下部：パラメータ設定エリアここ怪しいかも
               PracticeParameterSettingsWidget(controller: _controller),
             ],
           ),
