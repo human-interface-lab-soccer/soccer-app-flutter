@@ -312,70 +312,13 @@ class FlutterChannelManager {
                 return
             }
 
-            var colorCode: UInt16 = 1111
-            switch color {
-            case 1:
-                colorCode = 2222
-            case 2:
-                colorCode = 3333
-            case 3:
-                colorCode = 4444
-            default:
-                colorCode = 1111
-            }
-
-            // TODO: Refactor
-            guard
-                let clientModel = MeshNetworkManager.instance.localElements
-                    .flatMap(
-                        { $0.models }).first(where: {
-                        $0.modelIdentifier == .genericColorClientModelID
-                    })
-            else {
-                print("Failed to find client model")
-                return
-            }
-            let message = GenericColorSetUnacknowleged(
-                colorCode,
-                color2: colorCode,
-                color3: colorCode
+            let responce = MeshNetworkService.shared.publishColor(
+                colorNum: color
             )
-
-            // TODO: グループを直接指定するの頭悪い，直して
-            guard
-                let targetGroup = MeshNetworkManager.instance.meshNetwork?
-                    .group(withAddress: Address(0xC000))
-            else {
-                print("Failed to find target group")
-                return
-            }
-
-            // TODO: clientModelからapplicationKey持ってこれないかな？
-            guard
-                let applicationKey = MeshNetworkManager.instance.meshNetwork?
-                    .applicationKeys.first
-            else {
-                print("Failed to find application key")
-                return
-            }
-            do {
-                // TODO: TTL設定できる？
-                try MeshNetworkManager.instance.send(
-                    message,
-                    to: targetGroup,
-                    using: applicationKey,
-                )
-                print("send color change")
-            } catch {
-                print(
-                    "Failed to publish message: \(error.localizedDescription)"
-                )
-            }
-
             handleMethodResponse(
                 result: result,
-                isSuccess: true,
-                message: "This is mock message"
+                isSuccess: responce.isSuccess,
+                message: responce.message ?? "No message provided"
             )
 
         default:

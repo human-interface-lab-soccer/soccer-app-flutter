@@ -109,9 +109,9 @@ class MeshNetworkService {
         -> MeshNetworkServiceResponse
     {
 
-        var node: Node?
         /// メッセージを送信する際のカラーコード
-        var colorCode: UInt16 = 1111
+        let colorCode: UInt16 = convertColorCode(fromColorNum: state)
+        var node: Node?
 
         // ノードを探す
         do {
@@ -121,18 +121,6 @@ class MeshNetworkService {
                 isSuccess: false,
                 message: "Failed to find node."
             )
-        }
-
-        // colorCodeを生成
-        switch state {
-        case 1:  // red
-            colorCode = 2222
-        case 2:  // green
-            colorCode = 3333
-        case 3:  // blue
-            colorCode = 4444
-        default:  // none
-            colorCode = 1111
         }
 
         // clientモデルを探す
@@ -191,6 +179,47 @@ class MeshNetworkService {
         )
     }
 
+    func publishColor(colorNum: Int) -> MeshNetworkServiceResponse {
+        let colorCode = convertColorCode(fromColorNum: colorNum)
+        let message = GenericColorSetUnacknowleged(
+            colorCode,
+            color2: colorCode,
+            color3: colorCode
+        )
+
+        // TODO: グループの指定方法を修正．直接ではなく，いい感じに
+        guard
+            let targetGroup = manager.meshNetwork?.group(
+                withAddress: Address(0xC000)
+            )
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Group not found"
+            )
+        }
+
+        guard let applicationKey = manager.meshNetwork?.applicationKeys.first
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "ApplicationKey not found"
+            )
+        }
+        do {
+            try manager.send(message, to: targetGroup, using: applicationKey)
+        } catch {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to send message: \(error.localizedDescription)"
+            )
+        }
+        return MeshNetworkServiceResponse(
+            isSuccess: true,
+            message: "Successfully send message"
+        )
+    }
+
     private func findNode(withUnicastAddress unicastAddress: Address) throws
         -> Node
     {
@@ -199,5 +228,18 @@ class MeshNetworkService {
             throw MeshNetworkServiceError.nodeNotFound
         }
         return node
+    }
+
+    private func convertColorCode(fromColorNum colorNum: Int) -> UInt16 {
+        switch colorNum {
+        case 1:  // red
+            return UInt16(2222)
+        case 2:  // green
+            return UInt16(3333)
+        case 3:  // blue
+            return UInt16(4444)
+        default:  // none
+            return UInt16(1111)
+        }
     }
 }
