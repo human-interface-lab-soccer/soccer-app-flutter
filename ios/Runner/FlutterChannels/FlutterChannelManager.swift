@@ -180,6 +180,52 @@ class FlutterChannelManager {
                 message: response.message
             )
 
+        case "setSubscription":
+            // パラメータに `unicastAddress` が含まれているか確認
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"] as? Address
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress not found in arguments."
+                )
+                return
+            }
+
+            let response = ConfigurationService.shared.setSubscription(
+                withAddress: unicastAddress
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message
+            )
+
+        case "setPublication":
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"] as? Address
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress not found in arguments."
+                )
+                return
+            }
+
+            print("Received Publication message")
+
+            let response = ConfigurationService.shared.setPublication(
+                withAddress: unicastAddress
+            )
+
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message
+            )
+
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -229,6 +275,31 @@ class FlutterChannelManager {
                 isSuccess: response.isSuccess,
                 message: response.message ?? "No message provided"
             )
+
+        case "genericColorSet":
+            // パラメータに `unicastAddress`, `color` が含まれているかを確認
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"] as? Address,
+                let color = args["color"] as? Int
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress or color not found"
+                )
+                return
+            }
+
+            let response = MeshNetworkService.shared.setGenericColorState(
+                unicastAddress: unicastAddress,
+                state: color
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message ?? "No message provided"
+            )
+
         default:
             result(FlutterMethodNotImplemented)
         }

@@ -20,10 +20,21 @@ class ConfigurationServiceResponse {
     }
 }
 
+enum ConfigurationSupportModels: String {
+    case genericOnOffModel = "GenericOnOffModel"
+    case genericColorModel = "GenericColorModel"
+}
+
 class ConfigurationService {
 
     static let shared = ConfigurationService()
     private let manager = MeshNetworkManager.instance
+
+    private var periodSteps: UInt8 = 0
+    private var periodResolution: StepResolution = .hundredsOfMilliseconds
+    private var retransmissionCount: UInt8 = 0
+    private var retransmissionIntervalSteps: UInt8 = 0
+    private var ttl: UInt8 = 0xFF
 
     private init() {}
     /// MeshNetwork内のノードをリセットするメソッド
@@ -52,7 +63,11 @@ class ConfigurationService {
     /// - Parameters:
     ///     - unicastAddress: ノードのユニキャストアドレス
     ///
-    func configureNode(unicastAddress: Address) -> ConfigurationServiceResponse
+    func configureNode(
+        unicastAddress: Address,
+        model: ConfigurationSupportModels = .genericOnOffModel
+    )
+        -> ConfigurationServiceResponse
     {
         do {
             let node = try findNode(withUnicastAddress: unicastAddress)
@@ -106,6 +121,239 @@ class ConfigurationService {
                     "Failed to configure the node: \(error.localizedDescription)"
             )
         }
+    }
+
+    func setSubscription(withAddress address: Address)
+        -> ConfigurationServiceResponse
+    {
+        var node: Node!
+        var serverModel: Model!
+        var clientModelID: UInt16?
+        var groups: [Group]!
+        var specialGroups: [Group]!
+        var targetGroup: Group?
+
+        // ノードを探す
+        do {
+            node = try findNode(withUnicastAddress: address)
+        } catch {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Couldn't find node"
+            )
+        }
+
+        // サーバーモデルを探す
+        let models = node.elements.flatMap({ $0.models })
+        if let genericOnOffServerModel = models.first(where: {
+            $0.modelIdentifier == .genericOnOffServerModelId
+        }) {
+            serverModel = genericOnOffServerModel
+            clientModelID = .genericOnOffClientModelId
+        } else if let genericColorServerModel = models.first(where: {
+            $0.modelIdentifier == .genericColorServerModelID
+        }) {
+            serverModel = genericColorServerModel
+            clientModelID = .genericColorClientModelID
+        } else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Couldn't find server model"
+            )
+        }
+
+        guard let clientModelID,
+            let clientModel = manager.localElements
+                .flatMap({ $0.models })
+                .first(where: { $0.modelIdentifier == clientModelID })
+        else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Failed to find client model"
+            )
+        }
+
+        // groupを探す
+        let network = MeshNetworkManager.instance.meshNetwork!
+        let alreadySubscribedGroups = serverModel.subscriptions
+        groups = network.groups
+            .filter { !alreadySubscribedGroups.contains($0) }
+        specialGroups = Group.specialGroups
+            .filter { $0 != .allNodes }
+            .filter { !alreadySubscribedGroups.contains($0) }
+
+        // groupが無ければ生成
+        if groups.isEmpty {
+            guard
+                let groupAddress = manager.meshNetwork?
+                    .nextAvailableGroupAddress()
+            else {
+                return ConfigurationServiceResponse(
+                    isSuccess: false,
+                    message: "failed to create group"
+                )
+            }
+            do {
+                let newGroup = try Group(
+                    name: "LED Group",
+                    address: groupAddress
+                )
+                try manager.meshNetwork?.add(group: newGroup)
+                targetGroup = newGroup
+            } catch {
+                return ConfigurationServiceResponse(
+                    isSuccess: false,
+                    message:
+                        "Failed to add group: \(error.localizedDescription)"
+                )
+            }
+        } else {
+            targetGroup = groups.first
+        }
+
+        print("target group: \(targetGroup?.address)")
+        guard let targetGroup else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Failed to find group"
+            )
+        }
+
+        /// Subscription メッセージ
+        let message: AcknowledgedConfigMessage =
+            ConfigModelSubscriptionAdd(group: targetGroup, to: serverModel)
+            ?? ConfigModelSubscriptionVirtualAddressAdd(
+                group: targetGroup,
+                to: serverModel
+            )!
+        do {
+            try MeshNetworkManager.instance.send(message, to: node)
+            print("Successfully send subscription message")
+        } catch {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Failed to add group"
+            )
+        }
+
+        return ConfigurationServiceResponse(
+            isSuccess: true,
+            message: "Start subscription ..."
+        )
+    }
+
+    func setPublication(withAddress address: Address)
+        -> ConfigurationServiceResponse
+    {
+        var node: Node!
+        var serverModel: Model!
+        var clientModelID: UInt16?
+        var groups: [Group]!
+        var specialGroups: [Group]!
+        var targetGroup: Group?
+
+        // ノードを探す
+        do {
+            node = try findNode(withUnicastAddress: address)
+        } catch {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Couldn't find node"
+            )
+        }
+
+        // サーバーモデルを探す
+        let models = node.elements.flatMap({ $0.models })
+        if let genericOnOffServerModel = models.first(where: {
+            $0.modelIdentifier == .genericOnOffServerModelId
+        }) {
+            serverModel = genericOnOffServerModel
+            clientModelID = .genericOnOffClientModelId
+        } else if let genericColorServerModel = models.first(where: {
+            $0.modelIdentifier == .genericColorServerModelID
+        }) {
+            serverModel = genericColorServerModel
+            clientModelID = .genericColorClientModelID
+        } else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Couldn't find server model"
+            )
+        }
+
+        guard let clientModelID,
+            let clientModel = manager.localElements.flatMap({ $0.models })
+                .first(where: { $0.modelIdentifier == clientModelID })
+        else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Failed to find client model"
+            )
+        }
+
+        // groupを探す
+        let network = MeshNetworkManager.instance.meshNetwork!
+        let alreadySubscribedGroups = serverModel.subscriptions
+        groups = network.groups
+            .filter { !alreadySubscribedGroups.contains($0) }
+        specialGroups = Group.specialGroups
+            .filter { $0 != .allNodes }
+            .filter { !alreadySubscribedGroups.contains($0) }
+
+        targetGroup = serverModel.subscriptions.first
+        guard let targetGroup else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Group not found"
+            )
+        }
+        print("target group: \(targetGroup.address)")
+
+        guard let applicationKey = clientModel.boundApplicationKeys.first else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "ApplicationKey not found"
+            )
+        }
+
+        let publish = Publish(
+            to: targetGroup.address,
+            using: applicationKey,
+            usingFriendshipMaterial: false,
+            ttl: ttl,
+            period: Publish.Period(
+                steps: periodSteps,
+                resolution: periodResolution
+            ),
+            retransmit: Publish.Retransmit(
+                publishRetransmitCount: retransmissionCount,
+                intervalSteps: retransmissionIntervalSteps
+            )
+        )
+        let publicationMessage: AcknowledgedConfigMessage =
+            ConfigModelPublicationSet(publish, to: serverModel)
+            ?? ConfigModelPublicationVirtualAddressSet(
+                publish,
+                to: serverModel
+            )!
+        do {
+            try MeshNetworkManager.instance.send(
+                publicationMessage,
+                to: node,
+                withTtl: UInt8(3)
+            )
+            print("Successfully send publication message!")
+        } catch {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "Failed to send message"
+            )
+        }
+
+        return ConfigurationServiceResponse(
+            isSuccess: true,
+            message: "start publication ..."
+        )
     }
 
     private func findNode(withUnicastAddress unicastAddress: Address) throws

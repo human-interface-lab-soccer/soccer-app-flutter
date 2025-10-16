@@ -2,13 +2,13 @@
 //  GenericColorSetUnackowleged.swift
 //  Runner
 //
-//  Created by lights Winner on 2025/09/18.
+//  Created by naokeyn on 2025/09/18.
 //
 
 import Foundation
 import NordicMesh
 
-public struct GenericColorSetUnackowleged: StaticUnacknowledgedMeshMessage,
+public struct GenericColorSetUnacknowleged: StaticUnacknowledgedMeshMessage,
     TransactionMessage, TransitionMessage
 {
     public static let opCode: UInt32 = 0x8203

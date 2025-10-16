@@ -21,7 +21,7 @@
 		75CBB2A52E758CD600E058C2 /* MeshNetworkEventStreamHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CBB2A42E758CD600E058C2 /* MeshNetworkEventStreamHandler.swift */; };
 		75CBB2C52E7BDDF900E058C2 /* GenericColorSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CBB2C42E7BDDF900E058C2 /* GenericColorSet.swift */; };
 		75CBB2C92E7BE5F500E058C2 /* GenericColorStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CBB2C82E7BE5F500E058C2 /* GenericColorStatus.swift */; };
-		75CBB2CB2E7C02F000E058C2 /* GenericColorSetUnackowleged.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CBB2CA2E7C02F000E058C2 /* GenericColorSetUnackowleged.swift */; };
+		75CBB2CB2E7C02F000E058C2 /* GenericColorSetUnacknowleged.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CBB2CA2E7C02F000E058C2 /* GenericColorSetUnacknowleged.swift */; };
 		75CF3CB62E09AEB900EA146E /* NordicMesh in Frameworks */ = {isa = PBXBuildFile; productRef = 75CF3CB52E09AEB900EA146E /* NordicMesh */; };
 		75F213342DF8026B006D37CD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75F213332DF8026B006D37CD /* GoogleService-Info.plist */; };
 		75F213352DF8026B006D37CD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75F213332DF8026B006D37CD /* GoogleService-Info.plist */; };
@@ -75,7 +75,7 @@
 		75CBB2A42E758CD600E058C2 /* MeshNetworkEventStreamHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MeshNetworkEventStreamHandler.swift; path = FlutterChannels/MeshNetworkEventStreamHandler.swift; sourceTree = "<group>"; };
 		75CBB2C42E7BDDF900E058C2 /* GenericColorSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GenericColorSet.swift; path = MeshNetwork/GenericColorSet.swift; sourceTree = "<group>"; };
 		75CBB2C82E7BE5F500E058C2 /* GenericColorStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GenericColorStatus.swift; path = MeshNetwork/GenericColorStatus.swift; sourceTree = "<group>"; };
-		75CBB2CA2E7C02F000E058C2 /* GenericColorSetUnackowleged.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GenericColorSetUnackowleged.swift; path = MeshNetwork/GenericColorSetUnackowleged.swift; sourceTree = "<group>"; };
+		75CBB2CA2E7C02F000E058C2 /* GenericColorSetUnacknowleged.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GenericColorSetUnacknowleged.swift; path = MeshNetwork/GenericColorSetUnacknowleged.swift; sourceTree = "<group>"; };
 		75F213332DF8026B006D37CD /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		75FE7BC02E0D509300A40785 /* GeneralBleScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GeneralBleScanner.swift; path = Bluetooth/GeneralBleScanner.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -199,7 +199,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				75CBB2A22E7452EC00E058C2 /* AppDelegate+MeshNetworkDelegate.swift */,
-				75CBB2CA2E7C02F000E058C2 /* GenericColorSetUnackowleged.swift */,
+				75CBB2CA2E7C02F000E058C2 /* GenericColorSetUnacknowleged.swift */,
 				7595FF852E374E8100127591 /* FlutterChannelManager.swift */,
 				75CBB2C42E7BDDF900E058C2 /* GenericColorSet.swift */,
 				75CBB2A42E758CD600E058C2 /* MeshNetworkEventStreamHandler.swift */,
@@ -445,7 +445,7 @@
 				75CBB2A32E7452EC00E058C2 /* AppDelegate+MeshNetworkDelegate.swift in Sources */,
 				7595FF882E374F2600127591 /* ProvisioningEventStreamHandler.swift in Sources */,
 				75CBB2A52E758CD600E058C2 /* MeshNetworkEventStreamHandler.swift in Sources */,
-				75CBB2CB2E7C02F000E058C2 /* GenericColorSetUnackowleged.swift in Sources */,
+				75CBB2CB2E7C02F000E058C2 /* GenericColorSetUnacknowleged.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				75FE7BC12E0D509300A40785 /* GeneralBleScanner.swift in Sources */,
 			);
