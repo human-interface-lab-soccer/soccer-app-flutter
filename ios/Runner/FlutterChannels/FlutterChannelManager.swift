@@ -300,6 +300,27 @@ class FlutterChannelManager {
                 message: response.message ?? "No message provided"
             )
 
+        case "publishColor":
+            guard let args = call.arguments as? [String: Any],
+                let color = args["color"] as? Int
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "Argument `color` not found"
+                )
+                return
+            }
+
+            let responce = MeshNetworkService.shared.publishColor(
+                colorNum: color
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: responce.isSuccess,
+                message: responce.message ?? "No message provided"
+            )
+
         default:
             result(FlutterMethodNotImplemented)
         }

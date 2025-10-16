@@ -59,4 +59,14 @@ class MeshNetwork {
     String message = response['message'] ?? 'No message provided';
     return {'isSuccess': isSuccess, 'message': message};
   }
+
+  /// colorをpublishするメソッド
+  static Future<Map<String, dynamic>> publishColor({required int color}) async {
+    final response = await _methodChannel.invokeMethod('publishColor', {
+      'color': color,
+    });
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['message'] ?? 'No message provided';
+    return {'isSuccess': isSuccess, 'message': message};
+  }
 }

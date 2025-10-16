@@ -134,15 +134,19 @@ class ConnectionPageState extends State<ConnectionPage> {
   void handleButtonPress(ButtonPress action) {
     switch (action) {
       case ButtonPress.pressRed:
+        MeshNetwork.publishColor(color: 1);
         updateAction("赤だよー");
         break;
       case ButtonPress.pressBlue:
+        MeshNetwork.publishColor(color: 3);
         updateAction("青だよー");
         break;
       case ButtonPress.pressGreen:
+        MeshNetwork.publishColor(color: 2);
         updateAction("緑だよー");
         break;
       case ButtonPress.clearAction:
+        MeshNetwork.publishColor(color: 0);
         updateAction("");
         break;
       case ButtonPress.connectDevice:
