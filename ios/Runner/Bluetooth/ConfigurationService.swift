@@ -309,7 +309,12 @@ class ConfigurationService {
         }
         print("target group: \(targetGroup.address)")
 
-        let applicationKey = clientModel.boundApplicationKeys.first!
+        guard let applicationKey = clientModel.boundApplicationKeys.first else {
+            return ConfigurationServiceResponse(
+                isSuccess: false,
+                message: "ApplicationKey not found"
+            )
+        }
 
         let publish = Publish(
             to: targetGroup.address,
