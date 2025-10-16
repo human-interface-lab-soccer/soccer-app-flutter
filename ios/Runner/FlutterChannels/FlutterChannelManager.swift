@@ -202,10 +202,6 @@ class FlutterChannelManager {
                 message: response.message
             )
 
-            // TODO: メッセージの返し方を修正
-            print(response.isSuccess)
-            print(response.message)
-
         case "setPublication":
             guard let args = call.arguments as? [String: Any],
                 let unicastAddress = args["unicastAddress"] as? Address
@@ -229,10 +225,6 @@ class FlutterChannelManager {
                 isSuccess: response.isSuccess,
                 message: response.message
             )
-
-            // TODO: メッセージを返す
-            print(response.isSuccess)
-            print(response.message)
 
         default:
             result(FlutterMethodNotImplemented)
