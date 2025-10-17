@@ -7,6 +7,7 @@ import 'package:soccer_app_flutter/shared/widgets/practice_parameter_settings_wi
 import 'package:soccer_app_flutter/shared/mixins/swipe_navigation_mixin.dart';
 import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
 import 'package:soccer_app_flutter/pages/note_page/menu_form_page.dart';
+import 'package:soccer_app_flutter/shared/widgets/led_display_widget.dart';
 
 // 定数定義
 class PracticeDetailConstants {
@@ -225,11 +226,11 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
               (details) => handleSwipeNavigation(details, context),
           child: Column(
             children: [
-              // 上部：メニューリストの内容を表示
-              MenuInfoCardWidget(menu: widget.menu),
+              // 上部：MenuInfoCardWidgetまたはLEDディスプレイを表示
+              _buildTopContent(),
 
-              // 中部：空白エリア
-              const Expanded(child: SizedBox()),
+              // 中部：空白エリア（練習中は不要）
+              if (!_controller.isRunning) const Spacer(),
 
               // 下部：パラメータ設定エリア
               PracticeParameterSettingsWidget(controller: _controller),
@@ -238,5 +239,20 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
         ),
       ),
     );
+  }
+
+  /// 上部コンテンツの構築
+  /// 練習中はLEDディスプレイ，それ以外はMenuInfoCardWidgetを表示
+  Widget _buildTopContent() {
+    if (_controller.isRunning) {
+      return Expanded(
+        child: LedDisplayWidget(
+          menu: widget.menu,
+          currentPhaseIndex: _controller.currentPhaseIndex,
+        ),
+      );
+    } else {
+      return MenuInfoCardWidget(menu: widget.menu);
+    }
   }
 }
