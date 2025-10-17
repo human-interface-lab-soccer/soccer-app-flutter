@@ -4,10 +4,11 @@ import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/controllers/practice_timer_controller.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_info_card_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/practice_parameter_settings_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/led_display_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/led_preview_widget.dart';
 import 'package:soccer_app_flutter/shared/mixins/swipe_navigation_mixin.dart';
 import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
 import 'package:soccer_app_flutter/pages/note_page/menu_form_page.dart';
-import 'package:soccer_app_flutter/shared/widgets/led_display_widget.dart';
 
 // 定数定義
 class PracticeDetailConstants {
@@ -226,11 +227,11 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
               (details) => handleSwipeNavigation(details, context),
           child: Column(
             children: [
-              // 上部：MenuInfoCardWidgetまたはLEDディスプレイを表示
-              _buildTopContent(),
+              // 上部：MenuInfoCardWidget（練習前のみ）
+              if (!_controller.isRunning) MenuInfoCardWidget(menu: widget.menu),
 
-              // 中部：空白エリア（練習中は不要）
-              if (!_controller.isRunning) const Spacer(),
+              // 中部：LEDプレビューまたはLEDディスプレイ
+              _buildMiddleContent(),
 
               // 下部：パラメータ設定エリア
               PracticeParameterSettingsWidget(controller: _controller),
@@ -241,9 +242,9 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
     );
   }
 
-  /// 上部コンテンツの構築
-  /// 練習中はLEDディスプレイ，それ以外はMenuInfoCardWidgetを表示
-  Widget _buildTopContent() {
+  /// 中部コンテンツの構築
+  /// 練習中はLEDディスプレイ，それ以外はLEDプレビューを表示
+  Widget _buildMiddleContent() {
     if (_controller.isRunning) {
       return Expanded(
         child: LedDisplayWidget(
@@ -252,7 +253,9 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
         ),
       );
     } else {
-      return MenuInfoCardWidget(menu: widget.menu);
+      return Expanded(
+        child: Center(child: LedPreviewWidget(menu: widget.menu)),
+      );
     }
   }
 }
