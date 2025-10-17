@@ -222,18 +222,27 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
       ),
       body: SafeArea(
         child: GestureDetector(
-          // スワイプで戻る機能（SwipeNavigationMixinから提供）
           onHorizontalDragEnd:
               (details) => handleSwipeNavigation(details, context),
           child: Column(
             children: [
-              // 上部：MenuInfoCardWidget（練習前のみ）
-              if (!_controller.isRunning) MenuInfoCardWidget(menu: widget.menu),
+              // スクロール可能な上部・中部エリア
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // 上部：MenuInfoCardWidget（練習前のみ）
+                      if (!_controller.isRunning)
+                        MenuInfoCardWidget(menu: widget.menu),
 
-              // 中部：LEDプレビューまたはLEDディスプレイ
-              _buildMiddleContent(),
+                      // 中部：LEDプレビューまたはLEDディスプレイ
+                      _buildMiddleContent(),
+                    ],
+                  ),
+                ),
+              ),
 
-              // 下部：パラメータ設定エリア
+              // 下部：パラメータ設定エリア（固定）
               PracticeParameterSettingsWidget(controller: _controller),
             ],
           ),
@@ -246,16 +255,12 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
   /// 練習中はLEDディスプレイ，それ以外はLEDプレビューを表示
   Widget _buildMiddleContent() {
     if (_controller.isRunning) {
-      return Expanded(
-        child: LedDisplayWidget(
-          menu: widget.menu,
-          currentPhaseIndex: _controller.currentPhaseIndex,
-        ),
+      return LedDisplayWidget(
+        menu: widget.menu,
+        currentPhaseIndex: _controller.currentPhaseIndex,
       );
     } else {
-      return Expanded(
-        child: Center(child: LedPreviewWidget(menu: widget.menu)),
-      );
+      return LedPreviewWidget(menu: widget.menu);
     }
   }
 }
