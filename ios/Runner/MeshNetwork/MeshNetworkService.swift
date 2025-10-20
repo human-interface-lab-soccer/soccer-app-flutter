@@ -199,6 +199,7 @@ class MeshNetworkService {
             )
         }
 
+        // TODO: ApplicationKeyの取得をヘルパーメソッドにしたい
         guard let applicationKey = manager.meshNetwork?.applicationKeys.first
         else {
             return MeshNetworkServiceResponse(
@@ -207,6 +208,7 @@ class MeshNetworkService {
             )
         }
         do {
+            // TODO: TTLの設定どこでやるの？Publicationの時？
             try manager.send(message, to: targetGroup, using: applicationKey)
         } catch {
             return MeshNetworkServiceResponse(
