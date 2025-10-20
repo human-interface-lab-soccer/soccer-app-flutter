@@ -65,18 +65,21 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
           // スワイプで戻る機能（SwipeNavigationMixinから提供）
           onHorizontalDragEnd:
               (details) => handleSwipeNavigation(details, context),
-          child: Column(
-            children: [
-              // 上部：メニューリストの内容を表示
-              MenuInfoCardWidget(menu: widget.menu),
+          child: SingleChildScrollView( // ← Column をスクロール可能にする！   
+            padding: const EdgeInsets.only(bottom: 24), 
+            child: Column(
+              children: [
+                // 上部：メニューリストの内容を表示
+                MenuInfoCardWidget(menu: widget.menu),
 
-              // 中部：空白エリア
-              const Expanded(child: SizedBox()),
+                // 中部：空白エリア
+                const SizedBox(height: 16),
 
-              // 下部：パラメータ設定エリアここ怪しいかも
-              PracticeParameterSettingsWidget(controller: _controller),
-            ],
-          ),
+                // 下部：パラメータ設定エリア
+                PracticeParameterSettingsWidget(controller: _controller),
+              ],
+            ),
+          ),  
         ),
       ),
     );
