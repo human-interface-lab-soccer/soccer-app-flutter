@@ -312,13 +312,13 @@ class FlutterChannelManager {
                 return
             }
 
-            let responce = MeshNetworkService.shared.changeAllNodeColor(
+            let response = MeshNetworkService.shared.changeAllNodeColor(
                 colorNum: color
             )
             handleMethodResponse(
                 result: result,
-                isSuccess: responce.isSuccess,
-                message: responce.message ?? "No message provided"
+                isSuccess: response.isSuccess,
+                message: response.message ?? "No message provided"
             )
 
         default:
