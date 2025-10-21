@@ -312,7 +312,7 @@ class FlutterChannelManager {
                 return
             }
 
-            let responce = MeshNetworkService.shared.publishColor(
+            let responce = MeshNetworkService.shared.changeAllNodeColor(
                 colorNum: color
             )
             handleMethodResponse(

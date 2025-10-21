@@ -179,7 +179,7 @@ class MeshNetworkService {
         )
     }
 
-    func publishColor(colorNum: Int) -> MeshNetworkServiceResponse {
+    func changeAllNodeColor(colorNum: Int) -> MeshNetworkServiceResponse {
         let colorCode = convertColorCode(fromColorNum: colorNum)
         let message = GenericColorSetUnacknowleged(
             colorCode,
@@ -187,10 +187,9 @@ class MeshNetworkService {
             color3: colorCode
         )
 
-        // TODO: グループの指定方法を修正．直接ではなく，いい感じに
         guard
             let targetGroup = manager.meshNetwork?.group(
-                withAddress: Address(0xC000)
+                withAddress: .allLedNodes
             )
         else {
             return MeshNetworkServiceResponse(
@@ -199,7 +198,6 @@ class MeshNetworkService {
             )
         }
 
-        // TODO: ApplicationKeyの取得をヘルパーメソッドにしたい
         guard let applicationKey = manager.meshNetwork?.applicationKeys.first
         else {
             return MeshNetworkServiceResponse(
@@ -208,7 +206,6 @@ class MeshNetworkService {
             )
         }
         do {
-            // TODO: TTLの設定どこでやるの？Publicationの時？
             try manager.send(message, to: targetGroup, using: applicationKey)
         } catch {
             return MeshNetworkServiceResponse(
@@ -244,4 +241,8 @@ class MeshNetworkService {
             return UInt16(1111)
         }
     }
+}
+
+extension Address {
+    public static let allLedNodes: Address = 0xC000
 }
