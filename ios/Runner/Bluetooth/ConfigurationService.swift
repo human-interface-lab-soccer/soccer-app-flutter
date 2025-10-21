@@ -188,7 +188,7 @@ class ConfigurationService {
                 return ConfigurationServiceResponse(
                     isSuccess: false,
                     message:
-                        "Failed to find group: \(error.localizedDescription)"
+                        "Failed to add group: \(error.localizedDescription)"
                 )
             }
         }
