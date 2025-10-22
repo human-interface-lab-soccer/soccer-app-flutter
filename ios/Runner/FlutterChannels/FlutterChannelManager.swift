@@ -321,6 +321,48 @@ class FlutterChannelManager {
                 message: response.message ?? "No message provided"
             )
 
+        case "setNodeColors":
+            guard let args = call.arguments as? [String: Any],
+                let colorNum = args["colorNum"] as? UInt16,
+                let colorNum2 = args["colorNum2"] as? UInt16,
+                let colorNum3 = args["colorNum3"] as? UInt16
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "some params not found"
+                )
+                return
+            }
+            // TODO: Refactor
+            // 近い将来サポート終了予定
+            let message = GenericColorSetUnacknowleged(
+                colorNum + 1111,
+                color2: colorNum2 + 1111,
+                color3: colorNum3 + 1111
+            )
+            guard
+                let appKey = MeshNetworkManager.instance.meshNetwork?
+                    .applicationKeys.first
+            else {
+                return
+            }
+            do {
+                try MeshNetworkManager.instance.send(
+                    message,
+                    to: MeshAddress(.allLedNodes),
+                    using: appKey
+                )
+            } catch {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message:
+                        "Failed to send message: \(error.localizedDescription)"
+                )
+                return
+            }
+
         default:
             result(FlutterMethodNotImplemented)
         }
