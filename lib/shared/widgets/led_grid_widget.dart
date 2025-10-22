@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
-import 'package:soccer_app_flutter/shared/utils/led_utils.dart';
+import 'package:soccer_app_flutter/shared/constants/led_constants.dart';
+import 'package:soccer_app_flutter/shared/enums/led_color.dart';
 
 /// LEDグリッドウィジェット
 /// LEDの表示ロジックを共通化したウィジェット
@@ -29,8 +30,8 @@ class LedGridWidget extends StatelessWidget {
   /// 個別のLEDを構築
   Widget _buildLed(int ledIndex) {
     final String colorName = _getColorName(ledIndex);
-    final Color ledColor = LedUtils.colorNameToColor(colorName);
-    final bool isActive = LedUtils.isActiveLed(colorName);
+    final Color ledColor = LedColor.fromLabel(colorName).baseColor;
+    final bool isActive = LedColor.fromLabel(colorName).isActive;
 
     return Container(
       width: config.size,
@@ -48,7 +49,7 @@ class LedGridWidget extends StatelessWidget {
         child: Text(
           '${ledIndex + 1}',
           style: TextStyle(
-            color: LedUtils.getContrastColor(ledColor),
+            color: LedColor.fromLabel(colorName).getContrastColor(),
             fontSize: config.fontSize,
             fontWeight: FontWeight.bold,
           ),
@@ -65,7 +66,7 @@ class LedGridWidget extends StatelessWidget {
         currentPhaseIndex < colorSettings[ledIndex].length) {
       return colorSettings[ledIndex][currentPhaseIndex];
     }
-    return 'クリア';
+    return LedColor.clear.label;
   }
 
   /// 影のエフェクトを構築

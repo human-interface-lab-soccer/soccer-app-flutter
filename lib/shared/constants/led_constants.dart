@@ -1,34 +1,3 @@
-import 'package:flutter/material.dart';
-
-/// LEDウィジェットのユーティリティクラス
-class LedUtils {
-  /// 色名をColorに変換
-  static Color colorNameToColor(String colorName) {
-    switch (colorName) {
-      case '赤':
-        return Colors.red;
-      case '青':
-        return Colors.blue;
-      case '緑':
-        return Colors.green;
-      case 'クリア':
-      default:
-        return Colors.grey.shade200;
-    }
-  }
-
-  /// 背景色に対して見やすい文字色を取得
-  static Color getContrastColor(Color backgroundColor) {
-    final double luminance = backgroundColor.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
-  }
-
-  /// LEDが有効かどうかを判定
-  static bool isActiveLed(String colorName) {
-    return colorName != 'クリア';
-  }
-}
-
 /// LED表示の設定クラス
 class LedDisplayConfig {
   final double size;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
-import 'package:soccer_app_flutter/shared/utils/led_utils.dart';
+import 'package:soccer_app_flutter/shared/constants/led_constants.dart';
 import 'package:soccer_app_flutter/shared/widgets/led_grid_widget.dart';
 
 /// LEDディスプレイウィジェット
