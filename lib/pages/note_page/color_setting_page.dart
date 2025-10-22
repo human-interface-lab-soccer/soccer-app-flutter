@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:soccer_app_flutter/shared/enums/led_color.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 
 class ColorSettingPage extends StatefulWidget {
@@ -16,8 +17,7 @@ class ColorSettingPage extends StatefulWidget {
 }
 
 class _ColorSettingPageState extends State<ColorSettingPage> {
-  late List<List<String>> colorSettings;
-  final List<String> colors = ['赤', '青', '緑', 'クリア'];
+  late List<List<LedColor>> colorSettings;
 
   final ScrollController _horizontalControllerHeader = ScrollController();
   final ScrollController _horizontalControllerData = ScrollController();
@@ -30,7 +30,12 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
     // PracticeMenuから色設定を初期化
     colorSettings =
         widget.practiceMenu.colorSettings
-            .map((ledColors) => List<String>.from(ledColors))
+            .map(
+              (ledColors) =>
+                  ledColors
+                      .map((colorStr) => LedColor.fromLabel(colorStr))
+                      .toList(),
+            )
             .toList();
 
     // 横スクロールの同期
@@ -69,20 +74,6 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
     super.dispose();
   }
 
-  // 色に対応するColorオブジェクトを返す
-  Color getColorFromString(String colorName) {
-    switch (colorName) {
-      case '赤':
-        return Colors.red.shade100;
-      case '青':
-        return Colors.blue.shade100;
-      case '緑':
-        return Colors.green.shade100;
-      default:
-        return Colors.transparent;
-    }
-  }
-
   Widget _buildCell(String value, {bool isHeader = false}) {
     return Container(
       width: 120,
@@ -102,23 +93,27 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
   }
 
   Widget _buildDropdownCell(int ledIndex, int phaseIndex) {
+    final selectedColor = colorSettings[ledIndex][phaseIndex];
+
     return Container(
       width: 120,
       height: 56,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
-        color: getColorFromString(colorSettings[ledIndex][phaseIndex]),
+        color: selectedColor.displayColor.withValues(alpha: 0.3),
       ),
-      child: DropdownButton<String>(
-        value: colorSettings[ledIndex][phaseIndex],
+      child: DropdownButton<LedColor>(
+        value: selectedColor,
         isExpanded: true,
         underline: const SizedBox(),
         items:
-            colors
+            LedColor.values
                 .map(
-                  (c) =>
-                      DropdownMenuItem(value: c, child: Center(child: Text(c))),
+                  (color) => DropdownMenuItem(
+                    value: color,
+                    child: Center(child: Text(color.label)),
+                  ),
                 )
                 .toList(),
         onChanged: (value) {
@@ -228,9 +223,18 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
+          // LedColor → Stringに変換して保存
+          final colorSettingsAsStrings =
+              colorSettings
+                  .map(
+                    (ledColors) =>
+                        ledColors.map((color) => color.label).toList(),
+                  )
+                  .toList();
+
           // 更新されたPracticeMenuオブジェクトを作成
           final updatedMenu = widget.practiceMenu.copyWith(
-            colorSettings: colorSettings,
+            colorSettings: colorSettingsAsStrings,
           );
 
           debugPrint('保存されたPracticeMenu: ${updatedMenu.toJson()}');
