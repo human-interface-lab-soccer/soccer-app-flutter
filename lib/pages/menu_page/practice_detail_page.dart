@@ -61,15 +61,16 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
         title: Text(widget.menu.name),
       ),
       body: SafeArea(
-        child: Stack( 
+        child: Stack(
           children: [
-             // 背景：メニュー情報と空白エリア
+            // 背景：メニュー情報と空白エリア
             GestureDetector(
-            // スワイプで戻る機能（SwipeNavigationMixinから提供）
+              // スワイプで戻る機能（SwipeNavigationMixinから提供）
               onHorizontalDragEnd:
                   (details) => handleSwipeNavigation(details, context),
-              child: SingleChildScrollView( // ← Column をスクロール可能にする！   
-                padding: const EdgeInsets.only(bottom: 160), 
+              child: SingleChildScrollView(
+                // ← Column をスクロール可能にする！
+                padding: const EdgeInsets.only(bottom: 160),
                 child: Column(
                   children: [
                     // 上部：メニューリストの内容を表示
@@ -80,8 +81,8 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
                   ],
                 ),
               ),
-            ), 
-        
+            ),
+
             // 下部：パラメータ設定エリア
             DraggableScrollableSheet(
               initialChildSize: 0.2, // ← 初期表示高さ（画面の20%）
@@ -117,7 +118,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
                             ),
                           ),
                         ),
-                      ), 
+                      ),
 
                       // スクロール可能なパラメータ設定ウィジェット
                       Expanded(
@@ -125,8 +126,9 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
                           controller: scrollController, // ← スクロール連携
                           child: Padding(
                             padding: const EdgeInsets.all(16),
-                            child:
-                              PracticeParameterSettingsWidget(controller: _controller),
+                            child: PracticeParameterSettingsWidget(
+                              controller: _controller,
+                            ),
                           ),
                         ),
                       ),
@@ -134,7 +136,7 @@ class _PracticeDetailPageState extends State<PracticeDetailPage>
                   ),
                 );
               },
-            ), 
+            ),
           ],
         ),
       ),
