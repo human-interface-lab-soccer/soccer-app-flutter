@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:soccer_app_flutter/shared/enums/led_color.dart';
 import 'package:soccer_app_flutter/shared/models/mesh_node.dart';
@@ -81,22 +80,12 @@ class MeshNetwork {
     int maxNodes = 12; // 最大ノード数
     String colorNumStrings = "0" * maxNodes;
 
-    int maxKey =
-        nodeColors.keys.isEmpty
-            ? 0
-            : nodeColors.keys.reduce((a, b) => a > b ? a : b);
-    for (int i = 0; i < min(maxNodes, maxKey); i++) {
-      if (nodeColors.containsKey(i)) {
-        colorNumStrings = colorNumStrings.replaceRange(
-          i,
-          i + 1,
-          (nodeColors[i] ?? LedColor.clear).value.toString(),
-        );
+    for (var key in nodeColors.keys) {
+      if (key >= 0 && key < maxNodes) {
+        String colorNum = (nodeColors[key] ?? LedColor.clear).value.toString();
+        colorNumStrings = colorNumStrings.replaceRange(key, key + 1, colorNum);
       }
     }
-
-    print("----- Node colors -----");
-    print("colorNum: $colorNumStrings");
 
     int colorNum = int.parse(colorNumStrings.substring(0, 4));
     int colorNum2 = int.parse(colorNumStrings.substring(4, 8));
