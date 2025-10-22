@@ -4,6 +4,8 @@ import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/controllers/practice_timer_controller.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_info_card_widget.dart';
 import 'package:soccer_app_flutter/shared/widgets/practice_parameter_settings_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/led_display_widget.dart';
+import 'package:soccer_app_flutter/shared/widgets/led_preview_widget.dart';
 import 'package:soccer_app_flutter/shared/mixins/swipe_navigation_mixin.dart';
 import 'package:soccer_app_flutter/shared/providers/practice_menu_provider.dart';
 import 'package:soccer_app_flutter/pages/note_page/menu_form_page.dart';
@@ -220,23 +222,45 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
       ),
       body: SafeArea(
         child: GestureDetector(
-          // スワイプで戻る機能（SwipeNavigationMixinから提供）
           onHorizontalDragEnd:
               (details) => handleSwipeNavigation(details, context),
           child: Column(
             children: [
-              // 上部：メニューリストの内容を表示
-              MenuInfoCardWidget(menu: widget.menu),
+              // スクロール可能な上部・中部エリア
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // 上部：MenuInfoCardWidget（練習前のみ）
+                      if (!_controller.isRunning)
+                        MenuInfoCardWidget(menu: widget.menu),
 
-              // 中部：空白エリア
-              const Expanded(child: SizedBox()),
+                      // 中部：LEDプレビューまたはLEDディスプレイ
+                      _buildMiddleContent(),
+                    ],
+                  ),
+                ),
+              ),
 
-              // 下部：パラメータ設定エリア
+              // 下部：パラメータ設定エリア（固定）
               PracticeParameterSettingsWidget(controller: _controller),
             ],
           ),
         ),
       ),
     );
+  }
+
+  /// 中部コンテンツの構築
+  /// 練習中はLEDディスプレイ，それ以外はLEDプレビューを表示
+  Widget _buildMiddleContent() {
+    if (_controller.isRunning) {
+      return LedDisplayWidget(
+        menu: widget.menu,
+        currentPhaseIndex: _controller.currentPhaseIndex,
+      );
+    } else {
+      return LedPreviewWidget(menu: widget.menu);
+    }
   }
 }
