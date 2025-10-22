@@ -129,8 +129,6 @@ class ConfigurationService {
         var node: Node!
         var serverModel: Model!
         var clientModelID: UInt16?
-        var groups: [Group]!
-        var specialGroups: [Group]!
         var targetGroup: Group?
 
         // ノードを探す
@@ -163,9 +161,9 @@ class ConfigurationService {
         }
 
         guard let clientModelID,
-            let clientModel = manager.localElements
+            manager.localElements
                 .flatMap({ $0.models })
-                .first(where: { $0.modelIdentifier == clientModelID })
+                .first(where: { $0.modelIdentifier == clientModelID }) != nil
         else {
             return ConfigurationServiceResponse(
                 isSuccess: false,
@@ -173,33 +171,19 @@ class ConfigurationService {
             )
         }
 
-        // groupを探す
-        let network = MeshNetworkManager.instance.meshNetwork!
-        let alreadySubscribedGroups = serverModel.subscriptions
-        groups = network.groups
-            .filter { !alreadySubscribedGroups.contains($0) }
-        specialGroups = Group.specialGroups
-            .filter { $0 != .allNodes }
-            .filter { !alreadySubscribedGroups.contains($0) }
-
-        // groupが無ければ生成
-        if groups.isEmpty {
-            guard
-                let groupAddress = manager.meshNetwork?
-                    .nextAvailableGroupAddress()
-            else {
-                return ConfigurationServiceResponse(
-                    isSuccess: false,
-                    message: "failed to create group"
-                )
-            }
+        // LED Groupを探す．存在しない場合は 0xC000 で新規作成
+        if let ledGroup = manager.meshNetwork?.groups.first(where: {
+            $0.address == MeshAddress(.allLedNodes)
+        }) {
+            targetGroup = ledGroup
+        } else {
             do {
-                let newGroup = try Group(
+                let ledGroup = try Group(
                     name: "LED Group",
-                    address: groupAddress
+                    address: .allLedNodes
                 )
-                try manager.meshNetwork?.add(group: newGroup)
-                targetGroup = newGroup
+                try manager.meshNetwork?.add(group: ledGroup)
+                targetGroup = ledGroup
             } catch {
                 return ConfigurationServiceResponse(
                     isSuccess: false,
@@ -207,11 +191,10 @@ class ConfigurationService {
                         "Failed to add group: \(error.localizedDescription)"
                 )
             }
-        } else {
-            targetGroup = groups.first
         }
 
-        print("target group: \(targetGroup?.address)")
+        print("----- Subscription -----")
+        print("target group: \(String(describing: targetGroup?.address))")
         guard let targetGroup else {
             return ConfigurationServiceResponse(
                 isSuccess: false,
@@ -248,9 +231,6 @@ class ConfigurationService {
         var node: Node!
         var serverModel: Model!
         var clientModelID: UInt16?
-        var groups: [Group]!
-        var specialGroups: [Group]!
-        var targetGroup: Group?
 
         // ノードを探す
         do {
@@ -293,20 +273,16 @@ class ConfigurationService {
 
         // groupを探す
         let network = MeshNetworkManager.instance.meshNetwork!
-        let alreadySubscribedGroups = serverModel.subscriptions
-        groups = network.groups
-            .filter { !alreadySubscribedGroups.contains($0) }
-        specialGroups = Group.specialGroups
-            .filter { $0 != .allNodes }
-            .filter { !alreadySubscribedGroups.contains($0) }
-
-        targetGroup = serverModel.subscriptions.first
-        guard let targetGroup else {
+        guard
+            let targetGroup = network.groups
+                .first(where: { $0.address == MeshAddress(.allLedNodes) })
+        else {
             return ConfigurationServiceResponse(
                 isSuccess: false,
                 message: "Group not found"
             )
         }
+        print("----- Publication -----")
         print("target group: \(targetGroup.address)")
 
         guard let applicationKey = clientModel.boundApplicationKeys.first else {

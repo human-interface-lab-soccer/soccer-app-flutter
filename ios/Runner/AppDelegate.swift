@@ -10,6 +10,7 @@ import UIKit
     // Manager Instances
     var meshNetworkManager: MeshNetworkManager!
     var connection: NetworkConnection?
+    private let defaultTtl: UInt8 = 7
     private var bleScanner: GeneralBleScanner?
     private var provisioningService: ProvisioningService!
     private var flutterChannelManager: FlutterChannelManager!
@@ -59,6 +60,13 @@ import UIKit
             } else {
                 _ = createNewMeshNetwork()
             }
+
+            if let provisioner = meshNetworkManager.meshNetwork?
+                .localProvisioner, provisioner.node?.defaultTTL == nil
+            {
+                provisioner.node?.defaultTTL = defaultTtl
+                let _ = meshNetworkManager.save()
+            }
         } catch {
             print("Error loading mesh network: \(error)")
             _ = createNewMeshNetwork()
@@ -76,6 +84,9 @@ import UIKit
             withName: "My Flutter Mesh",
             by: provisioner
         )
+        if let localProvisioner = network.localProvisioner {
+            localProvisioner.node?.defaultTTL = defaultTtl
+        }
         _ = meshNetworkManager.save()
         meshNetworkDidChange()
         return network
