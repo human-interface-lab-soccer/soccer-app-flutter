@@ -177,6 +177,11 @@ extension AppDelegate: MeshNetworkDelegate {
         }) {
             serverModel = genericColorServerModel
             clientModelID = .genericColorClientModelID
+        } else if let customServerModel = models.first(where: {
+            $0.modelId == .customServerModelIdentifier
+        }) {
+            serverModel = customServerModel
+            clientModelID = .customClientModelID
         }
         // Configuration可能なサーバーが見つからないとき
         else {
