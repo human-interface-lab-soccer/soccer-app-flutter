@@ -12,8 +12,8 @@ extension UInt16 {
     public static let customCompanyID: UInt16 = 0xFFFF
     public static let customClientModelID: UInt16 = 0x0000
     public static let customServerModelID: UInt16 = 0x0001
-    public static let genericColorServerModelID: UInt16 = 0xffff
-    public static let genericColorClientModelID: UInt16 = 0xfffe
+    public static let genericColorServerModelID: UInt16 = 0xFFFF
+    public static let genericColorClientModelID: UInt16 = 0xFFFE
 }
 
 extension UInt32 {
