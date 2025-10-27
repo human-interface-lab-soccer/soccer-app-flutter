@@ -109,6 +109,11 @@ import UIKit
                     sigModelId: .genericColorClientModelID,
                     delegate: GenericColorClientDelegate()
                 ),
+                Model(
+                    vendorModelId: .customClientModelID,
+                    companyId: .customCompanyID,
+                    delegate: GenericColorClientDelegate()
+                ),
             ]
         )
         meshNetworkManager.localElements = [primaryElement]
