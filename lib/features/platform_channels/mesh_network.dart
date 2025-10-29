@@ -87,9 +87,15 @@ class MeshNetwork {
       }
     }
 
-    int colorNum = int.parse(colorNumStrings.substring(0, 4));
-    int colorNum2 = int.parse(colorNumStrings.substring(4, 8));
-    int colorNum3 = int.parse(colorNumStrings.substring(8, 12));
+    int colorNum = int.parse(
+      colorNumStrings.substring(0, 4).split('').reversed.join(),
+    );
+    int colorNum2 = int.parse(
+      colorNumStrings.substring(4, 8).split('').reversed.join(),
+    );
+    int colorNum3 = int.parse(
+      colorNumStrings.substring(8, 12).split('').reversed.join(),
+    );
 
     final response = await _methodChannel.invokeMethod('setNodeColors', {
       'colorNum': colorNum,
