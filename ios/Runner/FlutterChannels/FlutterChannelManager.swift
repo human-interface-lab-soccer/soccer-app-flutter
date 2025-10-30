@@ -321,6 +321,31 @@ class FlutterChannelManager {
                 message: response.message ?? "No message provided"
             )
 
+        case "setNodeColors":
+            guard let args = call.arguments as? [String: Any],
+                let colorNum = args["colorNum"] as? UInt16,
+                let colorNum2 = args["colorNum2"] as? UInt16,
+                let colorNum3 = args["colorNum3"] as? UInt16
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "Arguments `colorNum`, `colorNum2`, or `colorNum3` not found"
+                )
+                return
+            }
+
+            let response = MeshNetworkService.shared.setNodeColors(
+                colorNum: colorNum,
+                colorNum2: colorNum2,
+                colorNum3: colorNum3
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message ?? "No message provided"
+            )
+
         default:
             result(FlutterMethodNotImplemented)
         }
