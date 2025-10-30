@@ -269,19 +269,7 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
                 child: Column(
                   children: [
                     // つまみバー
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12, bottom: 12),
-                      child: Center(
-                        child: Container(
-                          width: 40,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[400],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ),
+                    _buildDragHandle(),
 
                     // スクロール可能なパラメータ設定ウィジェット
                     Expanded(
@@ -305,6 +293,23 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
     );
   }
 
+  /// つまみバーの構築
+  Widget _buildDragHandle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: Container(
+          width: 40,
+          height: 5,
+          decoration: BoxDecoration(
+            color: Colors.grey[400],
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// 練習実行中のレイアウト（固定レイアウト）
   Widget _buildRunningLayout() {
     return GestureDetector(
@@ -314,17 +319,12 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
           // スクロール可能な上部エリア
           Expanded(
             child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // 中部：LEDディスプレイ
-                  LedDisplayWidget(
+              child: LedDisplayWidget(
                     menu: widget.menu,
                     currentPhaseIndex: _controller.currentPhaseIndex,
                   ),
-                ],
               ),
             ),
-          ),
 
           // 下部：パラメータ設定エリア（固定）
           PracticeParameterSettingsWidget(controller: _controller),
