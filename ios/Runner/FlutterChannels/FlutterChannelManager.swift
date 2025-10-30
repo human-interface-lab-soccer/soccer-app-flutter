@@ -334,34 +334,17 @@ class FlutterChannelManager {
                 )
                 return
             }
-            // TODO: Refactor
-            // 近い将来サポート終了予定
-            let message = GenericColorSetUnacknowleged(
-                colorNum + 1111,
-                color2: colorNum2 + 1111,
-                color3: colorNum3 + 1111
+
+            let responce = MeshNetworkService.shared.setNodeColors(
+                colorNum: colorNum,
+                colorNum2: colorNum2,
+                colorNum3: colorNum3
             )
-            guard
-                let appKey = MeshNetworkManager.instance.meshNetwork?
-                    .applicationKeys.first
-            else {
-                return
-            }
-            do {
-                try MeshNetworkManager.instance.send(
-                    message,
-                    to: MeshAddress(.allLedNodes),
-                    using: appKey
-                )
-            } catch {
-                handleMethodResponse(
-                    result: result,
-                    isSuccess: false,
-                    message:
-                        "Failed to send message: \(error.localizedDescription)"
-                )
-                return
-            }
+            handleMethodResponse(
+                result: result,
+                isSuccess: responce.isSuccess,
+                message: responce.message ?? "No message provided"
+            )
 
         default:
             result(FlutterMethodNotImplemented)

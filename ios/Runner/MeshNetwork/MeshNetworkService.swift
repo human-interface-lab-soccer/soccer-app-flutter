@@ -219,6 +219,45 @@ class MeshNetworkService {
         )
     }
 
+    /// XXX: nRF54での実装後，サポートを終了予定
+    func setNodeColors(colorNum: UInt16, colorNum2: UInt16, colorNum3: UInt16)
+        -> MeshNetworkServiceResponse
+    {
+        /// ソフトウェア（0オリジン）とファームウェア（1オリジン）のラグを調整
+        let adjustValue: UInt16 = 1111
+
+        let message = GenericColorSetUnacknowleged(
+            colorNum + adjustValue,
+            color2: colorNum2 + adjustValue,
+            color3: colorNum3 + adjustValue
+        )
+        guard
+            let appKey = MeshNetworkManager.instance.meshNetwork?
+                .applicationKeys.first
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "ApplicationKey not found"
+            )
+        }
+        do {
+            try manager.send(
+                message,
+                to: MeshAddress(.allLedNodes),
+                using: appKey
+            )
+        } catch {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to send message: \(error.localizedDescription)"
+            )
+        }
+        return MeshNetworkServiceResponse(
+            isSuccess: true,
+            message: "Successfully send message"
+        )
+    }
+
     private func findNode(withUnicastAddress unicastAddress: Address) throws
         -> Node
     {
