@@ -330,7 +330,7 @@ class FlutterChannelManager {
                 handleMethodResponse(
                     result: result,
                     isSuccess: false,
-                    message: "some params not found"
+                    message: "Arguments `colorNum`, `colorNum2`, or `colorNum3` not found"
                 )
                 return
             }
