@@ -166,14 +166,14 @@ extension AppDelegate: MeshNetworkDelegate {
 
         // GenericOnOffServerがいるとき
         if let genericOnOffServerModel = models.first(where: {
-            UInt16($0.modelId) == .genericOnOffServerModelId
+            $0.modelIdentifier == .genericOnOffServerModelId
         }) {
             serverModel = genericOnOffServerModel
             clientModelID = .genericOnOffClientModelId
         }
         // GenericColorServerがいるとき
         else if let genericColorServerModel = models.first(where: {
-            UInt16($0.modelId) == .genericColorServerModelID
+            $0.modelIdentifier == .genericColorServerModelID
         }) {
             serverModel = genericColorServerModel
             clientModelID = .genericColorClientModelID
