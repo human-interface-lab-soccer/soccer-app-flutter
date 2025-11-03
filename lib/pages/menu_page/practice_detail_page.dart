@@ -235,7 +235,9 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
         children: [
           // 背景：メニュー情報とLEDプレビュー
           SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 160),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).size.height * 0.1,
+            ),
             child: Column(
               children: [
                 // 上部：メニュー情報
@@ -247,49 +249,52 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
           ),
 
           // 下部：ドラッグ可能なパラメータ設定エリア
-          DraggableScrollableSheet(
-            initialChildSize: 0.5, // 初期表示高さ（画面の50%）
-            minChildSize: 0.1, // 最小（格納状態）
-            maxChildSize: 0.8, // 最大（全開状態）
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // つまみバー
-                    _buildDragHandle(),
-
-                    // スクロール可能なパラメータ設定ウィジェット
-                    Expanded(
-                      child: SingleChildScrollView(
-                        controller: scrollController,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: PracticeParameterSettingsWidget(
-                            controller: _controller,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+          _buildScrollableContent(),
         ],
       ),
+    );
+  }
+
+  /// 下部：ドラッグ可能なパラメータ設定エリア
+  Widget _buildScrollableContent() {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.5, // 初期表示高さ（画面の50%）
+      minChildSize: 0.1, // 最小（格納状態）
+      maxChildSize: 0.8, // 最大（全開状態）
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -3),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // つまみバー
+              _buildDragHandle(),
+
+              // スクロール可能なパラメータ設定ウィジェット
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: PracticeParameterSettingsWidget(
+                      controller: _controller,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -320,11 +325,11 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
           Expanded(
             child: SingleChildScrollView(
               child: LedDisplayWidget(
-                    menu: widget.menu,
-                    currentPhaseIndex: _controller.currentPhaseIndex,
-                  ),
+                menu: widget.menu,
+                currentPhaseIndex: _controller.currentPhaseIndex,
               ),
             ),
+          ),
 
           // 下部：パラメータ設定エリア（固定）
           PracticeParameterSettingsWidget(controller: _controller),
