@@ -221,46 +221,120 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
         ],
       ),
       body: SafeArea(
-        child: GestureDetector(
-          onHorizontalDragEnd:
-              (details) => handleSwipeNavigation(details, context),
+        child:
+            _controller.isRunning ? _buildRunningLayout() : _buildIdleLayout(),
+      ),
+    );
+  }
+
+  /// 練習開始前のレイアウト（DraggableScrollableSheet使用）
+  Widget _buildIdleLayout() {
+    return GestureDetector(
+      onHorizontalDragEnd: (details) => handleSwipeNavigation(details, context),
+      child: Stack(
+        children: [
+          // 背景：メニュー情報とLEDプレビュー
+          SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).size.height * 0.1,
+            ),
+            child: Column(
+              children: [
+                // 上部：メニュー情報
+                MenuInfoCardWidget(menu: widget.menu),
+                // 中部：LEDプレビュー
+                LedPreviewWidget(menu: widget.menu),
+              ],
+            ),
+          ),
+
+          // 下部：ドラッグ可能なパラメータ設定エリア
+          _buildScrollableContent(),
+        ],
+      ),
+    );
+  }
+
+  /// 下部：ドラッグ可能なパラメータ設定エリア
+  Widget _buildScrollableContent() {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.5, // 初期表示高さ（画面の50%）
+      minChildSize: 0.1, // 最小（格納状態）
+      maxChildSize: 0.8, // 最大（全開状態）
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -3),
+              ),
+            ],
+          ),
           child: Column(
             children: [
-              // スクロール可能な上部・中部エリア
+              // つまみバー
+              _buildDragHandle(),
+
+              // スクロール可能なパラメータ設定ウィジェット
               Expanded(
                 child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // 上部：MenuInfoCardWidget（練習前のみ）
-                      if (!_controller.isRunning)
-                        MenuInfoCardWidget(menu: widget.menu),
-
-                      // 中部：LEDプレビューまたはLEDディスプレイ
-                      _buildMiddleContent(),
-                    ],
+                  controller: scrollController,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: PracticeParameterSettingsWidget(
+                      controller: _controller,
+                    ),
                   ),
                 ),
               ),
-
-              // 下部：パラメータ設定エリア（固定）
-              PracticeParameterSettingsWidget(controller: _controller),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// つまみバーの構築
+  Widget _buildDragHandle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: Container(
+          width: 40,
+          height: 5,
+          decoration: BoxDecoration(
+            color: Colors.grey[400],
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
       ),
     );
   }
 
-  /// 中部コンテンツの構築
-  /// 練習中はLEDディスプレイ，それ以外はLEDプレビューを表示
-  Widget _buildMiddleContent() {
-    if (_controller.isRunning) {
-      return LedDisplayWidget(
-        menu: widget.menu,
-        currentPhaseIndex: _controller.currentPhaseIndex,
-      );
-    } else {
-      return LedPreviewWidget(menu: widget.menu);
-    }
+  /// 練習実行中のレイアウト（固定レイアウト）
+  Widget _buildRunningLayout() {
+    return GestureDetector(
+      onHorizontalDragEnd: (details) => handleSwipeNavigation(details, context),
+      child: Column(
+        children: [
+          // スクロール可能な上部エリア
+          Expanded(
+            child: SingleChildScrollView(
+              child: LedDisplayWidget(
+                menu: widget.menu,
+                currentPhaseIndex: _controller.currentPhaseIndex,
+              ),
+            ),
+          ),
+
+          // 下部：パラメータ設定エリア（固定）
+          PracticeParameterSettingsWidget(controller: _controller),
+        ],
+      ),
+    );
   }
 }
