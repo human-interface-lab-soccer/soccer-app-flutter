@@ -28,7 +28,7 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
   void initState() {
     super.initState();
     // PracticeMenuから色設定を初期化
-    colorSettings =
+    List<List<LedColor>> initialSettings =
         widget.practiceMenu.colorSettings
             .map(
               (ledColors) =>
@@ -37,6 +37,29 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
                       .toList(),
             )
             .toList();
+
+    // LED数とフェーズ数を現在の設定に合わせて調整
+    colorSettings = List.generate(widget.practiceMenu.ledCount, (ledIndex) {
+      if (ledIndex < initialSettings.length) {
+        List<LedColor> ledColors = initialSettings[ledIndex];
+        return List.generate(widget.practiceMenu.phaseCount, (phaseIndex) {
+          if (phaseIndex < ledColors.length) {
+            return ledColors[phaseIndex];
+          } else {
+            // フェーズ数：編集設定＞既存設定の場合
+            // 新しく追加されたフェーズ，すべてのLEDをクリア色で初期化
+            return LedColor.clear;
+          }
+        });
+      } else {
+        // LED数：編集設定＞既存設定の場合
+        // 新しく追加されたLED，すべてのフェーズをクリア色で初期化
+        return List.generate(
+          widget.practiceMenu.phaseCount,
+          (phaseIndex) => LedColor.clear,
+        );
+      }
+    });
 
     // 横スクロールの同期
     _horizontalControllerHeader.addListener(() {
