@@ -40,20 +40,20 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
 
     // LED数とフェーズ数を現在の設定に合わせて調整
     colorSettings = List.generate(widget.practiceMenu.ledCount, (ledIndex) {
-      // LED数：編集設定＜既存設定の場合、既存設定を使用
       if (ledIndex < initialSettings.length) {
         List<LedColor> ledColors = initialSettings[ledIndex];
         return List.generate(widget.practiceMenu.phaseCount, (phaseIndex) {
-          // フェーズ数：編集設定＜既存設定の場合、既存設定を使用
           if (phaseIndex < ledColors.length) {
             return ledColors[phaseIndex];
           } else {
-            // 新しく追加されたフェーズの場合，全てのLEDをクリア色で初期化
+            // フェーズ数：編集設定＞既存設定の場合
+            // 新しく追加されたフェーズ，全てのLEDをクリア色で初期化
             return LedColor.clear;
           }
         });
       } else {
-        // 新しく追加されたLEDの場合、すべてのフェーズをクリア色で初期化
+        // LED数：編集設定＞既存設定の場合
+        // 新しく追加されたLED，すべてのフェーズをクリア色で初期化
         return List.generate(
           widget.practiceMenu.phaseCount,
           (phaseIndex) => LedColor.clear,
