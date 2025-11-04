@@ -47,7 +47,7 @@ class _ColorSettingPageState extends State<ColorSettingPage> {
             return ledColors[phaseIndex];
           } else {
             // フェーズ数：編集設定＞既存設定の場合
-            // 新しく追加されたフェーズ，全てのLEDをクリア色で初期化
+            // 新しく追加されたフェーズ，すべてのLEDをクリア色で初期化
             return LedColor.clear;
           }
         });
