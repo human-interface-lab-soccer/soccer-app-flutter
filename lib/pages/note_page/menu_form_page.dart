@@ -19,6 +19,7 @@ class MenuFormPage extends ConsumerStatefulWidget {
 
 class _MenuFormPageState extends ConsumerState<MenuFormPage> {
   final _formKey = GlobalKey<FormState>();
+  final _categoryController = TextEditingController();
 
   late String _name;
   late String _description;
@@ -26,6 +27,12 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
   late String _difficulty;
   late int _phaseCount;
   late int _ledCount;
+
+  /// カテゴリーのカスタム入力モードかどうか
+  bool _isCustomCategory = false;
+
+  /// ドロップダウンの「新しいカテゴリーを入力」項目を識別するための特殊な値
+  static const String _customCategoryValue = '__custom__';
 
   /// 編集モードかどうか
   bool get isEditMode => widget.existingMenu != null;
@@ -42,6 +49,13 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
       _difficulty = menu.difficulty;
       _phaseCount = menu.phaseCount;
       _ledCount = menu.ledCount;
+
+      /// 既存のカテゴリーかどうかをチェック
+      final existingCategories = _getExistingCategories();
+      if (!existingCategories.contains(_category)) {
+        _isCustomCategory = true;
+        _categoryController.text = _category;
+      }
     } else {
       // 新規作成モードの場合はデフォルト値
       _name = '';
@@ -54,7 +68,117 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
   }
 
   @override
+  void dispose() {
+    _categoryController.dispose();
+    super.dispose();
+  }
+
+  /// 既存のカテゴリーリストを取得
+  List<String> _getExistingCategories() {
+    final allMenus = ref.read(allMenusProvider);
+    final categories = allMenus
+        .map((menu) => menu.category)
+        .where((category) => category.isNotEmpty)
+        .toSet()
+        .toList();
+    categories.sort();
+    return categories;
+  }
+
+  /// カテゴリー入力フィールドを構築
+  Widget _buildCategoryField(List<String> existingCategories) {
+    if (_isCustomCategory) {
+      // カスタム入力モード
+      return TextFormField(
+        controller: _categoryController,
+        decoration: InputDecoration(
+          labelText: 'カテゴリー（10字以内）',
+          border: const OutlineInputBorder(),
+          suffixIcon: existingCategories.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_drop_down),
+                  onPressed: () {
+                    setState(() {
+                      // 入力された値を_categoryに保存
+                      _category = _categoryController.text;
+                      _isCustomCategory = false;
+                      // 入力された値が既存カテゴリーにない場合は，空にしてバリデーションで対応
+                      if (!existingCategories.contains(_category)) {
+                        _category = '';
+                      }
+                    });
+                  },
+                )
+              : null,
+        ),
+        maxLength: 10,
+        onChanged: (value) => _category = value,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'カテゴリーを入力してください';
+          }
+          if (value.length > 10) {
+            return 'カテゴリーは10字以内で入力してください';
+          }
+          return null;
+        },
+      );
+    } else {
+      // ドロップダウン選択モード
+      final dropdownItems = [
+        ...existingCategories.map(
+          (category) => DropdownMenuItem(
+            value: category,
+            child: Text(category),
+          ),
+        ),
+        const DropdownMenuItem(
+          value: _customCategoryValue,
+          child: Row(
+            children: [
+              Icon(Icons.add, size: 18),
+              SizedBox(width: 8),
+              Text('新しいカテゴリーを入力'),
+            ],
+          ),
+        ),
+      ];
+      return DropdownButtonFormField<String>(
+        decoration: const InputDecoration(
+          labelText: 'カテゴリー',
+          border: OutlineInputBorder(),
+        ),
+        value: existingCategories.contains(_category)
+            ? _category
+            : null,
+        items: dropdownItems,
+        onChanged: (value) {
+          if (value == _customCategoryValue) {
+            setState(() {
+              _isCustomCategory = true;
+              _categoryController.clear();
+              _category = '';
+            });
+          } else {
+            setState(() {
+              _category = value!;
+            });
+          }
+        },
+        validator: (value) {
+          if (!_isCustomCategory && (value == null || value.isEmpty)) {
+            return 'カテゴリーを選択してください';
+          }
+          return null;
+        },
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final existingCategories = _getExistingCategories();
+
     return Scaffold(
       key: const Key("menuFormPage"),
       appBar: AppBar(
@@ -117,24 +241,8 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
               ),
               const SizedBox(height: 16),
 
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'カテゴリー（10字以内）',
-                  border: OutlineInputBorder(),
-                ),
-                initialValue: _category,
-                maxLength: 10,
-                onSaved: (value) => _category = value ?? '',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'カテゴリーを入力してください';
-                  }
-                  if (value.length > 10) {
-                    return 'カテゴリーは10字以内で入力してください';
-                  }
-                  return null;
-                },
-              ),
+              // カテゴリー入力フィールド(ドロップダウンとテキスト入力の切り替え）
+              _buildCategoryField(existingCategories),
               const SizedBox(height: 16),
 
               DropdownButtonFormField<String>(
