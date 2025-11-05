@@ -111,7 +111,7 @@ void main() {
     // フォームの要素が存在することを確認
     expect(find.text('タイトル（20字以内）'), findsOneWidget);
     expect(find.text('説明（50字以内）'), findsOneWidget);
-    expect(find.text('カテゴリー（10字以内）'), findsOneWidget);
+    expect(find.text('カテゴリー'), findsOneWidget);
     expect(find.text('難易度'), findsOneWidget);
     expect(find.text('フェーズ（1〜8）'), findsOneWidget);
     expect(find.text('LED数（1〜24）'), findsOneWidget);
