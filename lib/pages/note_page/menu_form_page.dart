@@ -76,11 +76,12 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
   /// 既存のカテゴリーリストを取得
   List<String> _getExistingCategories() {
     final allMenus = ref.read(allMenusProvider);
-    final categories = allMenus
-        .map((menu) => menu.category)
-        .where((category) => category.isNotEmpty)
-        .toSet()
-        .toList();
+    final categories =
+        allMenus
+            .map((menu) => menu.category)
+            .where((category) => category.isNotEmpty)
+            .toSet()
+            .toList();
     categories.sort();
     return categories;
   }
@@ -94,22 +95,23 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
         decoration: InputDecoration(
           labelText: 'カテゴリー（10字以内）',
           border: const OutlineInputBorder(),
-          suffixIcon: existingCategories.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_drop_down),
-                  onPressed: () {
-                    setState(() {
-                      // 入力された値を_categoryに保存
-                      _category = _categoryController.text;
-                      _isCustomCategory = false;
-                      // 入力された値が既存カテゴリーにない場合は，空にしてバリデーションで対応
-                      if (!existingCategories.contains(_category)) {
-                        _category = '';
-                      }
-                    });
-                  },
-                )
-              : null,
+          suffixIcon:
+              existingCategories.isNotEmpty
+                  ? IconButton(
+                    icon: const Icon(Icons.arrow_drop_down),
+                    onPressed: () {
+                      setState(() {
+                        // 入力された値を_categoryに保存
+                        _category = _categoryController.text;
+                        _isCustomCategory = false;
+                        // 入力された値が既存カテゴリーにない場合は，空にしてバリデーションで対応
+                        if (!existingCategories.contains(_category)) {
+                          _category = '';
+                        }
+                      });
+                    },
+                  )
+                  : null,
         ),
         maxLength: 10,
         onChanged: (value) => _category = value,
@@ -127,10 +129,8 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
       // ドロップダウン選択モード
       final dropdownItems = [
         ...existingCategories.map(
-          (category) => DropdownMenuItem(
-            value: category,
-            child: Text(category),
-          ),
+          (category) =>
+              DropdownMenuItem(value: category, child: Text(category)),
         ),
         const DropdownMenuItem(
           value: _customCategoryValue,
@@ -148,9 +148,7 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
           labelText: 'カテゴリー',
           border: OutlineInputBorder(),
         ),
-        value: existingCategories.contains(_category)
-            ? _category
-            : null,
+        value: existingCategories.contains(_category) ? _category : null,
         items: dropdownItems,
         onChanged: (value) {
           if (value == _customCategoryValue) {
