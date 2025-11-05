@@ -68,8 +68,8 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
 
   /// 既存のカテゴリーリストを取得
   List<String> _getExistingCategories() {
-    // ref.watch()を使用してリアクティブに取得
-    final allMenus = ref.watch(allMenusProvider);
+    // ref.read()を使用して非リアクティブに取得
+    final allMenus = ref.read(allMenusProvider);
     final categories =
         allMenus
             .map((menu) => menu.category)
@@ -104,7 +104,7 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
                   : null,
         ),
         maxLength: 10,
-        onChanged: (value) => _category = value,
+        onSaved: (value) => _category = value ?? '',
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'カテゴリーを入力してください';
