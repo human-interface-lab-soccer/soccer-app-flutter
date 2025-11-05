@@ -49,9 +49,7 @@ class ThemeColorNotifier extends StateNotifier<ThemeColorOption> {
 
 // Provider
 final themeColorProvider =
-    StateNotifierProvider<ThemeColorNotifier, ThemeColorOption>(
-      (ref) {
-        final appSettingsBox = Hive.box('app_settings');
-        return ThemeColorNotifier(appSettingsBox);
-      }
-    );
+    StateNotifierProvider<ThemeColorNotifier, ThemeColorOption>((ref) {
+      final appSettingsBox = Hive.box('app_settings');
+      return ThemeColorNotifier(appSettingsBox);
+    });
