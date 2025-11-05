@@ -49,13 +49,6 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
       _difficulty = menu.difficulty;
       _phaseCount = menu.phaseCount;
       _ledCount = menu.ledCount;
-
-      /// 既存のカテゴリーかどうかをチェック
-      final existingCategories = _getExistingCategories();
-      if (!existingCategories.contains(_category)) {
-        _isCustomCategory = true;
-        _categoryController.text = _category;
-      }
     } else {
       // 新規作成モードの場合はデフォルト値
       _name = '';
@@ -75,7 +68,8 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
 
   /// 既存のカテゴリーリストを取得
   List<String> _getExistingCategories() {
-    final allMenus = ref.read(allMenusProvider);
+    // ref.watch()を使用してリアクティブに取得
+    final allMenus = ref.watch(allMenusProvider);
     final categories =
         allMenus
             .map((menu) => menu.category)
@@ -104,10 +98,6 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
                         // 入力された値を_categoryに保存
                         _category = _categoryController.text;
                         _isCustomCategory = false;
-                        // 入力された値が既存カテゴリーにない場合は，空にしてバリデーションで対応
-                        if (!existingCategories.contains(_category)) {
-                          _category = '';
-                        }
                       });
                     },
                   )
@@ -239,7 +229,7 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
               ),
               const SizedBox(height: 16),
 
-              // カテゴリー入力フィールド(ドロップダウンとテキスト入力の切り替え）
+              // カテゴリー入力フィールド（ドロップダウンとテキスト入力の切り替え）
               _buildCategoryField(existingCategories),
               const SizedBox(height: 16),
 
