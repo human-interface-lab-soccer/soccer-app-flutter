@@ -84,7 +84,7 @@ void main() {
     // MenuFormPageのキーを確認
     expect(find.byKey(const Key('menuFormPage')), findsOneWidget);
 
-        // 設定ページに遷移
+    // 設定ページに遷移
     final settingsIcon = find.byIcon(Icons.settings);
     expect(settingsIcon, findsOneWidget);
     await tester.tap(settingsIcon);
