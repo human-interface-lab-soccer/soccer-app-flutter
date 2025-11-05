@@ -21,11 +21,11 @@ enum ThemeColorOption {
 
 // テーマカラーを管理するNotifier
 class ThemeColorNotifier extends StateNotifier<ThemeColorOption> {
-  ThemeColorNotifier() : super(ThemeColorOption.blue) {
+  ThemeColorNotifier(this._box) : super(ThemeColorOption.blue) {
     _loadThemeColor();
   }
 
-  final _box = Hive.box('app_settings');
+  final Box _box;
   static const _themeColorKey = 'theme_color';
 
   // 保存されたテーマカラーを読み込む
@@ -50,5 +50,8 @@ class ThemeColorNotifier extends StateNotifier<ThemeColorOption> {
 // Provider
 final themeColorProvider =
     StateNotifierProvider<ThemeColorNotifier, ThemeColorOption>(
-      (ref) => ThemeColorNotifier(),
+      (ref) {
+        final appSettingsBox = Hive.box('app_settings');
+        return ThemeColorNotifier(appSettingsBox);
+      }
     );
