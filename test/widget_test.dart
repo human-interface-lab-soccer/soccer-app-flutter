@@ -77,12 +77,19 @@ void main() {
     expect(find.byKey(const Key('menuPage')), findsOneWidget);
 
     // 自由帳ページに遷移
-    final noteIcon = find.byIcon(Icons.settings);
+    final noteIcon = find.byIcon(Icons.edit_note);
     expect(noteIcon, findsOneWidget);
     await tester.tap(noteIcon);
     await tester.pumpAndSettle();
     // MenuFormPageのキーを確認
     expect(find.byKey(const Key('menuFormPage')), findsOneWidget);
+
+        // 設定ページに遷移
+    final settingsIcon = find.byIcon(Icons.settings);
+    expect(settingsIcon, findsOneWidget);
+    await tester.tap(settingsIcon);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settingPage')), findsOneWidget);
 
     // 接続ページに戻る
     final connectionIcon = find.byIcon(Icons.bluetooth_connected);

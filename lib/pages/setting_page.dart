@@ -10,6 +10,7 @@ class SettingPage extends ConsumerWidget {
     final currentThemeColor = ref.watch(themeColorProvider);
 
     return Scaffold(
+      key: const Key('settingPage'),
       appBar: AppBar(
         title: const Text('設定'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
