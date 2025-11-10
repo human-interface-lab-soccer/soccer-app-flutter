@@ -13,7 +13,7 @@ class MainNavigationBar extends StatefulWidget {
 }
 
 class MainNavigationBarState extends State<MainNavigationBar> {
-  int _selectedIndex = NavigationItems.connection.index;
+  int _selectedIndex = NavigationItems.menu.index;
 
   void onItemTapped(int index) {
     setState(() {
