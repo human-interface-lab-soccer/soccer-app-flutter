@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:soccer_app_flutter/pages/main_navigation_bar.dart';
 import 'package:soccer_app_flutter/shared/themes/button_theme_extension.dart';
+import 'package:soccer_app_flutter/shared/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,19 +13,28 @@ void main() async {
 
   // ✅ Box（保存場所）を開く
   await Hive.openBox('practice_menus');
+  await Hive.openBox('app_settings');
 
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // テーマカラーを監視
+    final themeColor = ref.watch(themeColorProvider);
+
     return MaterialApp(
       title: 'Soccer App Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: themeColor.color),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          selectedItemColor: themeColor.color,
+          unselectedItemColor: Colors.grey,
+          type: BottomNavigationBarType.fixed,
+        ),
         extensions: const [
           ButtonThemeExtension(
             circleButtonSize: 64.0, // 円形ボタンのデフォルトサイズ
