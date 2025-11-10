@@ -28,12 +28,6 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
   late int _phaseCount;
   late int _ledCount;
 
-  /// カテゴリーのカスタム入力モードかどうか
-  bool _isCustomCategory = false;
-
-  /// ドロップダウンの「新しいカテゴリーを入力」項目を識別するための特殊な値
-  static const String _customCategoryValue = '__custom__';
-
   /// 編集モードかどうか
   bool get isEditMode => widget.existingMenu != null;
 
@@ -82,85 +76,46 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
 
   /// カテゴリー入力フィールドを構築
   Widget _buildCategoryField(List<String> existingCategories) {
-    if (_isCustomCategory) {
-      // カスタム入力モード
-      return TextFormField(
-        controller: _categoryController,
-        decoration: InputDecoration(
-          labelText: 'カテゴリー（10字以内）',
-          border: const OutlineInputBorder(),
-          suffixIcon:
-              existingCategories.isNotEmpty
-                  ? IconButton(
-                    icon: const Icon(Icons.arrow_drop_down),
-                    onPressed: () {
-                      setState(() {
-                        // 入力された値を_categoryに保存
-                        _category = _categoryController.text;
-                        _isCustomCategory = false;
-                      });
-                    },
-                  )
-                  : null,
-        ),
-        maxLength: 10,
-        onSaved: (value) => _category = value ?? '',
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'カテゴリーを入力してください';
-          }
-          if (value.length > 10) {
-            return 'カテゴリーは10字以内で入力してください';
-          }
-          return null;
-        },
-      );
-    } else {
-      // ドロップダウン選択モード
-      final dropdownItems = [
-        ...existingCategories.map(
-          (category) =>
-              DropdownMenuItem(value: category, child: Text(category)),
-        ),
-        const DropdownMenuItem(
-          value: _customCategoryValue,
-          child: Row(
-            children: [
-              Icon(Icons.add, size: 18),
-              SizedBox(width: 8),
-              Text('新しいカテゴリーを入力'),
-            ],
-          ),
-        ),
-      ];
-      return DropdownButtonFormField<String>(
-        decoration: const InputDecoration(
-          labelText: 'カテゴリー',
-          border: OutlineInputBorder(),
-        ),
-        value: existingCategories.contains(_category) ? _category : null,
-        items: dropdownItems,
-        onChanged: (value) {
-          if (value == _customCategoryValue) {
-            setState(() {
-              _isCustomCategory = true;
-              _categoryController.clear();
-              _category = '';
-            });
-          } else {
-            setState(() {
-              _category = value!;
-            });
-          }
-        },
-        validator: (value) {
-          if (!_isCustomCategory && (value == null || value.isEmpty)) {
-            return 'カテゴリーを選択してください';
-          }
-          return null;
-        },
-      );
-    }
+    return TextFormField(
+      controller: _categoryController,
+      decoration: InputDecoration(
+        labelText: 'カテゴリー（10字以内）',
+        border: const OutlineInputBorder(),
+        suffixIcon:
+            existingCategories.isNotEmpty
+                ? PopupMenuButton<String>(
+                  icon: const Icon(Icons.arrow_drop_down),
+                  onSelected: (value) {
+                    setState(() {
+                      _category = value;
+                      _categoryController.text = value;
+                    });
+                  },
+                  itemBuilder:
+                      (context) =>
+                          existingCategories
+                              .map(
+                                (category) => PopupMenuItem(
+                                  value: category,
+                                  child: Text(category),
+                                ),
+                              )
+                              .toList(),
+                )
+                : null,
+      ),
+      maxLength: 10,
+      onSaved: (value) => _category = value ?? '',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'カテゴリーを入力してください';
+        }
+        if (value.length > 10) {
+          return 'カテゴリーは10字以内で入力してください';
+        }
+        return null;
+      },
+    );
   }
 
   @override
