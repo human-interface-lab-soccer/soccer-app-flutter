@@ -19,6 +19,7 @@ void main() {
     // テスト用のボックスを開く
     try {
       await Hive.openBox('practice_menus');
+      await Hive.openBox('app_settings');
     } catch (e) {
       // 既に開かれている場合は無視
       debugPrint('Hive box already open: $e');
@@ -30,6 +31,8 @@ void main() {
     try {
       final box = Hive.box('practice_menus');
       await box.clear();
+      final settingsBox = Hive.box('app_settings');
+      await settingsBox.clear();
     } catch (e) {
       debugPrint('Failed to clear box: $e');
     }
@@ -77,12 +80,19 @@ void main() {
     expect(find.byKey(const Key('menuPage')), findsOneWidget);
 
     // 自由帳ページに遷移
-    final noteIcon = find.byIcon(Icons.settings);
+    final noteIcon = find.byIcon(Icons.edit_note);
     expect(noteIcon, findsOneWidget);
     await tester.tap(noteIcon);
     await tester.pumpAndSettle();
     // MenuFormPageのキーを確認
     expect(find.byKey(const Key('menuFormPage')), findsOneWidget);
+
+    // 設定ページに遷移
+    final settingsIcon = find.byIcon(Icons.settings);
+    expect(settingsIcon, findsOneWidget);
+    await tester.tap(settingsIcon);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settingPage')), findsOneWidget);
 
     // 接続ページに戻る
     final connectionIcon = find.byIcon(Icons.bluetooth_connected);
@@ -105,7 +115,7 @@ void main() {
     );
 
     // 自由帳ページに遷移
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(Icons.edit_note));
     await tester.pumpAndSettle();
 
     // フォームの要素が存在することを確認
