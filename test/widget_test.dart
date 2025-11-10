@@ -44,13 +44,13 @@ void main() {
     }
   });
 
-  testWidgets('MainNavigationBar 初期状態は接続ページ', (WidgetTester tester) async {
+  testWidgets('MainNavigationBar 初期状態はメニューページ', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: MainNavigationBar())),
     );
 
-    // 初期状態で接続ページが表示される
-    expect(find.byKey(const Key('connectionPage')), findsOneWidget);
+    // 初期状態でメニューページが表示される
+    expect(find.byKey(const Key('menuPage')), findsOneWidget);
   });
 
   testWidgets('BottomNavigationBarで各ページへ遷移', (WidgetTester tester) async {
@@ -67,7 +67,7 @@ void main() {
     );
 
     // 初期状態を確認
-    expect(find.byKey(const Key('connectionPage')), findsOneWidget);
+    expect(find.byKey(const Key('menuPage')), findsOneWidget);
 
     // メニューページに遷移
     final menuIcon = find.byIcon(Icons.menu_book);
@@ -84,7 +84,7 @@ void main() {
     // MenuFormPageのキーを確認
     expect(find.byKey(const Key('menuFormPage')), findsOneWidget);
 
-    // 接続ページに戻る
+    // 接続ページに遷移
     final connectionIcon = find.byIcon(Icons.bluetooth_connected);
     expect(connectionIcon, findsOneWidget);
     await tester.tap(connectionIcon);
@@ -119,7 +119,9 @@ void main() {
 
   group('ConnectionPage内のボタン挙動確認', () {
     Future<void> pumpConnectionPage(WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: MainNavigationBar()));
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: MainNavigationBar())),
+      );
       await tester.tap(find.byIcon(Icons.bluetooth_connected));
       await tester.pumpAndSettle();
     }
