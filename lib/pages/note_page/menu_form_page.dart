@@ -19,6 +19,7 @@ class MenuFormPage extends ConsumerStatefulWidget {
 
 class _MenuFormPageState extends ConsumerState<MenuFormPage> {
   final _formKey = GlobalKey<FormState>();
+  final _categoryController = TextEditingController();
 
   late String _name;
   late String _description;
@@ -54,7 +55,73 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
   }
 
   @override
+  void dispose() {
+    _categoryController.dispose();
+    super.dispose();
+  }
+
+  /// 既存のカテゴリーリストを取得
+  List<String> _getExistingCategories() {
+    // ref.read()を使用して非リアクティブに取得
+    final allMenus = ref.read(allMenusProvider);
+    final categories =
+        allMenus
+            .map((menu) => menu.category)
+            .where((category) => category.isNotEmpty)
+            .toSet()
+            .toList();
+    categories.sort();
+    return categories;
+  }
+
+  /// カテゴリー入力フィールドを構築
+  Widget _buildCategoryField(List<String> existingCategories) {
+    return TextFormField(
+      controller: _categoryController,
+      decoration: InputDecoration(
+        labelText: 'カテゴリー（10字以内）',
+        border: const OutlineInputBorder(),
+        suffixIcon:
+            existingCategories.isNotEmpty
+                ? PopupMenuButton<String>(
+                  icon: const Icon(Icons.arrow_drop_down),
+                  onSelected: (value) {
+                    setState(() {
+                      _category = value;
+                      _categoryController.text = value;
+                    });
+                  },
+                  itemBuilder:
+                      (context) =>
+                          existingCategories
+                              .map(
+                                (category) => PopupMenuItem(
+                                  value: category,
+                                  child: Text(category),
+                                ),
+                              )
+                              .toList(),
+                )
+                : null,
+      ),
+      maxLength: 10,
+      onSaved: (value) => _category = value ?? '',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'カテゴリーを入力してください';
+        }
+        if (value.length > 10) {
+          return 'カテゴリーは10字以内で入力してください';
+        }
+        return null;
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final existingCategories = _getExistingCategories();
+
     return Scaffold(
       key: const Key("menuFormPage"),
       appBar: AppBar(
@@ -117,24 +184,8 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
               ),
               const SizedBox(height: 16),
 
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'カテゴリー（10字以内）',
-                  border: OutlineInputBorder(),
-                ),
-                initialValue: _category,
-                maxLength: 10,
-                onSaved: (value) => _category = value ?? '',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'カテゴリーを入力してください';
-                  }
-                  if (value.length > 10) {
-                    return 'カテゴリーは10字以内で入力してください';
-                  }
-                  return null;
-                },
-              ),
+              // カテゴリー入力フィールド（ドロップダウンとテキスト入力の切り替え）
+              _buildCategoryField(existingCategories),
               const SizedBox(height: 16),
 
               DropdownButtonFormField<String>(
