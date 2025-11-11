@@ -80,6 +80,10 @@ class MeshNetwork {
     int maxNodes = 12; // 最大ノード数
     String colorNumStrings = "0" * maxNodes;
 
+    if (nodeColors.length > maxNodes) {
+      throw Exception('nodeColors exceeds maximum node count of $maxNodes');
+    }
+
     for (var key in nodeColors.keys) {
       if (key >= 0 && key < maxNodes) {
         String colorNum = (nodeColors[key] ?? LedColor.clear).value.toString();
