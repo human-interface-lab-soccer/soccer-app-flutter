@@ -81,7 +81,10 @@ class MeshNetwork {
     String colorNumStrings = "0" * maxNodes;
 
     if (nodeColors.length > maxNodes) {
-      throw Exception('nodeColors exceeds maximum node count of $maxNodes');
+      return {
+        'isSuccess': false,
+        'message': 'Exceeded maximum number of nodes: $maxNodes',
+      };
     }
 
     for (var key in nodeColors.keys) {

@@ -217,7 +217,7 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
 
   /// mesh network の setNodeColors を呼び出すテスト用関数
   Future<void> _setNodeColors() async {
-    await MeshNetwork.setNodeColors(
+    var response = await MeshNetwork.setNodeColors(
       nodeColors: {
         for (int i = 0; i < widget.menu.ledCount; i++)
           i: LedColor.fromLabel(
@@ -225,6 +225,24 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
           ),
       },
     );
+    if (!response['isSuccess']) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('エラー'),
+            content: Text('LEDの色設定に失敗しました: ${response['message']}'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
