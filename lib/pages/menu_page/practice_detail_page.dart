@@ -64,7 +64,7 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
     _controller.dispose();
     super.dispose();
   }
-  
+
   /// コントローラーの初期化処理
   void _initializeController() {
     _controller = PracticeTimerController();
@@ -75,22 +75,22 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
       PracticeDetailConstants.defaultTimerSeconds,
       this,
     );
-  
+
     // コントローラーの変更を監視
     _controller.addListener(_onPhaseChanged);
   }
-  
+
   /// コントローラーのフェーズが変更されたときの処理
   void _onPhaseChanged() {
     int currentPhaseIndex = _controller.currentPhaseIndex;
-    
+
     // フェーズが実際に変わった場合のみ処理
     if (previousPhaseIndex != currentPhaseIndex) {
       // 状態の更新
       setState(() {
         previousPhaseIndex = currentPhaseIndex;
       });
-      
+
       // LEDの色を設定（非同期処理）
       _setNodeColors();
     }
