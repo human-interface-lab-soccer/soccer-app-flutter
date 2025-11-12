@@ -164,20 +164,24 @@ extension AppDelegate: MeshNetworkDelegate {
         // elementとmodelを書き出す
         let models = node.elements.flatMap({ $0.models })
 
-        // GenericOnOffServerがいるとき
-        if let genericOnOffServerModel = models.first(where: {
-            $0.modelIdentifier == .genericOnOffServerModelId
-        }) {
-            serverModel = genericOnOffServerModel
-            clientModelID = .genericOnOffClientModelId
-        }
+        // TODO: ユーザーがモデルを選択できるようにする
+//        // GenericOnOffServerがいるとき
+//        if let genericOnOffServerModel = models.first(where: {
+//            $0.modelIdentifier == .genericOnOffServerModelId
+//        }) {
+//            serverModel = genericOnOffServerModel
+//            clientModelID = .genericOnOffClientModelId
+//        }
         // GenericColorServerがいるとき
-        else if let genericColorServerModel = models.first(where: {
+        if let genericColorServerModel = models.first(where: {
             $0.modelIdentifier == .genericColorServerModelID
         }) {
             serverModel = genericColorServerModel
             clientModelID = .genericColorClientModelID
-        } else if let customServerModel = models.first(where: {
+        }
+        
+        //
+        else if let customServerModel = models.first(where: {
             $0.modelId == .customServerModelIdentifier
         }) {
             serverModel = customServerModel
