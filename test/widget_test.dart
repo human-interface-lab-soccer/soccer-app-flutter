@@ -124,7 +124,7 @@ void main() {
     expect(find.text('カテゴリー（10字以内）'), findsOneWidget);
     expect(find.text('難易度'), findsOneWidget);
     expect(find.text('フェーズ（1〜8）'), findsOneWidget);
-    expect(find.text('LED数（1〜24）'), findsOneWidget);
+    expect(find.text('LED数（1〜12）'), findsOneWidget);
   });
 
   group('ConnectionPage内のボタン挙動確認', () {
