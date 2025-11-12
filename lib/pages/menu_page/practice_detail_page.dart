@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
+import 'package:soccer_app_flutter/shared/enums/led_color.dart';
 import 'package:soccer_app_flutter/shared/models/practice_menu.dart';
 import 'package:soccer_app_flutter/shared/controllers/practice_timer_controller.dart';
 import 'package:soccer_app_flutter/shared/widgets/menu_info_card_widget.dart';
@@ -49,6 +51,8 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
     with TickerProviderStateMixin, SwipeNavigationMixin {
   late PracticeTimerController _controller;
 
+  int previousPhaseIndex = -1;
+
   @override
   void initState() {
     super.initState();
@@ -73,9 +77,23 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
     );
 
     // コントローラーの変更を監視
-    _controller.addListener(() {
-      setState(() {});
-    });
+    _controller.addListener(_onPhaseChanged);
+  }
+
+  /// コントローラーのフェーズが変更されたときの処理
+  void _onPhaseChanged() {
+    int currentPhaseIndex = _controller.currentPhaseIndex;
+
+    // フェーズが実際に変わった場合のみ処理
+    if (previousPhaseIndex != currentPhaseIndex) {
+      // 状態の更新
+      setState(() {
+        previousPhaseIndex = currentPhaseIndex;
+      });
+
+      // LEDの色を設定（非同期処理）
+      _setNodeColors();
+    }
   }
 
   /// 編集可能なメニューかどうかを判定
@@ -202,6 +220,36 @@ class _PracticeDetailPageState extends ConsumerState<PracticeDetailPage>
           ),
         );
       }
+    }
+  }
+
+  /// mesh network の setNodeColors を呼び出すテスト用関数
+  Future<void> _setNodeColors() async {
+    var response = await MeshNetwork.setNodeColors(
+      nodeColors: {
+        for (int i = 0; i < widget.menu.ledCount; i++)
+          i: LedColor.fromLabel(
+            widget.menu.colorSettings[i][_controller.currentPhaseIndex],
+          ),
+      },
+    );
+    if (!response['isSuccess']) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('エラー'),
+            content: Text('LEDの色設定に失敗しました: ${response['message']}'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 

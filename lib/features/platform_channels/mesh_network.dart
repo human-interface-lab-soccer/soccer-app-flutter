@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:soccer_app_flutter/shared/enums/led_color.dart';
 import 'package:soccer_app_flutter/shared/models/mesh_node.dart';
 
 class MeshNetwork {
@@ -64,6 +65,49 @@ class MeshNetwork {
   static Future<Map<String, dynamic>> publishColor({required int color}) async {
     final response = await _methodChannel.invokeMethod('publishColor', {
       'color': color,
+    });
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['message'] ?? 'No message provided';
+    return {'isSuccess': isSuccess, 'message': message};
+  }
+
+  /// 各ノードの色を個別に変更するメソッド（for nRF52）
+  /// 近い将来サポート終了予定
+  /// nodeColors: {0: LedColor.red, 1: LedColor.green, 2: LedColor.blue, ...}
+  static Future<Map<String, dynamic>> setNodeColors({
+    required Map<int, LedColor> nodeColors,
+  }) async {
+    int maxNodes = 12; // 最大ノード数
+    String colorNumStrings = "0" * maxNodes;
+
+    if (nodeColors.length > maxNodes) {
+      return {
+        'isSuccess': false,
+        'message': 'Exceeded maximum number of nodes: $maxNodes',
+      };
+    }
+
+    for (var key in nodeColors.keys) {
+      if (key >= 0 && key < maxNodes) {
+        String colorNum = (nodeColors[key] ?? LedColor.clear).value.toString();
+        colorNumStrings = colorNumStrings.replaceRange(key, key + 1, colorNum);
+      }
+    }
+
+    int colorNum = int.parse(
+      colorNumStrings.substring(0, 4).split('').reversed.join(),
+    );
+    int colorNum2 = int.parse(
+      colorNumStrings.substring(4, 8).split('').reversed.join(),
+    );
+    int colorNum3 = int.parse(
+      colorNumStrings.substring(8, 12).split('').reversed.join(),
+    );
+
+    final response = await _methodChannel.invokeMethod('setNodeColors', {
+      'colorNum': colorNum,
+      'colorNum2': colorNum2,
+      'colorNum3': colorNum3,
     });
     bool isSuccess = response['isSuccess'] ?? false;
     String message = response['message'] ?? 'No message provided';
