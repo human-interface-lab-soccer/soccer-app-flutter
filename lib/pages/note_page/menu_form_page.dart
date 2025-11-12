@@ -221,12 +221,12 @@ class _MenuFormPageState extends ConsumerState<MenuFormPage> {
 
               DropdownButtonFormField<int>(
                 decoration: const InputDecoration(
-                  labelText: 'LED数（1〜24）',
+                  labelText: 'LED数（1〜12）',
                   border: OutlineInputBorder(),
                 ),
                 value: _ledCount,
                 items: List.generate(
-                  24,
+                  12,
                   (index) => DropdownMenuItem(
                     value: index + 1,
                     child: Text('${index + 1}'),
