@@ -5,7 +5,11 @@ enum LedColor {
   clear("クリア", 0, Colors.grey),
   red("赤", 1, Colors.red),
   green("緑", 2, Colors.green),
-  blue("青", 3, Colors.blue);
+  blue("青", 3, Colors.blue),
+  purple("紫", 4, Colors.purple),
+  yellow("黄", 5, Colors.yellow),
+  cyan("シアン", 6, Colors.cyan),
+  white("白", 7, Colors.white);
 
   final String label;
   final int value;
