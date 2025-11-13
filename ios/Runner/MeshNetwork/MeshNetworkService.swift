@@ -105,6 +105,77 @@ class MeshNetworkService {
         )
     }
 
+    func setSwitchColorState(unicastAddress: Address, state: Int)
+        -> MeshNetworkServiceResponse
+    {
+        var node: Node?
+        // ノードを探す
+        do {
+            node = try findNode(withUnicastAddress: unicastAddress)
+        } catch {
+            print("Failed to find node")
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to find node."
+            )
+        }
+
+        // clientモデルを探す
+        guard
+            let clientModel = manager.localElements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .customClientModelID
+                })
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Couldn't find Client-Model"
+            )
+        }
+
+        // Serverモデルを探す
+        guard let node,
+            let serverModel = node.elements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == .customServerModelID
+                })
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Couldn't find Server-Model"
+            )
+        }
+
+        // メッセージを作成
+        let colorCode: UInt16 = convertColorCode(fromColorNum: state)
+        let message = SwitchColorSet(
+            colorCode,
+            colorNum2: colorCode,
+            colorNum3: colorCode
+        )
+        print("Color Code: \(colorCode)")
+
+        do {
+            let response = try manager.send(
+                message,
+                from: clientModel,
+                to: serverModel
+            )
+            print(response)
+        } catch {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to send message: \(error.localizedDescription)"
+            )
+        }
+        return MeshNetworkServiceResponse(
+            isSuccess: true,
+            message: "Successfully start!"
+        )
+    }
+
     func setGenericColorState(unicastAddress: Address, state: Int)
         -> MeshNetworkServiceResponse
     {

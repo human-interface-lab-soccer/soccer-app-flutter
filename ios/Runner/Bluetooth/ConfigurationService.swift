@@ -142,17 +142,24 @@ class ConfigurationService {
         }
 
         // サーバーモデルを探す
+        // TODO: .frst ユーザーがモデルを選べるようにする
         let models = node.elements.flatMap({ $0.models })
-        if let genericOnOffServerModel = models.first(where: {
-            $0.modelIdentifier == .genericOnOffServerModelId
-        }) {
-            serverModel = genericOnOffServerModel
-            clientModelID = .genericOnOffClientModelId
-        } else if let genericColorServerModel = models.first(where: {
+        //        if let genericOnOffServerModel = models.first(where: {
+        //            $0.modelIdentifier == .genericOnOffServerModelId
+        //        }) {
+        //            serverModel = genericOnOffServerModel
+        //            clientModelID = .genericOnOffClientModelId
+        //        } else
+        if let genericColorServerModel = models.first(where: {
             $0.modelIdentifier == .genericColorServerModelID
         }) {
             serverModel = genericColorServerModel
             clientModelID = .genericColorClientModelID
+        } else if let customServerModel = models.first(where: {
+            $0.modelIdentifier == .customServerModelID
+        }) {
+            serverModel = customServerModel
+            clientModelID = .customClientModelID
         } else {
             return ConfigurationServiceResponse(
                 isSuccess: false,
@@ -195,6 +202,8 @@ class ConfigurationService {
 
         print("----- Subscription -----")
         print("target group: \(String(describing: targetGroup?.address))")
+        print("client model id: \(clientModelID)")
+        print("server model id: \(serverModel.modelIdentifier)")
         guard let targetGroup else {
             return ConfigurationServiceResponse(
                 isSuccess: false,
@@ -284,6 +293,8 @@ class ConfigurationService {
         }
         print("----- Publication -----")
         print("target group: \(targetGroup.address)")
+        print("client model id: \(clientModelID)")
+        print("server model id: \(serverModel.modelIdentifier)")
 
         guard let applicationKey = clientModel.boundApplicationKeys.first else {
             return ConfigurationServiceResponse(
