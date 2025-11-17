@@ -30,7 +30,7 @@ enum ProvisioningStep {
     }
   }
 
-  /// ステップのインデクスを取得（プログレスバー用）
+  /// ステップのインデックスを取得（プログレスバー用）
   int get stepIndex {
     switch (this) {
       case ProvisioningStep.connecting:
