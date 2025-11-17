@@ -66,7 +66,7 @@ enum ProvisioningStep {
     }
   }
 
-  ///ステップのアイコンを取得
+  /// ステップのアイコンを取得
   IconData get icon {
     switch (this) {
       case ProvisioningStep.connecting:
