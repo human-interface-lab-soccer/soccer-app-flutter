@@ -178,14 +178,14 @@ class ProvisioningService: NSObject {
 extension ProvisioningService: GattBearerDelegate {
     func bearerDidConnect(_ bearer: Bearer) {
         _provisioningEventStreamHandler.sendEvent(
-            status: .connecting,
+            status: .discovering,
             data: ["message": "Discovering services..."]
         )
     }
 
     func bearerDidDiscoverServices(_ bearer: Bearer) {
         _provisioningEventStreamHandler.sendEvent(
-            status: .connecting,
+            status: .discovering,
             data: ["message": "Initializing..."]
         )
     }

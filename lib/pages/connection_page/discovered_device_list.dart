@@ -84,7 +84,29 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   }
 
   Future<void> handleStartProvisioning(BleDevice device) async {
-    // ダイアログを表示（barrierDismissibleをfalseにして，ユーザーが誤って閉じないようにする）
+    // 確認ダイアログを表示
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('プロビジョニング開始'),
+            content: Text('${device.name} のプロビジョニングを開始しますか？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('キャンセル'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('開始'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    // プロビジョニング進捗ダイアログを表示
     showDialog(
       context: context,
       barrierDismissible: false,
