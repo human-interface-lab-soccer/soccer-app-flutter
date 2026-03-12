@@ -81,16 +81,49 @@ class _ProvisioningProgressDialogState
     ProvisioningStep.complete,
   ];
 
+  final bool _isDebugMode = const bool.fromEnvironment(
+    'DEBUG',
+    defaultValue: false,
+  );
+
   @override
   void initState() {
     super.initState();
-    _startProvisioning();
+    if (_isDebugMode) {
+      _startProvisioningDebug();
+    } else {
+      _startProvisioning();
+    }
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
     super.dispose();
+  }
+
+  /// デバッグ用: 各ステップを2秒間隔で擬似的に進行させる
+  Future<void> _startProvisioningDebug() async {
+    const steps = [
+      ('connecting', '接続中...'),
+      ('discovering', 'サービス検索中...'),
+      ('identifying', '識別中...'),
+      ('provisioning', 'プロビジョニング中...'),
+      ('complete', 'プロビジョニング完了！'),
+    ];
+
+    for (final (status, message) in steps) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+      final step = ProvisioningStep.fromStatus(status);
+      setState(() {
+        if (step != ProvisioningStep.error) {
+          _lastStepBeforeError = step;
+        }
+        _currentStep = step;
+        _statusMessage = message;
+      });
+    }
   }
 
   Future<void> _startProvisioning() async {
