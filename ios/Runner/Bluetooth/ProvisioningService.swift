@@ -31,8 +31,7 @@ class ProvisioningService: NSObject {
     private var unprovisionedDevice: UnprovisionedDevice?
     private var provisioningManager: ProvisioningManager?
 
-    init(meshNetworkManager: MeshNetworkManager, bleScanner: GeneralBleScanner)
-    {
+    init(meshNetworkManager: MeshNetworkManager, bleScanner: GeneralBleScanner) {
         self.meshNetworkManager = meshNetworkManager
         self.bleScanner = bleScanner
         self._provisioningEventStreamHandler = ProvisioningEventStreamHandler()
@@ -57,7 +56,7 @@ class ProvisioningService: NSObject {
                 as? [String: Any]
         else {
             result([
-                "isSuccess": false, "body": "Device not found in scan results.",
+                "isSuccess": false, "message": "Device not found in scan results.",
             ])
             return
         }
@@ -69,7 +68,7 @@ class ProvisioningService: NSObject {
         else {
             result([
                 "isSuccess": false,
-                "body": "The device is not a valid unprovisioned device.",
+                "message": "The device is not a valid unprovisioned device.",
             ])
             return
         }
@@ -91,13 +90,13 @@ class ProvisioningService: NSObject {
                 ]
             )
             result([
-                "isSuccess": true, "body": "Provisioning process initiated.",
+                "isSuccess": true, "message": "Provisioning process initiated.",
             ])
         } catch {
             cleanupProvisioning()
             result([
                 "isSuccess": false,
-                "body": "Failed to open bearer: \(error.localizedDescription)",
+                "message": "Failed to open bearer: \(error.localizedDescription)",
             ])
         }
     }
