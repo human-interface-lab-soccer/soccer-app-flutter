@@ -64,7 +64,7 @@ class ProvisioningProgressDialog extends StatefulWidget {
 class _ProvisioningProgressDialogState
     extends State<ProvisioningProgressDialog> {
   final Provisioning _provisioning = Provisioning();
-  StreamSubscription<dynamic>? _subscription;
+  StreamSubscription<Map<String, dynamic>>? _subscription;
   ProvisioningStep _currentStep = ProvisioningStep.connecting;
   ProvisioningStep _lastStepBeforeError = ProvisioningStep.connecting;
   String _statusMessage = 'プロビジョニングを開始しています...';
@@ -143,10 +143,10 @@ class _ProvisioningProgressDialogState
 
   /// 現在の進捗率を計算（0.0 ~ 1.0）
   double get _progressValue {
-    if (_hasError) return 0.0;
     if (_isCompleted) return 1.0;
 
-    final currentIndex = _currentStep.stepIndex;
+    final displayStep = _hasError ? _lastStepBeforeError : _currentStep;
+    final currentIndex = displayStep.stepIndex;
     if (currentIndex < 0) return 0.0;
 
     return (currentIndex + 1) / _allSteps.length;
