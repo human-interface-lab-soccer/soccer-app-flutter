@@ -66,6 +66,7 @@ class _ProvisioningProgressDialogState
   final Provisioning _provisioning = Provisioning();
   StreamSubscription<dynamic>? _subscription;
   ProvisioningStep _currentStep = ProvisioningStep.connecting;
+  ProvisioningStep _lastStepBeforeError = ProvisioningStep.connecting;
   String _statusMessage = 'プロビジョニングを開始しています...';
 
   bool get _isCompleted => _currentStep == ProvisioningStep.complete;
@@ -114,8 +115,12 @@ class _ProvisioningProgressDialogState
           final status = data['status'] as String? ?? 'unknown';
           final message = data['message'] as String? ?? '';
 
+          final step = ProvisioningStep.fromStatus(status);
           setState(() {
-            _currentStep = ProvisioningStep.fromStatus(status);
+            if (step != ProvisioningStep.error) {
+              _lastStepBeforeError = step;
+            }
+            _currentStep = step;
             _statusMessage = message;
           });
         },
@@ -209,12 +214,18 @@ class _ProvisioningProgressDialogState
 
   /// ステップインジケーター
   Widget _buildStepIndicators() {
+    // エラー時はエラー前のステップを基準にする
+    final displayStep = _hasError ? _lastStepBeforeError : _currentStep;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children:
           _allSteps.map((step) {
-            final isActive = step.stepIndex <= _currentStep.stepIndex;
-            final isCurrent = step == _currentStep;
+            final isActive = step.stepIndex <= displayStep.stepIndex;
+            final isCurrent = step == displayStep;
+            // エラー時、エラーが起きたステップを赤で表示
+            final isErrorStep = _hasError && isCurrent;
+            final displayColor = isErrorStep ? Colors.red : step.color;
 
             return Expanded(
               child: Column(
@@ -226,16 +237,17 @@ class _ProvisioningProgressDialogState
                       shape: BoxShape.circle,
                       color:
                           isActive || isCurrent
-                              ? step.color.withValues(alpha: 0.2)
+                              ? displayColor.withValues(alpha: 0.2)
                               : Colors.grey[300],
                       border: Border.all(
-                        color: isActive || isCurrent ? step.color : Colors.grey,
+                        color:
+                            isActive || isCurrent ? displayColor : Colors.grey,
                         width: isCurrent ? 3 : 2,
                       ),
                     ),
                     child: Icon(
-                      step.icon,
-                      color: isActive || isCurrent ? step.color : Colors.grey,
+                      isErrorStep ? Icons.error : step.icon,
+                      color: isActive || isCurrent ? displayColor : Colors.grey,
                       size: 24,
                     ),
                   ),
