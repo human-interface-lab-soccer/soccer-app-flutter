@@ -10,7 +10,7 @@ import UIKit
     // Manager Instances
     var meshNetworkManager: MeshNetworkManager!
     var connection: NetworkConnection?
-    private let defaultTtl: UInt8 = 7
+    private let defaultTtl: UInt8 = 127 // Bluetooth Mesh 仕様上の Default TTL の最大値 0x7F (127) に設定して安定化を図る
     private var bleScanner: GeneralBleScanner?
     private var provisioningService: ProvisioningService!
     private var flutterChannelManager: FlutterChannelManager!
