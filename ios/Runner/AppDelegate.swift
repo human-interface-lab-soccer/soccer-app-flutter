@@ -10,7 +10,7 @@ import UIKit
     // Manager Instances
     var meshNetworkManager: MeshNetworkManager!
     var connection: NetworkConnection?
-    private let defaultTtl: UInt8 = 7
+    private let defaultTtl: UInt8 = 127 // 最大値にして，安定化を図る
     private var bleScanner: GeneralBleScanner?
     private var provisioningService: ProvisioningService!
     private var flutterChannelManager: FlutterChannelManager!
