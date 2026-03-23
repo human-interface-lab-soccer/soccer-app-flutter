@@ -106,6 +106,9 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
 
     if (confirmed != true || !mounted) return;
 
+    // テストデバイスかどうかを判定
+    final isMock = _testDevices.any((d) => d.uuid == device.uuid);
+
     // プロビジョニング進捗ダイアログを表示
     showDialog(
       context: context,
@@ -114,6 +117,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
           (context) => ProvisioningProgressDialog(
             deviceName: device.name,
             deviceUuid: device.uuid,
+            isMockDevice: isMock,
           ),
     );
   }

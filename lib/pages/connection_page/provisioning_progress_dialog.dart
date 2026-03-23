@@ -27,7 +27,7 @@ enum ProvisioningStep {
   /// ステータス文字列から列挙型に変換
   static ProvisioningStep fromStatus(String status) => values.firstWhere(
     (e) => e.name == status.toLowerCase(),
-    orElse: () => ProvisioningStep.connecting,
+    orElse: () => ProvisioningStep.error,
   );
 }
 
@@ -49,11 +49,13 @@ enum ProvisioningStep {
 class ProvisioningProgressDialog extends StatefulWidget {
   final String deviceName;
   final String deviceUuid;
+  final bool isMockDevice;
 
   const ProvisioningProgressDialog({
     super.key,
     required this.deviceName,
     required this.deviceUuid,
+    this.isMockDevice = false,
   });
 
   @override
@@ -73,23 +75,15 @@ class _ProvisioningProgressDialogState
   bool get _hasError => _currentStep == ProvisioningStep.error;
 
   // 全ステップ（エラーを除く）
-  static const List<ProvisioningStep> _allSteps = [
-    ProvisioningStep.connecting,
-    ProvisioningStep.discovering,
-    ProvisioningStep.identifying,
-    ProvisioningStep.provisioning,
-    ProvisioningStep.complete,
-  ];
-
-  final bool _isDebugMode = const bool.fromEnvironment(
-    'DEBUG',
-    defaultValue: false,
-  );
+  static final List<ProvisioningStep> _allSteps =
+      ProvisioningStep.values
+          .where((e) => e != ProvisioningStep.error)
+          .toList();
 
   @override
   void initState() {
     super.initState();
-    if (_isDebugMode) {
+    if (widget.isMockDevice) {
       _startProvisioningDebug();
     } else {
       _startProvisioning();
