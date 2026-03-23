@@ -41,6 +41,39 @@ flutter run
 flutter test
 ```
 
+## デバッグモード（`DEBUG`フラグ）
+
+BLE関連のUI動作確認をシミュレータや実機で行うためのモックモードです。
+
+### 有効化方法
+
+`.env` ファイルで設定されています：
+```
+DEBUG=true
+```
+VS Codeからの起動時は `launch.json` の `--dart-define-from-file=.env` により自動で読み込まれます。
+コマンドラインから直接指定する場合：
+```bash
+flutter run --dart-define=DEBUG=true
+```
+
+### 影響範囲
+
+| ファイル | `DEBUG=true` の挙動 |
+|---|---|
+| `discovered_device_list.dart` | スキャン前にダミーBLEデバイス3台を初期表示する。スキャン開始後にストリームからデータが来ると、ダミーは実デバイスに置き換わる |
+| `provisioning_progress_dialog.dart` | **ダミーデバイスを選択した場合のみ**モックプロビジョニング（2秒間隔で各ステップを擬似進行）を実行する。実デバイスを選択した場合は通常のBLEプロビジョニングが動作する |
+| `network_node_list.dart` | ノードリスト取得時に1秒のローディング遅延を追加する |
+
+### プロビジョニングのモック判定
+
+モックプロビジョニングの実行はグローバルな`DEBUG`フラグではなく、**選択されたデバイスがダミーかどうか**で判定されます：
+
+- **ダミーデバイス**（UUIDが `_testDevices` に一致） → モックプロビジョニング
+- **実デバイス** → 通常のBLEプロビジョニング
+
+そのため、`DEBUG=true` の状態で実機を接続しても、スキャンで検出された実デバイスは通常通りプロビジョニングできます。
+
 ## 貢献について
 効果的なチーム開発のために，[CONTRIBUTING.md](https://github.com/human-interface-lab-soccer/soccer-app-flutter/blob/main/CONTRIBUTING.md) に記載されている開発ルール，ブランチ戦略などのガイドラインを必ず確認してください．
 <!-- 川崎です -->
