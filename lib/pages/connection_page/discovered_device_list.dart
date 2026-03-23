@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/general_ble_scanner.dart';
 import 'package:soccer_app_flutter/shared/models/ble_device.dart';
-import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
+import 'package:soccer_app_flutter/pages/connection_page/provisioning_progress_dialog.dart';
 
 /// 検出されたBLEデバイスのリストを表示するウィジェット
 ///
@@ -57,7 +57,6 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
   ];
 
   final GeneralBleScanner generalBleScanner = GeneralBleScanner();
-  final Provisioning _provisioning = Provisioning();
   bool isScanning = false;
 
   Future<void> handleScanButtonPressed() async {
@@ -84,42 +83,43 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
     }
   }
 
-  Future<void> handleStartProvisioning(String uuid) async {
-    Map<String, dynamic> response = await _provisioning.startProvisioning(uuid);
-    if (!mounted) return;
+  Future<void> handleStartProvisioning(BleDevice device) async {
+    // 確認ダイアログを表示
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('プロビジョニング開始'),
+            content: Text('${device.name} のプロビジョニングを開始しますか？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('キャンセル'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('開始'),
+              ),
+            ],
+          ),
+    );
 
-    bool isSuccess = response['isSuccess'] ?? false;
-    String message = response['message'] ?? 'No message provided';
+    if (confirmed != true || !mounted) return;
 
-    if (isSuccess) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Provisioning successfully started")),
-      );
-      // streamを購読して、プロビジョニングの進捗を受け取る
-      _provisioning.provisioningStream.listen(
-        (data) {
-          if (!mounted) return;
-          SnackBar snackBar = SnackBar(
-            content: Text(
-              '${data['status'] ?? 'Unknown'}: ${data["message"] ?? ""}',
-            ),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        },
-        onError: (error) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Provisioning error: $error')));
-        },
-      );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("error: $message")));
-    }
-    // close the dialog after provisioning
-    Navigator.of(context).pop();
+    // テストデバイスかどうかを判定
+    final isMock = _testDevices.any((d) => d.uuid == device.uuid);
+
+    // プロビジョニング進捗ダイアログを表示
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => ProvisioningProgressDialog(
+            deviceName: device.name,
+            deviceUuid: device.uuid,
+            isMockDevice: isMock,
+          ),
+    );
   }
 
   @override
@@ -154,37 +154,7 @@ class _DiscoveredDeviceListState extends State<DiscoveredDeviceList> {
                             subtitle: Text(
                               'UUID: ${device.uuid}, RSSI: ${device.rssi}',
                             ),
-                            onTap: () async {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return SimpleDialog(
-                                    title: Text('Provisioning ${device.name}'),
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Text(
-                                          'UUID: ${device.uuid}',
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: ElevatedButton(
-                                          onPressed:
-                                              () => handleStartProvisioning(
-                                                device.uuid,
-                                              ),
-                                          child: const Text(
-                                            'Start Provisioning',
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
+                            onTap: () => handleStartProvisioning(device),
                           );
                         },
                       ).toList(),
