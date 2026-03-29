@@ -266,9 +266,13 @@ class FlutterChannelManager {
                 return
             }
 
-            let response = MeshNetworkService.shared.setGenericOnOffState(
+            //            let response = MeshNetworkService.shared.setGenericOnOffState(
+            //                unicastAddress: unicastAddress,
+            //                state: state
+            //            )
+            let response = MeshNetworkService.shared.setSwitchColorState(
                 unicastAddress: unicastAddress,
-                state: state
+                state: state ? 1 : 0
             )
             handleMethodResponse(
                 result: result,
