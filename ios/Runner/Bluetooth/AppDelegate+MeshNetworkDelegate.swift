@@ -56,13 +56,15 @@ extension AppDelegate: MeshNetworkDelegate {
             if configSubscriptionState.isSuccess {
                 sendFlutterEvent(
                     status: .success,
-                    message: "Successfully subscribe model"
+                    message: "Successfully subscribe model",
+                    eventType: "subscription"
                 )
             } else {
                 sendFlutterEvent(
                     status: .error,
                     message:
-                        "Failed to subscribe model: \(configSubscriptionState.message)"
+                        "Failed to subscribe model: \(configSubscriptionState.message)",
+                    eventType: "subscription"
                 )
             }
 
@@ -70,13 +72,15 @@ extension AppDelegate: MeshNetworkDelegate {
             if configPublicationStatus.status == .success {
                 sendFlutterEvent(
                     status: .success,
-                    message: "Successfully publish model"
+                    message: "Successfully publish model",
+                    eventType: "publication"
                 )
             } else {
                 sendFlutterEvent(
                     status: .error,
                     message:
-                        "Failed to publish model: \(configPublicationStatus.message)"
+                        "Failed to publish model: \(configPublicationStatus.message)",
+                    eventType: "publication"
                 )
             }
 
@@ -99,7 +103,8 @@ extension AppDelegate: MeshNetworkDelegate {
             sendFlutterEvent(
                 status: .error,
                 message:
-                    "Failed to add AppKey: \(appKeyStatus.status.debugDescription)"
+                    "Failed to add AppKey: \(appKeyStatus.status.debugDescription)",
+                eventType: "configuration"
             )
         }
     }
@@ -182,7 +187,8 @@ extension AppDelegate: MeshNetworkDelegate {
         else {
             sendFlutterEvent(
                 status: .error,
-                message: "Valid server model not found"
+                message: "Valid server model not found",
+                eventType: "configuration"
             )
             return
         }
@@ -267,7 +273,8 @@ extension AppDelegate: MeshNetworkDelegate {
         if modelAppStatus.status == .success {
             sendFlutterEvent(
                 status: .success,
-                message: "Successfully bind AppKey to Model"
+                message: "Successfully bind AppKey to Model",
+                eventType: "configuration"
             )
             guard
                 (manager.meshNetwork?.applicationKeys.first(where: {
@@ -281,7 +288,8 @@ extension AppDelegate: MeshNetworkDelegate {
             sendFlutterEvent(
                 status: .error,
                 message:
-                    "Model bind failed with status: \(modelAppStatus.status)"
+                    "Model bind failed with status: \(modelAppStatus.status)",
+                eventType: "configuration"
             )
         }
     }
@@ -312,7 +320,8 @@ extension AppDelegate: MeshNetworkDelegate {
             print("Failed to find Server model.")
             sendFlutterEvent(
                 status: .error,
-                message: "Failed to find models"
+                message: "Failed to find models",
+                eventType: "colorSet"
             )
             return
         }
@@ -330,21 +339,27 @@ extension AppDelegate: MeshNetworkDelegate {
             print(result)
             sendFlutterEvent(
                 status: .success,
-                message: "Successfully sent message"
+                message: "Successfully sent message",
+                eventType: "colorSet"
             )
         } catch {
             sendFlutterEvent(
                 status: .error,
                 message:
-                    "Failed to send message: \(error.localizedDescription)"
+                    "Failed to send message: \(error.localizedDescription)",
+                eventType: "colorSet"
             )
         }
     }
 
-    private func sendFlutterEvent(status: MeshNetworkStatus, message: String?) {
+    private func sendFlutterEvent(status: MeshNetworkStatus, message: String?, eventType: String? = nil) {
+        var data: [String: Any] = ["message": message ?? "No message"]
+        if let eventType = eventType {
+            data["eventType"] = eventType
+        }
         MeshNetworkEventStreamHandler.shared.sendEvent(
             status: status,
-            data: ["message": message ?? "No message"]
+            data: data
         )
     }
 }
