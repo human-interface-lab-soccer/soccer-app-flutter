@@ -48,7 +48,23 @@ class ProvisioningService: NSObject {
         for uuid: String,
         result: @escaping FlutterResult
     ) {
+        // 既存のProxy接続（NetworkConnection）を明示的に切断し、状態をリセットする
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            appDelegate.connection?.close()
+        }
+        
         cleanupProvisioning(closeBearer: true)
+
+        // 同一UUIDの既存ノードがあれば、データベースから削除する
+        if let meshNetwork = meshNetworkManager?.meshNetwork,
+           let existingNode = meshNetwork.nodes.first(where: { $0.uuid.uuidString == uuid }) {
+            print("[ProvisioningService] Found duplicate node with UUID: \(uuid). Removing from database before provisioning.")
+            meshNetwork.remove(node: existingNode)
+            _ = meshNetworkManager?.save()
+        }
+
+        ConfigurationService.shared.resetForNewSession()
+        (UIApplication.shared.delegate as? AppDelegate)?.meshState = .provisioning
 
         guard let deviceInfo = bleScanner?.discoveredDevicesList[uuid],
             let peripheral = deviceInfo["peripheral"] as? CBPeripheral,
@@ -252,6 +268,14 @@ extension ProvisioningService: GattBearerDelegate {
                     cleanupProvisioning()
                     return
                 }
+
+                ConfigurationService.shared.currentTargetAddress = node.primaryUnicastAddress
+                if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                    appDelegate.meshState = .provisioningComplete
+                    appDelegate.connection?.open()
+                    appDelegate.meshState = .waitProxyConnection
+                }
+
                 _provisioningEventStreamHandler.sendEvent(
                     status: .complete,
                     data: [
