@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "754858244182",
+    "project_id": "human-lab-soccer",
+    "storage_bucket": "human-lab-soccer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:754858244182:android:fb11a6f9eb31ec3b58e3f7",
+        "android_client_info": {
+          "package_name": "jp.ac.saitama_u.mech.human.soccerAppFlutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACaJ36UrA24_mXbQxcp2kj5_woNuj97Sc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
