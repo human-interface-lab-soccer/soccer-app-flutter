@@ -46,7 +46,7 @@ app.*.map.json
 
 # Firebase API keys
 GoogleService-Info.plist
-google-services.json
+#google-services.json
 
 # dotenv files
 .env
