@@ -305,7 +305,9 @@ class _ProvisioningProgressDialogState
               final nodeUuid = data['nodeUuid'] as String?;
               if (nodeUuid != null && nodeUuid.isNotEmpty) {
                 _targetUuid = nodeUuid;
-                debugPrint('[Wizard] Target UUID updated to true Mesh UUID: $_targetUuid');
+                debugPrint(
+                  '[Wizard] Target UUID updated to true Mesh UUID: $_targetUuid',
+                );
               }
               _currentStepStatus = StepStatus.success;
               if (message.contains('Resuming')) {
@@ -362,7 +364,6 @@ class _ProvisioningProgressDialogState
       });
     }
   }
-
 
   /// ウィザード全体の進捗率の計算 (0.0 ~ 1.0)
   double get _progressValue {
