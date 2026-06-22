@@ -74,16 +74,18 @@ class ProvisioningService: NSObject {
                     appDelegate.meshState = .waitProxyConnection
                 }
             }
-            
-            _provisioningEventStreamHandler.sendEvent(
-                status: .complete,
-                data: [
-                    "message": "Node already provisioned. Resuming configuration...",
-                    "nodeUuid": existingNode.uuid.uuidString,
-                    "unicastAddress": existingNode.primaryUnicastAddress as Any
-                ]
-            )
             result(["isSuccess": true, "message": "Resuming configuration."])
+            
+            DispatchQueue.main.async {
+                self._provisioningEventStreamHandler.sendEvent(
+                    status: .complete,
+                    data: [
+                        "message": "Node already provisioned. Resuming configuration...",
+                        "nodeUuid": existingNode.uuid.uuidString,
+                        "unicastAddress": existingNode.primaryUnicastAddress as Any
+                    ]
+                )
+            }
             return
             }
         }

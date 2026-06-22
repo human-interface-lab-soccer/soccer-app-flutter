@@ -36,6 +36,7 @@ class ConfigurationService {
     var currentTargetAddress: Address?
 
     // Watchdog, Trace and ACK properties
+    var currentMessageHandle: MessageHandle?
     var configTraceId: UUID?
     var expectedNextEvent: String = "None"
     var lastReceivedEvent: String = "None"
@@ -119,18 +120,8 @@ class ConfigurationService {
 
 
             // AppKeyの取得，無ければ生成
-            var applicationKey: ApplicationKey?
-            if let availableKeys = manager.meshNetwork?.applicationKeys
-                .notKnownTo(node: node), !availableKeys.isEmpty
-            {
-                let keys = availableKeys.filter {
-                    node.knows(networkKey: $0.boundNetworkKey)
-                }
-                if !keys.isEmpty {
-                    applicationKey = keys[0]
-                }
-            }
-
+            var applicationKey: ApplicationKey? = manager.meshNetwork?.applicationKeys.first
+            
             if applicationKey == nil {
                 // applicationKeyを新しく生成
                 applicationKey = try manager.meshNetwork?.add(
@@ -158,6 +149,19 @@ class ConfigurationService {
                 )
             }
 
+            if !node.applicationKeys.isEmpty {
+                MeshTrace.log(traceId: traceIdStr, step: "APP_KEY_ADD", event: "SKIP", node: "\(unicastAddress)", state: "CONFIGURING", detail: "Node already has application keys. Skipping ConfigAppKeyAdd.")
+                appDelegate.meshState = .waitComposition
+                
+                startWatchdog(for: node.primaryUnicastAddress)
+                expectedNextEvent = "ConfigCompositionDataStatus"
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    appDelegate.sendCompositionDataRequest(to: node)
+                }
+                return ConfigurationServiceResponse(isSuccess: true, message: "Skipped AppKeyAdd. Requesting Composition Data...")
+            }
+
             // AppKeyの追加
             let appKeyCount = manager.meshNetwork?.applicationKeys.count ?? 0
             let isConnected = appDelegate.connection?.isConnected ?? false
@@ -173,7 +177,7 @@ class ConfigurationService {
             )
             
             trackAckSent(messageType: "ConfigAppKeyAdd")
-            try manager.send(
+            currentMessageHandle = try manager.send(
                 ConfigAppKeyAdd(applicationKey: selectedAppKey),
                 to: node
             )
@@ -354,6 +358,12 @@ class ConfigurationService {
             )
         }
 
+        // 購読済みスキップ判定
+        if serverModel.subscriptions.contains(targetGroup) {
+            MeshTrace.log(traceId: traceIdStr, step: "SUBSCRIPTION", event: "SKIP", node: "\(address)", state: stateStr, detail: "Model already subscribed to group \(targetGroup.address). Skipping.")
+            appDelegate?.meshState = .publication
+            return setPublication(withAddress: address)
+        }
 
         /// Subscription メッセージ
         let message: AcknowledgedConfigMessage =
@@ -376,7 +386,7 @@ class ConfigurationService {
         
         do {
             trackAckSent(messageType: "ConfigModelSubscriptionAdd")
-            try MeshNetworkManager.instance.send(message, to: node)
+            currentMessageHandle = try MeshNetworkManager.instance.send(message, to: node)
             
             let detailSendPost = "Sent ConfigModelSubscriptionAdd successfully."
             MeshTrace.log(
@@ -545,6 +555,14 @@ class ConfigurationService {
             )
         }
 
+        // Publish設定済みスキップ判定
+        if serverModel.publish?.publicationAddress == targetGroup.address {
+            MeshTrace.log(traceId: traceIdStr, step: "PUBLICATION", event: "SKIP", node: "\(address)", state: stateStr, detail: "Model already published to group \(targetGroup.address). Skipping.")
+            markConfigurationComplete()
+            _ = MeshNetworkManager.instance.save()
+            MeshNetworkEventStreamHandler.shared.sendEvent(status: .success, data: ["message": "Configuration complete (Skipped Publication)", "eventType": "publication"])
+            return ConfigurationServiceResponse(isSuccess: true, message: "Already published to group. Configuration complete.")
+        }
 
         let publish = Publish(
             to: targetGroup.address,
@@ -580,7 +598,7 @@ class ConfigurationService {
         
         do {
             trackAckSent(messageType: "ConfigModelPublicationSet")
-            try MeshNetworkManager.instance.send(
+            currentMessageHandle = try MeshNetworkManager.instance.send(
                 publicationMessage,
                 to: node,
                 withTtl: UInt8(3)
@@ -734,6 +752,8 @@ extension ConfigurationService {
             if self.watchdogTicks >= self.maxWatchdogTicks {
                 MeshTrace.log(traceId: traceIdStr, step: "WATCHDOG", event: "TIMEOUT", node: "\(nodeAddress)", state: (UIApplication.shared.delegate as? AppDelegate)?.meshState.rawValue ?? "UNKNOWN", detail: "No response for 15s. Aborting sequence.")
                 
+                self.currentMessageHandle?.cancel()
+                self.currentMessageHandle = nil
                 self.stopWatchdog()
                 self.isConfiguring = false
                 self.isSubscribed = false
@@ -751,6 +771,8 @@ extension ConfigurationService {
     func stopWatchdog() {
         watchdogTimer?.invalidate()
         watchdogTimer = nil
+        currentMessageHandle?.cancel()
+        currentMessageHandle = nil
     }
     
     /// コンフィグレーション完了時に呼ぶ（isConfiguringリセット含む）

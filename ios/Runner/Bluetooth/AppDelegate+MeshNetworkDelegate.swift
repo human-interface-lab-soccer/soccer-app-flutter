@@ -203,6 +203,10 @@ extension AppDelegate: MeshNetworkDelegate {
                     )
                 }
             } else {
+                ConfigurationService.shared.isSubscribed = false
+                ConfigurationService.shared.isConfiguring = false
+                ConfigurationService.shared.stopWatchdog()
+                
                 let statusDetail = "Failed to subscribe model: \(configSubscriptionState.message) for \(source)"
                 MeshTrace.log(
                     traceId: traceIdStr,
@@ -226,9 +230,9 @@ extension AppDelegate: MeshNetworkDelegate {
             ConfigurationService.shared.lastReceivedEvent = "ConfigModelPublicationStatus Received"
             ConfigurationService.shared.expectedNextEvent = "Flow Complete"
             ConfigurationService.shared.expectedDelegate = "None"
-            ConfigurationService.shared.markConfigurationComplete() // 正常終了: isConfiguring リセット + Watchdog停止
             
             if configPublicationStatus.status == .success {
+                ConfigurationService.shared.markConfigurationComplete() // 正常終了: isConfiguring リセット + Watchdog停止
                 _ = manager.save()
                 let statusDetail = "Successfully publish model for \(source)"
                 MeshTrace.log(
@@ -246,6 +250,10 @@ extension AppDelegate: MeshNetworkDelegate {
                     eventType: "publication"
                 )
             } else {
+                ConfigurationService.shared.isPublished = false
+                ConfigurationService.shared.isConfiguring = false
+                ConfigurationService.shared.stopWatchdog()
+                
                 let statusDetail = "Failed to publish model: \(configPublicationStatus.message) for \(source)"
                 MeshTrace.log(
                     traceId: traceIdStr,
@@ -315,7 +323,13 @@ extension AppDelegate: MeshNetworkDelegate {
                 detail: detail
             )
             meshState = .waitComposition
-            sendCompositionDataRequest(to: node)
+            
+            ConfigurationService.shared.startWatchdog(for: node.primaryUnicastAddress)
+            ConfigurationService.shared.expectedNextEvent = "ConfigCompositionDataStatus"
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.sendCompositionDataRequest(to: node)
+            }
         } else {
             let detail = "Failed to add AppKey: \(appKeyStatus.status.debugDescription)"
             MeshTrace.log(
@@ -392,8 +406,9 @@ extension AppDelegate: MeshNetworkDelegate {
         )
 
         do {
+            ConfigurationService.shared.currentMessageHandle?.cancel()
             ConfigurationService.shared.trackAckSent(messageType: "ConfigCompositionDataGet")
-            try meshNetworkManager.send(ConfigCompositionDataGet(), to: node)
+            ConfigurationService.shared.currentMessageHandle = try meshNetworkManager.send(ConfigCompositionDataGet(), to: node)
             
             let detailSuccess = "Sent ConfigCompositionDataGet successfully to \(node.name ?? "Unknown Node")"
             MeshTrace.log(
@@ -561,7 +576,7 @@ extension AppDelegate: MeshNetworkDelegate {
             )
             
             ConfigurationService.shared.trackAckSent(messageType: "ConfigModelAppBind")
-            try manager.send(clientBindMessage, to: clientUnicastAddress)
+            ConfigurationService.shared.currentMessageHandle = try manager.send(clientBindMessage, to: clientUnicastAddress)
 
             let detailSendPost = "Sent local Client Model Bind successfully."
             MeshTrace.log(
@@ -616,7 +631,7 @@ extension AppDelegate: MeshNetworkDelegate {
         
         do {
             ConfigurationService.shared.trackAckSent(messageType: "ConfigModelAppBind")
-            try manager.send(bindMessage, to: node)
+            ConfigurationService.shared.currentMessageHandle = try manager.send(bindMessage, to: node)
             
             let detailSendPost = "Sent ConfigModelAppBind successfully."
             MeshTrace.log(

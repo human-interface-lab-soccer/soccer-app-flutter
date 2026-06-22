@@ -154,15 +154,7 @@ class NetworkConnection: NSObject, Bearer {
 
     func send(_ data: Data, ofType type: PduType) throws {
         let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
-        
-        var stateStr = "UNKNOWN"
-        if Thread.isMainThread {
-            stateStr = (UIApplication.shared.delegate as? AppDelegate)?.meshState.rawValue ?? "UNKNOWN"
-        } else {
-            stateStr = DispatchQueue.main.sync {
-                return (UIApplication.shared.delegate as? AppDelegate)?.meshState.rawValue ?? "UNKNOWN"
-            }
-        }
+        let stateStr = "UNKNOWN"
         let openProxies = proxies.filter { $0.isOpen }
         let openProxiesCount = openProxies.count
         let totalProxiesCount = proxies.count

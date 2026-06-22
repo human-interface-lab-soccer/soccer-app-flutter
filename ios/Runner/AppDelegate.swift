@@ -30,12 +30,13 @@ enum MeshState: String {
             stateQueue.async { [weak self] in
                 guard let self = self else { return }
                 let oldValue = self._meshState
-                guard oldValue != newValue else {
-                    return
-                }
+                guard oldValue != newValue else { return }
                 
+                // Write under stateQueue to maintain thread safety
+                self._meshState = newValue
+                
+                // Notify via EventChannel and timers on main thread
                 DispatchQueue.main.async {
-                    self._meshState = newValue
                     let previousState = oldValue.rawValue
                     let nextState = newValue.rawValue
                     let isMain = Thread.isMainThread ? "main" : "background"
@@ -180,11 +181,7 @@ enum MeshState: String {
         connection!.dataDelegate = meshNetworkManager
         meshNetworkManager.transmitter = connection
 
-        do {
-            try connection!.open()
-        } catch {
-            print("Failed to open network connection: \(error)")
-        }
+        connection!.open()
     }
 
     private func initializeProvisioningService() {
@@ -218,10 +215,9 @@ enum MeshState: String {
     private func startProxyConnectionTimer() {
         stopProxyConnectionTimer()
         proxyConnectionTimer = Timer.scheduledTimer(withTimeInterval: proxyConnectionTimeout, repeats: false) { [weak self] _ in
-            guard let self = self, self._meshState == .waitProxyConnection else { return }
+            guard let self = self, self.meshState == .waitProxyConnection else { return }
             print("[ProxyTimeout] GATT Proxy connection timed out.")
             self.connection?.close()
-            self._meshState = .complete
             MeshNetworkEventStreamHandler.shared.sendEvent(status: .error, data: [
                 "eventType": "configuration",
                 "message": "Proxyスキャンタイムアウト"
@@ -327,26 +323,29 @@ extension AppDelegate: ProxyFilterDelegate {
                     return
                 }
                 
-                let infoDetail = "[ProxyFilterDelegate] Found target address \(targetAddress) in filter, triggering configureNode"
+                let infoDetail = "[ProxyFilterDelegate] Found target address \(targetAddress) in filter, triggering configureNode in 1.0s"
                 MeshTrace.log(
                     traceId: traceIdStr,
                     step: "PROXY_FILTER",
-                    event: "TRIGGER_CONFIGURE_NODE",
+                    event: "TRIGGER_CONFIGURE_NODE_DELAY",
                     node: "\(targetAddress)",
                     state: meshState.rawValue,
                     detail: infoDetail
                 )
-                let result = ConfigurationService.shared.configureNode(unicastAddress: targetAddress)
                 
-                let resultDetail = "[ProxyFilterDelegate] configureNode triggered: \(result.isSuccess) - \(result.message)"
-                MeshTrace.log(
-                    traceId: traceIdStr,
-                    step: "PROXY_FILTER",
-                    event: "CONFIGURE_NODE_RESULT",
-                    node: "\(targetAddress)",
-                    state: meshState.rawValue,
-                    detail: resultDetail
-                )
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    let result = ConfigurationService.shared.configureNode(unicastAddress: targetAddress)
+                    
+                    let resultDetail = "[ProxyFilterDelegate] configureNode triggered: \(result.isSuccess) - \(result.message)"
+                    MeshTrace.log(
+                        traceId: traceIdStr,
+                        step: "PROXY_FILTER",
+                        event: "CONFIGURE_NODE_RESULT",
+                        node: "\(targetAddress)",
+                        state: self.meshState.rawValue,
+                        detail: resultDetail
+                    )
+                }
             }
         }
     }
@@ -371,11 +370,7 @@ extension AppDelegate: BearerDelegate {
         if meshState == .waitComposition || meshState == .configuring || meshState == .proxyConnected || meshState == .waitProxyConnection {
             meshState = .waitProxyConnection
             if let connection = connection {
-                do {
-                    try connection.open()
-                } catch {
-                    print("Failed to reopen connection: \(error.localizedDescription)")
-                }
+                connection.open()
             }
         }
     }
