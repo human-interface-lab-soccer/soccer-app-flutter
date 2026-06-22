@@ -44,6 +44,8 @@ class ConfigurationService {
     var pendingAckSentTime: Date?
     var proxyFilterUpdatedCount = 0
     private var watchdogTimer: Timer?
+    private var watchdogTicks = 0
+    private let maxWatchdogTicks = 3
 
     private var periodSteps: UInt8 = 0
     private var periodResolution: StepResolution = .hundredsOfMilliseconds
@@ -114,6 +116,7 @@ class ConfigurationService {
 
         do {
             let node = try findNode(withUnicastAddress: unicastAddress)
+
 
             // AppKeyの取得，無ければ生成
             var applicationKey: ApplicationKey?
@@ -351,6 +354,7 @@ class ConfigurationService {
             )
         }
 
+
         /// Subscription メッセージ
         let message: AcknowledgedConfigMessage =
             ConfigModelSubscriptionAdd(group: targetGroup, to: serverModel)
@@ -541,6 +545,7 @@ class ConfigurationService {
             )
         }
 
+
         let publish = Publish(
             to: targetGroup.address,
             using: applicationKey,
@@ -693,8 +698,10 @@ extension ConfigurationService {
 
     func startWatchdog(for nodeAddress: Address) {
         watchdogTimer?.invalidate()
+        watchdogTicks = 0
         watchdogTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
+            self.watchdogTicks += 1
             let traceIdStr = self.configTraceId?.uuidString ?? "N/A"
             let node = self.manager.meshNetwork?.node(withAddress: nodeAddress)
             
@@ -722,6 +729,22 @@ extension ConfigurationService {
                 state: (UIApplication.shared.delegate as? AppDelegate)?.meshState.rawValue ?? "UNKNOWN",
                 detail: detail
             )
+            
+            // 15秒応答なしでのアクティブリカバリ
+            if self.watchdogTicks >= self.maxWatchdogTicks {
+                MeshTrace.log(traceId: traceIdStr, step: "WATCHDOG", event: "TIMEOUT", node: "\(nodeAddress)", state: (UIApplication.shared.delegate as? AppDelegate)?.meshState.rawValue ?? "UNKNOWN", detail: "No response for 15s. Aborting sequence.")
+                
+                self.stopWatchdog()
+                self.isConfiguring = false
+                self.isSubscribed = false
+                self.isPublished = false
+                
+                var eventType = "configuration"
+                if self.expectedNextEvent == "ConfigModelSubscriptionStatus" { eventType = "subscription" }
+                else if self.expectedNextEvent == "ConfigModelPublicationStatus" { eventType = "publication" }
+                
+                MeshNetworkEventStreamHandler.shared.sendEvent(status: .error, data: ["message": "タイムアウト: デバイスからの応答がありません", "eventType": eventType])
+            }
         }
     }
 

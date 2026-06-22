@@ -77,12 +77,12 @@ class _ProvisioningProgressDialogState
   StreamSubscription<Map<String, dynamic>>? _subscription; // provisioningStream
   StreamSubscription<Map<String, dynamic>>?
   _meshSubscription; // meshNetworkStream
-  Timer? _timeoutTimer;
 
   bool _isDebugMode = false;
   WizardStep _currentWizardStep = WizardStep.provisioning;
   StepStatus _currentStepStatus = StepStatus.running;
   int? _unicastAddress;
+  late String _targetUuid;
 
   // Provisioningサブステップ用
   ProvisioningStep _currentStep = ProvisioningStep.connecting;
@@ -92,6 +92,7 @@ class _ProvisioningProgressDialogState
   void initState() {
     super.initState();
     _isDebugMode = widget.isMockDevice;
+    _targetUuid = widget.deviceUuid;
 
     // イベントストリームはダイアログの初期化時に一度だけ購読し，disposeまで維持する
     _meshSubscription = MeshNetwork.meshNetworkStream.listen(
@@ -107,7 +108,6 @@ class _ProvisioningProgressDialogState
   void dispose() {
     _subscription?.cancel();
     _meshSubscription?.cancel();
-    _timeoutTimer?.cancel();
     super.dispose();
   }
 
@@ -216,7 +216,6 @@ class _ProvisioningProgressDialogState
 
   /// 各ステップ成功時の状態更新
   void _handleStepSuccess(String successMessage) {
-    _timeoutTimer?.cancel();
     setState(() {
       _currentStepStatus = StepStatus.success;
       _statusMessage = successMessage;
@@ -226,28 +225,12 @@ class _ProvisioningProgressDialogState
 
   /// 各ステップ失敗（エラー）時の状態更新
   void _handleStepFailure(String errorMessage) {
-    _timeoutTimer?.cancel();
     setState(() {
       _currentStepStatus = StepStatus.failed;
       _statusMessage = errorMessage;
     });
     debugPrint('[Wizard] Step $_currentWizardStep failed: $errorMessage');
   }
-
-  // /// タイムアウトタイマーの起動（15秒）
-  // void _startTimeoutTimer() {
-  //   _timeoutTimer?.cancel();
-  //   if (_isDebugMode) return; // デバッグモードではタイムアウトさせない
-
-  //   _timeoutTimer = Timer(const Duration(seconds: 15), () {
-  //     if (!mounted) return;
-  //     debugPrint('[Wizard] Step $_currentWizardStep timed out.');
-  //     setState(() {
-  //       _currentStepStatus = StepStatus.failed;
-  //       _statusMessage = 'タイムアウトしました。もう一度お試しください。';
-  //     });
-  //   });
-  // }
 
   /// 各ステップのアクションを起動するメソッド
   Future<void> _triggerStepAction() async {
@@ -297,7 +280,7 @@ class _ProvisioningProgressDialogState
       // 以前のプロビジョニング購読があれば解除
       await _subscription?.cancel();
 
-      final response = await _provisioning.startProvisioning(widget.deviceUuid);
+      final response = await _provisioning.startProvisioning(_targetUuid);
 
       if (!response['isSuccess']) {
         if (!mounted) return;
@@ -319,8 +302,17 @@ class _ProvisioningProgressDialogState
 
             if (step == ProvisioningStep.complete) {
               _unicastAddress = data['unicastAddress'] as int?;
+              final nodeUuid = data['nodeUuid'] as String?;
+              if (nodeUuid != null && nodeUuid.isNotEmpty) {
+                _targetUuid = nodeUuid;
+                debugPrint('[Wizard] Target UUID updated to true Mesh UUID: $_targetUuid');
+              }
               _currentStepStatus = StepStatus.success;
-              _statusMessage = 'プロビジョニングが完了しました！';
+              if (message.contains('Resuming')) {
+                _statusMessage = '既存デバイスを検知しました。設定を再開します...';
+              } else {
+                _statusMessage = 'プロビジョニングが完了しました！';
+              }
               debugPrint(
                 '[Wizard] Provisioning complete. UnicastAddress: $_unicastAddress',
               );
@@ -371,41 +363,6 @@ class _ProvisioningProgressDialogState
     }
   }
 
-  // /// NEXTボタンまたは完了ボタンが押下されたときの処理
-  // void _handleNextStep() {
-  //   if (_currentWizardStep == WizardStep.publication &&
-  //       _currentStepStatus == StepStatus.success) {
-  //     // 最終ステップ完了時はダイアログを閉じる
-  //     Navigator.of(context).pop();
-  //     return;
-  //   }
-
-  //   final nextIndex = _currentWizardStep.stepIndex + 1;
-  //   if (nextIndex < WizardStep.values.length) {
-  //     setState(() {
-  //       _currentWizardStep = WizardStep.values[nextIndex];
-  //       _currentStepStatus = StepStatus.waitingUserConfirmation;
-
-  //       // 次のステップの初期表示メッセージを設定
-  //       switch (_currentWizardStep) {
-  //         case WizardStep.configuration:
-  //           _statusMessage = 'Configurationを開始しますか？';
-  //           break;
-  //         case WizardStep.subscription:
-  //           _statusMessage = 'Set Subscriptionを開始しますか？';
-  //           break;
-  //         case WizardStep.publication:
-  //           _statusMessage = 'Set Publicationを開始しますか？';
-  //           break;
-  //         default:
-  //           break;
-  //       }
-  //     });
-  //     debugPrint(
-  //       '[Wizard] Transitioned to $_currentWizardStep (waitingUserConfirmation)',
-  //     );
-  //   }
-  // }
 
   /// ウィザード全体の進捗率の計算 (0.0 ~ 1.0)
   double get _progressValue {

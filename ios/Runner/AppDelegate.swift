@@ -53,6 +53,12 @@ enum MeshState: String {
                     )
                     
                     self.sendFlutterMeshStateEvent(state: newValue)
+                    
+                    if newValue == .waitProxyConnection {
+                        self.startProxyConnectionTimer()
+                    } else if newValue == .proxyConnected {
+                        self.stopProxyConnectionTimer()
+                    }
                 }
             }
         }
@@ -71,6 +77,10 @@ enum MeshState: String {
     var compositionDataRetries = 0
     let maxCompositionDataRetries = 3
     let retryTimeInterval = 5.0
+
+    // Proxy Connection Timeout
+    var proxyConnectionTimer: Timer?
+    let proxyConnectionTimeout = 30.0
 
     // MARK: - Application Lifecycle
 
@@ -203,6 +213,25 @@ enum MeshState: String {
                 "message": "State transitioned to \(state.rawValue)"
             ]
         )
+    }
+
+    private func startProxyConnectionTimer() {
+        stopProxyConnectionTimer()
+        proxyConnectionTimer = Timer.scheduledTimer(withTimeInterval: proxyConnectionTimeout, repeats: false) { [weak self] _ in
+            guard let self = self, self._meshState == .waitProxyConnection else { return }
+            print("[ProxyTimeout] GATT Proxy connection timed out.")
+            self.connection?.close()
+            self._meshState = .complete
+            MeshNetworkEventStreamHandler.shared.sendEvent(status: .error, data: [
+                "eventType": "configuration",
+                "message": "Proxyスキャンタイムアウト"
+            ])
+        }
+    }
+
+    private func stopProxyConnectionTimer() {
+        proxyConnectionTimer?.invalidate()
+        proxyConnectionTimer = nil
     }
 }
 

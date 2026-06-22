@@ -171,6 +171,7 @@ extension AppDelegate: MeshNetworkDelegate {
             ConfigurationService.shared.expectedDelegate = "ConfigModelPublicationStatus"
             
             if configSubscriptionState.isSuccess {
+                _ = manager.save()
                 let statusDetail = "Successfully subscribe model for \(source)"
                 MeshTrace.log(
                     traceId: traceIdStr,
@@ -228,6 +229,7 @@ extension AppDelegate: MeshNetworkDelegate {
             ConfigurationService.shared.markConfigurationComplete() // 正常終了: isConfiguring リセット + Watchdog停止
             
             if configPublicationStatus.status == .success {
+                _ = manager.save()
                 let statusDetail = "Successfully publish model for \(source)"
                 MeshTrace.log(
                     traceId: traceIdStr,
@@ -302,6 +304,7 @@ extension AppDelegate: MeshNetworkDelegate {
     ) {
         let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
         if appKeyStatus.status == .success {
+            _ = manager.save()
             let detail = "AppKey added successfully. Transitioning to waitComposition."
             MeshTrace.log(
                 traceId: traceIdStr,
@@ -333,7 +336,7 @@ extension AppDelegate: MeshNetworkDelegate {
     }
 
     // ConfigCompositionDataGet を送信するリトライロジック
-    private func sendCompositionDataRequest(to node: Node) {
+    func sendCompositionDataRequest(to node: Node) {
         guard compositionDataTimer == nil else { return }
         compositionDataRetries = 0
 
@@ -644,6 +647,7 @@ extension AppDelegate: MeshNetworkDelegate {
     ) async {
         let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
         if modelAppStatus.status == .success {
+            _ = manager.save()
             let detail = "Successfully bind AppKey to Model. Transitioning to subscription."
             MeshTrace.log(
                 traceId: traceIdStr,
@@ -735,7 +739,6 @@ extension AppDelegate: MeshNetworkDelegate {
                 withTtl: UInt8(5),
                 using: appKey
             )
-            print(result)
             sendFlutterEvent(
                 status: .success,
                 message: "Successfully sent message",

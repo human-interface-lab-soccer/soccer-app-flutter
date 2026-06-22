@@ -55,12 +55,37 @@ class ProvisioningService: NSObject {
         
         cleanupProvisioning(closeBearer: true)
 
-        // 同一UUIDの既存ノードがあれば、データベースから削除する
-        if let meshNetwork = meshNetworkManager?.meshNetwork,
-           let existingNode = meshNetwork.nodes.first(where: { $0.uuid.uuidString == uuid }) {
-            print("[ProvisioningService] Found duplicate node with UUID: \(uuid). Removing from database before provisioning.")
-            meshNetwork.remove(node: existingNode)
-            _ = meshNetworkManager?.save()
+        // 同一UUIDの既存ノードがあれば、ProvisioningをスキップしてGATT Proxy接続へ進む（自動レジューム）
+        if let meshNetwork = meshNetworkManager?.meshNetwork {
+            let uuidUpper = uuid.uppercased()
+            let allUuids = meshNetwork.nodes.map { $0.uuid.uuidString }.joined(separator: ", ")
+            print("[ProvisioningService] Requested UUID: \(uuidUpper)")
+            print("[ProvisioningService] DB Node UUIDs: [\(allUuids)]")
+            
+            if let existingNode = meshNetwork.nodes.first(where: { $0.uuid.uuidString.uppercased() == uuidUpper }) {
+            print("[ProvisioningService] Found existing node with UUID: \(uuid). Skipping provisioning and auto-resuming configuration.")
+            
+            ConfigurationService.shared.currentTargetAddress = existingNode.primaryUnicastAddress
+            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                appDelegate.meshState = .provisioningComplete
+                appDelegate.connection?.close()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    appDelegate.connection?.open()
+                    appDelegate.meshState = .waitProxyConnection
+                }
+            }
+            
+            _provisioningEventStreamHandler.sendEvent(
+                status: .complete,
+                data: [
+                    "message": "Node already provisioned. Resuming configuration...",
+                    "nodeUuid": existingNode.uuid.uuidString,
+                    "unicastAddress": existingNode.primaryUnicastAddress as Any
+                ]
+            )
+            result(["isSuccess": true, "message": "Resuming configuration."])
+            return
+            }
         }
 
         ConfigurationService.shared.resetForNewSession()
@@ -335,6 +360,8 @@ extension ProvisioningService: ProvisioningDelegate {
                 self.startProvisioning()
 
             case .complete:
+                let saveSuccess = self.meshNetworkManager?.save() ?? false
+                print("[ProvisioningService] meshNetworkManager.save() at .complete result: \(saveSuccess)")
                 do {
                     try self.bearer?.close()
                 } catch {
