@@ -221,7 +221,7 @@ class ConfigurationService {
         -> ConfigurationServiceResponse
     {
         guard !isSubscribed else {
-            return ConfigurationServiceResponse(isSuccess: false, message: "Already subscribed")
+            return ConfigurationServiceResponse(isSuccess: true, message: "Already subscribed")
         }
         let traceIdStr = configTraceId?.uuidString ?? "N/A"
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -423,7 +423,7 @@ class ConfigurationService {
         -> ConfigurationServiceResponse
     {
         guard !isPublished else {
-            return ConfigurationServiceResponse(isSuccess: false, message: "Already published")
+            return ConfigurationServiceResponse(isSuccess: true, message: "Already published")
         }
         let traceIdStr = configTraceId?.uuidString ?? "N/A"
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -778,7 +778,16 @@ extension ConfigurationService {
     /// コンフィグレーション完了時に呼ぶ（isConfiguringリセット含む）
     func markConfigurationComplete() {
         isConfiguring = false
+        isSubscribed = false
+        isPublished = false
         currentTargetAddress = nil
+        configTraceId = nil
+        expectedNextEvent = "None"
+        lastReceivedEvent = "None"
+        expectedDelegate = "None"
+        pendingAckMessage = nil
+        pendingAckSentTime = nil
+        proxyFilterUpdatedCount = 0
         stopWatchdog()
     }
 }

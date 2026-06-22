@@ -27,39 +27,41 @@ enum MeshState: String {
             return stateQueue.sync { _meshState }
         }
         set {
-            stateQueue.async { [weak self] in
+            var oldValue: MeshState!
+            stateQueue.sync {
+                oldValue = _meshState
+                if oldValue != newValue {
+                    _meshState = newValue
+                }
+            }
+            
+            guard oldValue != newValue else { return }
+            
+            // Notify via EventChannel and timers on main thread
+            DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                let oldValue = self._meshState
-                guard oldValue != newValue else { return }
+                let previousState = oldValue.rawValue
+                let nextState = newValue.rawValue
+                let isMain = Thread.isMainThread ? "main" : "background"
+                let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: " | ")
+                let nodeRef = ConfigurationService.shared.currentTargetAddress != nil ? "\(ConfigurationService.shared.currentTargetAddress!)" : "nil"
+                let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
                 
-                // Write under stateQueue to maintain thread safety
-                self._meshState = newValue
+                MeshTrace.log(
+                    traceId: traceIdStr,
+                    step: "STATE_TRANSITION",
+                    event: "CHANGE",
+                    node: nodeRef,
+                    state: nextState,
+                    detail: "Transition: \(previousState) -> \(nextState) | Thread: \(isMain) | Stack: \(stackTrace)"
+                )
                 
-                // Notify via EventChannel and timers on main thread
-                DispatchQueue.main.async {
-                    let previousState = oldValue.rawValue
-                    let nextState = newValue.rawValue
-                    let isMain = Thread.isMainThread ? "main" : "background"
-                    let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: " | ")
-                    let nodeRef = ConfigurationService.shared.currentTargetAddress != nil ? "\(ConfigurationService.shared.currentTargetAddress!)" : "nil"
-                    let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
-                    
-                    MeshTrace.log(
-                        traceId: traceIdStr,
-                        step: "STATE_TRANSITION",
-                        event: "CHANGE",
-                        node: nodeRef,
-                        state: nextState,
-                        detail: "Transition: \(previousState) -> \(nextState) | Thread: \(isMain) | Stack: \(stackTrace)"
-                    )
-                    
-                    self.sendFlutterMeshStateEvent(state: newValue)
-                    
-                    if newValue == .waitProxyConnection {
-                        self.startProxyConnectionTimer()
-                    } else if newValue == .proxyConnected {
-                        self.stopProxyConnectionTimer()
-                    }
+                self.sendFlutterMeshStateEvent(state: newValue)
+                
+                if newValue == .waitProxyConnection {
+                    self.startProxyConnectionTimer()
+                } else if newValue == .proxyConnected {
+                    self.stopProxyConnectionTimer()
                 }
             }
         }
@@ -365,6 +367,11 @@ extension AppDelegate: BearerDelegate {
         // SDK内部のproxyNetworkKeyをnilにリセットし、次の接続で
         // newProxyDidConnect()が確実に呼ばれるようにする
         meshNetworkManager.proxyFilter.proxyDidDisconnect()
+        
+        if let connection = connection, connection.isExplicitlyClosing {
+            print("[ProxyDelegate] Connection was explicitly closed. Skipping automatic reconnection.")
+            return
+        }
         
         // プロビジョニング中などの意図的な切断時に、勝手にProxy接続を再開しないようにする
         if meshState == .waitComposition || meshState == .configuring || meshState == .proxyConnected || meshState == .waitProxyConnection {
