@@ -48,7 +48,50 @@ class ProvisioningService: NSObject {
         for uuid: String,
         result: @escaping FlutterResult
     ) {
+        // 既存のProxy接続（NetworkConnection）を明示的に切断し、状態をリセットする
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            appDelegate.connection?.close()
+        }
+        
         cleanupProvisioning(closeBearer: true)
+
+        // 同一UUIDの既存ノードがあれば、ProvisioningをスキップしてGATT Proxy接続へ進む（自動レジューム）
+        if let meshNetwork = meshNetworkManager?.meshNetwork {
+            let uuidUpper = uuid.uppercased()
+            let allUuids = meshNetwork.nodes.map { $0.uuid.uuidString }.joined(separator: ", ")
+            print("[ProvisioningService] Requested UUID: \(uuidUpper)")
+            print("[ProvisioningService] DB Node UUIDs: [\(allUuids)]")
+            
+            if let existingNode = meshNetwork.nodes.first(where: { $0.uuid.uuidString.uppercased() == uuidUpper }) {
+            print("[ProvisioningService] Found existing node with UUID: \(uuid). Skipping provisioning and auto-resuming configuration.")
+            
+            ConfigurationService.shared.currentTargetAddress = existingNode.primaryUnicastAddress
+            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                appDelegate.meshState = .provisioningComplete
+                appDelegate.connection?.close()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    appDelegate.connection?.open()
+                    appDelegate.meshState = .waitProxyConnection
+                }
+            }
+            result(["isSuccess": true, "message": "Resuming configuration."])
+            
+            DispatchQueue.main.async {
+                self._provisioningEventStreamHandler.sendEvent(
+                    status: .complete,
+                    data: [
+                        "message": "Node already provisioned. Resuming configuration...",
+                        "nodeUuid": existingNode.uuid.uuidString,
+                        "unicastAddress": existingNode.primaryUnicastAddress as Any
+                    ]
+                )
+            }
+            return
+            }
+        }
+
+        ConfigurationService.shared.resetForNewSession()
+        (UIApplication.shared.delegate as? AppDelegate)?.meshState = .provisioning
 
         guard let deviceInfo = bleScanner?.discoveredDevicesList[uuid],
             let peripheral = deviceInfo["peripheral"] as? CBPeripheral,
@@ -252,6 +295,14 @@ extension ProvisioningService: GattBearerDelegate {
                     cleanupProvisioning()
                     return
                 }
+
+                ConfigurationService.shared.currentTargetAddress = node.primaryUnicastAddress
+                if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                    appDelegate.meshState = .provisioningComplete
+                    appDelegate.connection?.open()
+                    appDelegate.meshState = .waitProxyConnection
+                }
+
                 _provisioningEventStreamHandler.sendEvent(
                     status: .complete,
                     data: [
@@ -311,6 +362,8 @@ extension ProvisioningService: ProvisioningDelegate {
                 self.startProvisioning()
 
             case .complete:
+                let saveSuccess = self.meshNetworkManager?.save() ?? false
+                print("[ProvisioningService] meshNetworkManager.save() at .complete result: \(saveSuccess)")
                 do {
                     try self.bearer?.close()
                 } catch {

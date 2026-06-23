@@ -2,10 +2,70 @@ import Flutter
 import NordicMesh
 import UIKit
 
+enum MeshState: String {
+    case provisioning = "PROVISIONING"
+    case provisioningComplete = "PROVISIONING_COMPLETE"
+    case waitProxyConnection = "WAIT_PROXY_CONNECTION"
+    case proxyConnected = "PROXY_CONNECTED"
+    case waitComposition = "WAIT_COMPOSITION"
+    case configuring = "CONFIGURING"
+    case complete = "COMPLETE"
+    case subscription = "SUBSCRIPTION"
+    case publication = "PUBLICATION"
+}
+
 @main
 @objc class AppDelegate: FlutterAppDelegate {
 
     // MARK: - Properties
+ 
+    private let stateQueue = DispatchQueue(label: "com.soccerapp.mesh.state")
+    private var _meshState: MeshState = .complete
+    
+    var meshState: MeshState {
+        get {
+            return stateQueue.sync { _meshState }
+        }
+        set {
+            var oldValue: MeshState!
+            stateQueue.sync {
+                oldValue = _meshState
+                if oldValue != newValue {
+                    _meshState = newValue
+                }
+            }
+            
+            guard oldValue != newValue else { return }
+            
+            // Notify via EventChannel and timers on main thread
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                let previousState = oldValue.rawValue
+                let nextState = newValue.rawValue
+                let isMain = Thread.isMainThread ? "main" : "background"
+                let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: " | ")
+                let nodeRef = ConfigurationService.shared.currentTargetAddress != nil ? "\(ConfigurationService.shared.currentTargetAddress!)" : "nil"
+                let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
+                
+                MeshTrace.log(
+                    traceId: traceIdStr,
+                    step: "STATE_TRANSITION",
+                    event: "CHANGE",
+                    node: nodeRef,
+                    state: nextState,
+                    detail: "Transition: \(previousState) -> \(nextState) | Thread: \(isMain) | Stack: \(stackTrace)"
+                )
+                
+                self.sendFlutterMeshStateEvent(state: newValue)
+                
+                if newValue == .waitProxyConnection {
+                    self.startProxyConnectionTimer()
+                } else if newValue == .proxyConnected {
+                    self.stopProxyConnectionTimer()
+                }
+            }
+        }
+    }
 
     // Manager Instances
     var meshNetworkManager: MeshNetworkManager!
@@ -20,6 +80,10 @@ import UIKit
     var compositionDataRetries = 0
     let maxCompositionDataRetries = 3
     let retryTimeInterval = 5.0
+
+    // Proxy Connection Timeout
+    var proxyConnectionTimer: Timer?
+    let proxyConnectionTimeout = 30.0
 
     // MARK: - Application Lifecycle
 
@@ -52,6 +116,7 @@ import UIKit
 
     private func initializeMeshNetworkManager() {
         meshNetworkManager = MeshNetworkManager()
+        meshNetworkManager.proxyFilter.delegate = self
         meshNetworkManager.networkParameters = .default
 
         do {
@@ -114,14 +179,11 @@ import UIKit
         meshNetworkManager.localElements = [primaryElement]
 
         connection = NetworkConnection(to: meshNetwork)
+        connection!.delegate = self
         connection!.dataDelegate = meshNetworkManager
         meshNetworkManager.transmitter = connection
 
-        do {
-            try connection!.open()
-        } catch {
-            print("Failed to open network connection: \(error)")
-        }
+        connection!.open()
     }
 
     private func initializeProvisioningService() {
@@ -139,6 +201,35 @@ import UIKit
             provisioningService: provisioningService,
         )
         flutterChannelManager.setupChannels()
+    }
+
+    private func sendFlutterMeshStateEvent(state: MeshState) {
+        MeshNetworkEventStreamHandler.shared.sendEvent(
+            status: .processing,
+            data: [
+                "eventType": "meshStateChanged",
+                "meshState": state.rawValue,
+                "message": "State transitioned to \(state.rawValue)"
+            ]
+        )
+    }
+
+    private func startProxyConnectionTimer() {
+        stopProxyConnectionTimer()
+        proxyConnectionTimer = Timer.scheduledTimer(withTimeInterval: proxyConnectionTimeout, repeats: false) { [weak self] _ in
+            guard let self = self, self.meshState == .waitProxyConnection else { return }
+            print("[ProxyTimeout] GATT Proxy connection timed out.")
+            self.connection?.close()
+            MeshNetworkEventStreamHandler.shared.sendEvent(status: .error, data: [
+                "eventType": "configuration",
+                "message": "Proxyスキャンタイムアウト"
+            ])
+        }
+    }
+
+    private func stopProxyConnectionTimer() {
+        proxyConnectionTimer?.invalidate()
+        proxyConnectionTimer = nil
     }
 }
 
@@ -168,3 +259,128 @@ extension MeshNetworkManager {
         }
     }
 }
+
+extension AppDelegate: ProxyFilterDelegate {
+    func proxyFilterUpdated(type: ProxyFilerType, addresses: Set<Address>) {
+        ConfigurationService.shared.proxyFilterUpdatedCount += 1
+        let count = ConfigurationService.shared.proxyFilterUpdatedCount
+        let targetAddress = ConfigurationService.shared.currentTargetAddress
+        let targetMatch = targetAddress != nil ? addresses.contains(targetAddress!) : false
+        let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
+        
+        let detail = "Proxy filter updated count: \(count). Type: \(type), Addresses: \(addresses). TargetAddress: \(targetAddress != nil ? String(targetAddress!) : "nil"). Match: \(targetMatch)"
+        
+        MeshTrace.log(
+            traceId: traceIdStr,
+            step: "PROXY_FILTER",
+            event: "UPDATED",
+            node: targetAddress != nil ? "\(targetAddress!)" : "nil",
+            state: meshState.rawValue,
+            detail: detail
+        )
+        
+        if meshState == .proxyConnected {
+            guard let targetAddress = ConfigurationService.shared.currentTargetAddress else {
+                let errDetail = "[ProxyFilterDelegate] Error: currentTargetAddress is nil"
+                MeshTrace.log(
+                    traceId: traceIdStr,
+                    step: "PROXY_FILTER",
+                    event: "ERROR",
+                    node: "nil",
+                    state: meshState.rawValue,
+                    detail: errDetail
+                )
+                return
+            }
+            if !ConfigurationService.shared.isConfiguring {
+                // ターゲットがまだフィルターに入っていない場合
+                if !addresses.contains(targetAddress) {
+                    // SDKのデフォルト設定（1 や 65535 の追加）が終わっているか確認する
+                    let localAddress = meshNetworkManager.meshNetwork?.localProvisioner?.unicastAddress ?? 1
+                    
+                    if addresses.contains(localAddress) || addresses.contains(.allProxies) {
+                        // デフォルト設定が完了していれば、ここで安全にターゲットを追加！
+                        let waitDetail = "[ProxyFilterDelegate] Default filter setup complete. Now adding target \(targetAddress)"
+                        MeshTrace.log(
+                            traceId: traceIdStr,
+                            step: "PROXY_FILTER",
+                            event: "ADDING_TARGET",
+                            node: "\(targetAddress)",
+                            state: meshState.rawValue,
+                            detail: waitDetail
+                        )
+                        meshNetworkManager.proxyFilter.add(address: targetAddress)
+                    } else {
+                        // まだ空っぽ（初期化中）の場合は待つ
+                        let waitDetail = "[ProxyFilterDelegate] Filter initializing... waiting."
+                        MeshTrace.log(
+                            traceId: traceIdStr,
+                            step: "PROXY_FILTER",
+                            event: "WAITING_FOR_INITIALIZATION",
+                            node: "\(targetAddress)",
+                            state: meshState.rawValue,
+                            detail: waitDetail
+                        )
+                    }
+                    return
+                }
+                
+                let infoDetail = "[ProxyFilterDelegate] Found target address \(targetAddress) in filter, triggering configureNode in 1.0s"
+                MeshTrace.log(
+                    traceId: traceIdStr,
+                    step: "PROXY_FILTER",
+                    event: "TRIGGER_CONFIGURE_NODE_DELAY",
+                    node: "\(targetAddress)",
+                    state: meshState.rawValue,
+                    detail: infoDetail
+                )
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    let result = ConfigurationService.shared.configureNode(unicastAddress: targetAddress)
+                    
+                    let resultDetail = "[ProxyFilterDelegate] configureNode triggered: \(result.isSuccess) - \(result.message)"
+                    MeshTrace.log(
+                        traceId: traceIdStr,
+                        step: "PROXY_FILTER",
+                        event: "CONFIGURE_NODE_RESULT",
+                        node: "\(targetAddress)",
+                        state: self.meshState.rawValue,
+                        detail: resultDetail
+                    )
+                }
+            }
+        }
+    }
+}
+
+extension AppDelegate: BearerDelegate {
+    func bearerDidOpen(_ bearer: Bearer) {
+        print("[ProxyDelegate] bearerDidOpen callback. Current state: \(meshState.rawValue)")
+        if meshState == .waitProxyConnection {
+            meshState = .proxyConnected
+        }
+    }
+
+    func bearer(_ bearer: Bearer, didClose error: Error?) {
+        print("[ProxyDelegate] bearerDidClose callback. Current state: \(meshState.rawValue)")
+        
+        // SDK内部のproxyNetworkKeyをnilにリセットし、次の接続で
+        // newProxyDidConnect()が確実に呼ばれるようにする
+        meshNetworkManager.proxyFilter.proxyDidDisconnect()
+        
+        if let connection = connection, connection.isExplicitlyClosing {
+            print("[ProxyDelegate] Connection was explicitly closed. Skipping automatic reconnection.")
+            return
+        }
+        
+        // プロビジョニング中などの意図的な切断時に、勝手にProxy接続を再開しないようにする
+        if meshState == .waitComposition || meshState == .configuring || meshState == .proxyConnected || meshState == .waitProxyConnection {
+            meshState = .waitProxyConnection
+            if let connection = connection {
+                connection.open()
+            }
+        }
+    }
+}
+
+

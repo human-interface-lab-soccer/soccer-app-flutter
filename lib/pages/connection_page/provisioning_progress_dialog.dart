@@ -2,8 +2,27 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:soccer_app_flutter/features/platform_channels/provisioning.dart';
+import 'package:soccer_app_flutter/features/platform_channels/mesh_network.dart';
 
-/// プロビジョニングの進捗状態を表す列挙型
+/// プロビジョニングおよびセットアップウィザードの各ステップを表す列挙型
+enum WizardStep {
+  provisioning(0, 'Provisioning', Icons.bluetooth_searching, Colors.blue),
+  configuration(1, 'Configuration', Icons.settings, Colors.blue),
+  subscription(2, 'Subscription', Icons.notifications_active, Colors.blue),
+  publication(3, 'Publication', Icons.publish, Colors.blue);
+
+  const WizardStep(this.stepIndex, this.displayName, this.icon, this.color);
+
+  final int stepIndex;
+  final String displayName;
+  final IconData icon;
+  final Color color;
+}
+
+/// ウィザード内の各ステップの状態を表す列挙型
+enum StepStatus { idle, waitingUserConfirmation, running, success, failed }
+
+/// プロビジョニングの進捗状態を表す列挙型（内部サブステップ用）
 enum ProvisioningStep {
   connecting(0, '接続中', Icons.bluetooth, Colors.blue),
   discovering(1, 'サービス検索中', Icons.bluetooth_searching, Colors.blue),
@@ -31,21 +50,10 @@ enum ProvisioningStep {
   );
 }
 
-/// プロビジョニング進捗ダイアログ
+/// プロビジョニング進捗ダイアログ (セットアップウィザード)
 ///
-/// BLEデバイスのプロビジョニング進捗をステップ表示付きプログレスバーで表示します．
-///
-/// ### 使用例:
-/// ```dart
-/// showDialog(
-///   context: context,
-///   barrierDismissible: false,
-///   builder: (context) => ProvisioningProgressDialog(
-///     deviceName: 'My Device',
-///     deviceUuid: 'xxxx-xxxx-xxxx',
-///   ),
-/// );
-/// ```
+/// BLEデバイスのプロビジョニングから各種設定（Configuration, Subscription, Publication）までを
+/// 順番に実行するウィザード形式のフローを表示します．
 class ProvisioningProgressDialog extends StatefulWidget {
   final String deviceName;
   final String deviceUuid;
@@ -66,37 +74,268 @@ class ProvisioningProgressDialog extends StatefulWidget {
 class _ProvisioningProgressDialogState
     extends State<ProvisioningProgressDialog> {
   final Provisioning _provisioning = Provisioning();
-  StreamSubscription<Map<String, dynamic>>? _subscription;
+  StreamSubscription<Map<String, dynamic>>? _subscription; // provisioningStream
+  StreamSubscription<Map<String, dynamic>>?
+  _meshSubscription; // meshNetworkStream
+
+  bool _isDebugMode = false;
+  WizardStep _currentWizardStep = WizardStep.provisioning;
+  StepStatus _currentStepStatus = StepStatus.running;
+  int? _unicastAddress;
+  late String _targetUuid;
+
+  // Provisioningサブステップ用
   ProvisioningStep _currentStep = ProvisioningStep.connecting;
-  ProvisioningStep _lastStepBeforeError = ProvisioningStep.connecting;
   String _statusMessage = 'プロビジョニングを開始しています...';
-
-  bool get _isCompleted => _currentStep == ProvisioningStep.complete;
-  bool get _hasError => _currentStep == ProvisioningStep.error;
-
-  // 全ステップ（エラーを除く）
-  static final List<ProvisioningStep> _allSteps =
-      ProvisioningStep.values
-          .where((e) => e != ProvisioningStep.error)
-          .toList();
 
   @override
   void initState() {
     super.initState();
-    if (widget.isMockDevice) {
-      _startProvisioningDebug();
-    } else {
-      _startProvisioning();
-    }
+    _isDebugMode = widget.isMockDevice;
+    _targetUuid = widget.deviceUuid;
+
+    // イベントストリームはダイアログの初期化時に一度だけ購読し，disposeまで維持する
+    _meshSubscription = MeshNetwork.meshNetworkStream.listen(
+      _handleMeshNetworkEvent,
+      onError: _handleMeshNetworkError,
+    );
+
+    // 最初のステップ (Provisioning) は自動的に実行を開始する
+    _triggerStepAction();
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
+    _meshSubscription?.cancel();
     super.dispose();
   }
 
-  /// デバッグ用: 各ステップを2秒間隔で擬似的に進行させる
+  /// メッシュネットワークからのイベント通知を処理するハンドラ
+  void _handleMeshNetworkEvent(Map<String, dynamic> event) {
+    if (!mounted) return;
+
+    final eventType = event['eventType'] as String?;
+    final status = event['status'] as String?;
+    final message = event['message'] as String? ?? '';
+    final meshState = event['meshState'] as String?;
+
+    debugPrint(
+      '[Wizard Stream] Received eventType: $eventType, status: $status, message: $message, meshState: $meshState',
+    );
+
+    if (eventType == 'meshStateChanged' && meshState != null) {
+      setState(() {
+        switch (meshState) {
+          case 'PROVISIONING':
+            _currentWizardStep = WizardStep.provisioning;
+            _currentStepStatus = StepStatus.running;
+            _statusMessage = 'プロビジョニング中...';
+            break;
+          case 'PROVISIONING_COMPLETE':
+            _currentWizardStep = WizardStep.provisioning;
+            _currentStepStatus = StepStatus.success;
+            _statusMessage = 'プロビジョニング完了';
+            break;
+          case 'WAIT_PROXY_CONNECTION':
+            _currentWizardStep = WizardStep.configuration;
+            _currentStepStatus = StepStatus.running;
+            _statusMessage = 'Proxy接続を待っています...';
+            break;
+          case 'PROXY_CONNECTED':
+            _currentWizardStep = WizardStep.configuration;
+            _currentStepStatus = StepStatus.running;
+            _statusMessage = '接続完了';
+            break;
+          case 'WAIT_COMPOSITION':
+            _currentWizardStep = WizardStep.configuration;
+            _currentStepStatus = StepStatus.running;
+            _statusMessage = 'Composition Dataを取得中...';
+            break;
+          case 'CONFIGURING':
+            _currentWizardStep = WizardStep.configuration;
+            _currentStepStatus = StepStatus.running;
+            _statusMessage = '設定中...';
+            break;
+          case 'COMPLETE':
+            _currentWizardStep = WizardStep.configuration;
+            _currentStepStatus = StepStatus.success;
+            _statusMessage = 'Configuration完了';
+            break;
+          case 'SUBSCRIPTION':
+            _currentWizardStep = WizardStep.subscription;
+            _currentStepStatus = StepStatus.running;
+            _statusMessage = 'Subscription設定中...';
+            break;
+          case 'PUBLICATION':
+            _currentWizardStep = WizardStep.publication;
+            _currentStepStatus = StepStatus.running;
+            _statusMessage = 'Publication設定中...';
+            break;
+        }
+      });
+      return;
+    }
+
+    if (_currentStepStatus != StepStatus.running) return;
+
+    if (_currentWizardStep == WizardStep.configuration) {
+      if (eventType == 'configuration') {
+        if (status == 'success') {
+          _handleStepSuccess('Configuration完了');
+        } else if (status == 'error') {
+          _handleStepFailure('Configuration失敗: $message');
+        }
+      }
+    } else if (_currentWizardStep == WizardStep.subscription) {
+      if (eventType == 'subscription') {
+        if (status == 'success') {
+          _handleStepSuccess('Subscription設定完了');
+        } else if (status == 'error') {
+          _handleStepFailure('Subscription設定失敗: $message');
+        }
+      }
+    } else if (_currentWizardStep == WizardStep.publication) {
+      if (eventType == 'publication') {
+        if (status == 'success') {
+          _handleStepSuccess('Publication設定完了');
+        } else if (status == 'error') {
+          _handleStepFailure('Publication設定失敗: $message');
+        }
+      }
+    }
+  }
+
+  /// メッシュネットワークエラーハンドラ
+  void _handleMeshNetworkError(dynamic error) {
+    if (!mounted) return;
+    if (_currentStepStatus == StepStatus.running) {
+      _handleStepFailure('通信エラーが発生しました: $error');
+    }
+  }
+
+  /// 各ステップ成功時の状態更新
+  void _handleStepSuccess(String successMessage) {
+    setState(() {
+      _currentStepStatus = StepStatus.success;
+      _statusMessage = successMessage;
+    });
+    debugPrint('[Wizard] Step $_currentWizardStep succeeded.');
+  }
+
+  /// 各ステップ失敗（エラー）時の状態更新
+  void _handleStepFailure(String errorMessage) {
+    setState(() {
+      _currentStepStatus = StepStatus.failed;
+      _statusMessage = errorMessage;
+    });
+    debugPrint('[Wizard] Step $_currentWizardStep failed: $errorMessage');
+  }
+
+  /// 各ステップのアクションを起動するメソッド
+  Future<void> _triggerStepAction() async {
+    setState(() {
+      _currentStepStatus = StepStatus.running;
+    });
+
+    debugPrint(
+      '[Wizard] Running step: $_currentWizardStep (DebugMode: $_isDebugMode)',
+    );
+
+    // デバッグモード（疑似実行）
+    if (_isDebugMode) {
+      switch (_currentWizardStep) {
+        case WizardStep.provisioning:
+          _startProvisioningDebug();
+          break;
+        case WizardStep.configuration:
+          _statusMessage = 'Configuration実行中... (Debug)';
+          await Future.delayed(const Duration(seconds: 2));
+          if (mounted) _handleStepSuccess('Configuration完了 (Debug)');
+          break;
+        case WizardStep.subscription:
+          _statusMessage = 'Subscription設定実行中... (Debug)';
+          await Future.delayed(const Duration(seconds: 2));
+          if (mounted) _handleStepSuccess('Subscription設定完了 (Debug)');
+          break;
+        case WizardStep.publication:
+          _statusMessage = 'Publication設定実行中... (Debug)';
+          await Future.delayed(const Duration(seconds: 2));
+          if (mounted) _handleStepSuccess('Publication設定完了 (Debug)');
+          break;
+      }
+      return;
+    }
+
+    // 本番環境フローでは最初のProvisioningのみFlutter側からトリガーする
+    if (_currentWizardStep == WizardStep.provisioning) {
+      _statusMessage = '接続中...';
+      _startProvisioning();
+    }
+  }
+
+  /// 本番用のプロビジョニング実行メソッド
+  Future<void> _startProvisioning() async {
+    try {
+      // 以前のプロビジョニング購読があれば解除
+      await _subscription?.cancel();
+
+      final response = await _provisioning.startProvisioning(_targetUuid);
+
+      if (!response['isSuccess']) {
+        if (!mounted) return;
+        _handleStepFailure('プロビジョニング開始失敗: ${response['message']}');
+        return;
+      }
+
+      _subscription = _provisioning.provisioningStream.listen(
+        (data) {
+          if (!mounted) return;
+
+          final status = data['status'] as String? ?? 'unknown';
+          final message = data['message'] as String? ?? '';
+
+          final step = ProvisioningStep.fromStatus(status);
+          setState(() {
+            _currentStep = step;
+            _statusMessage = message;
+
+            if (step == ProvisioningStep.complete) {
+              _unicastAddress = data['unicastAddress'] as int?;
+              final nodeUuid = data['nodeUuid'] as String?;
+              if (nodeUuid != null && nodeUuid.isNotEmpty) {
+                _targetUuid = nodeUuid;
+                debugPrint(
+                  '[Wizard] Target UUID updated to true Mesh UUID: $_targetUuid',
+                );
+              }
+              _currentStepStatus = StepStatus.success;
+              if (message.contains('Resuming')) {
+                _statusMessage = '既存デバイスを検知しました。設定を再開します...';
+              } else {
+                _statusMessage = 'プロビジョニングが完了しました！';
+              }
+              debugPrint(
+                '[Wizard] Provisioning complete. UnicastAddress: $_unicastAddress',
+              );
+            } else if (step == ProvisioningStep.error) {
+              _currentStepStatus = StepStatus.failed;
+              _statusMessage = 'プロビジョニング失敗: $message';
+              debugPrint('[Wizard] Provisioning failed: $message');
+            }
+          });
+        },
+        onError: (error) {
+          if (!mounted) return;
+          _handleStepFailure('プロビジョニングエラー: $error');
+        },
+      );
+    } catch (e) {
+      _handleStepFailure('プロビジョニング中に例外が発生しました: $e');
+    }
+  }
+
+  /// デバッグ用のプロビジョニング擬似実行メソッド
   Future<void> _startProvisioningDebug() async {
     const steps = [
       ('connecting', '接続中...'),
@@ -107,82 +346,64 @@ class _ProvisioningProgressDialogState
     ];
 
     for (final (status, message) in steps) {
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return;
       final step = ProvisioningStep.fromStatus(status);
       setState(() {
-        if (step != ProvisioningStep.error) {
-          _lastStepBeforeError = step;
-        }
         _currentStep = step;
         _statusMessage = message;
+
+        if (step == ProvisioningStep.complete) {
+          _unicastAddress = 99; // デバッグ用の疑似ユニキャストアドレス
+          _currentStepStatus = StepStatus.success;
+          _statusMessage = 'プロビジョニングが完了しました！ (Debug)';
+          debugPrint(
+            '[Wizard Debug] Provisioning complete. Mock Unicast Address: 99',
+          );
+        }
       });
     }
   }
 
-  Future<void> _startProvisioning() async {
-    try {
-      // プロビジョニング開始
-      final response = await _provisioning.startProvisioning(widget.deviceUuid);
-
-      if (!response['isSuccess']) {
-        if (!mounted) return;
-        setState(() {
-          _currentStep = ProvisioningStep.error;
-          _statusMessage = 'エラー: ${response['message']}';
-        });
-        return;
-      }
-
-      // プロビジョニングストリームを購読
-      _subscription = _provisioning.provisioningStream.listen(
-        (data) {
-          if (!mounted) return;
-
-          final status = data['status'] as String? ?? 'unknown';
-          final message = data['message'] as String? ?? '';
-
-          final step = ProvisioningStep.fromStatus(status);
-          setState(() {
-            if (step != ProvisioningStep.error) {
-              _lastStepBeforeError = step;
-            }
-            _currentStep = step;
-            _statusMessage = message;
-          });
-        },
-        onError: (error) {
-          if (!mounted) return;
-          setState(() {
-            _currentStep = ProvisioningStep.error;
-            _statusMessage = 'エラーが発生しました: $error';
-          });
-        },
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _currentStep = ProvisioningStep.error;
-        _statusMessage = '予期しないエラー: $e';
-      });
-    }
-  }
-
-  /// 現在の進捗率を計算（0.0 ~ 1.0）
+  /// ウィザード全体の進捗率の計算 (0.0 ~ 1.0)
   double get _progressValue {
-    if (_isCompleted) return 1.0;
+    if (_currentWizardStep == WizardStep.publication &&
+        _currentStepStatus == StepStatus.success) {
+      return 1.0;
+    }
 
-    final displayStep = _hasError ? _lastStepBeforeError : _currentStep;
-    final currentIndex = displayStep.stepIndex;
-    if (currentIndex < 0) return 0.0;
+    final currentStepIndex = _currentWizardStep.stepIndex;
+    double stepBaseProgress = currentStepIndex / WizardStep.values.length;
 
-    return (currentIndex + 1) / _allSteps.length;
+    double statusProgress = 0.0;
+    if (_currentStepStatus == StepStatus.success) {
+      statusProgress = 1.0 / WizardStep.values.length;
+    } else if (_currentStepStatus == StepStatus.running) {
+      if (_currentWizardStep == WizardStep.provisioning) {
+        final subStepIndex = _currentStep.stepIndex;
+        if (subStepIndex >= 0) {
+          statusProgress =
+              (subStepIndex + 1) /
+              (ProvisioningStep.values.length - 1) /
+              WizardStep.values.length;
+        }
+      } else {
+        statusProgress = 0.5 / WizardStep.values.length;
+      }
+    }
+
+    return (stepBaseProgress + statusProgress).clamp(0.0, 1.0);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isFinished =
+        _currentWizardStep == WizardStep.publication &&
+        _currentStepStatus == StepStatus.success;
+    final isFailed = _currentStepStatus == StepStatus.failed;
+
     return PopScope(
-      canPop: _isCompleted || _hasError,
+      canPop: isFinished || isFailed,
       child: Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
@@ -233,26 +454,35 @@ class _ProvisioningProgressDialogState
       value: _progressValue,
       backgroundColor: Colors.grey[300],
       valueColor: AlwaysStoppedAnimation<Color>(
-        _hasError ? Colors.red : Colors.blue,
+        _currentStepStatus == StepStatus.failed ? Colors.red : Colors.blue,
       ),
       minHeight: 8,
     );
   }
 
-  /// ステップインジケーター
+  /// ウィザード各ステップのインジケーター表示
   Widget _buildStepIndicators() {
-    // エラー時はエラー前のステップを基準にする
-    final displayStep = _hasError ? _lastStepBeforeError : _currentStep;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children:
-          _allSteps.map((step) {
-            final isActive = step.stepIndex <= displayStep.stepIndex;
-            final isCurrent = step == displayStep;
-            // エラー時、エラーが起きたステップを赤で表示
-            final isErrorStep = _hasError && isCurrent;
-            final displayColor = isErrorStep ? Colors.red : step.color;
+          WizardStep.values.map((step) {
+            final isCompleted =
+                step.stepIndex < _currentWizardStep.stepIndex ||
+                (_currentWizardStep == step &&
+                    _currentStepStatus == StepStatus.success);
+            final isActive = _currentWizardStep == step;
+            final isFailed =
+                _currentWizardStep == step &&
+                _currentStepStatus == StepStatus.failed;
+
+            final displayColor =
+                isFailed
+                    ? Colors.red
+                    : isCompleted
+                    ? Colors.green
+                    : isActive
+                    ? Colors.blue
+                    : Colors.grey;
 
             return Expanded(
               child: Column(
@@ -263,18 +493,21 @@ class _ProvisioningProgressDialogState
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color:
-                          isActive || isCurrent
+                          isActive || isCompleted
                               ? displayColor.withValues(alpha: 0.2)
                               : Colors.grey[300],
                       border: Border.all(
-                        color:
-                            isActive || isCurrent ? displayColor : Colors.grey,
-                        width: isCurrent ? 3 : 2,
+                        color: displayColor,
+                        width: isActive ? 3 : 2,
                       ),
                     ),
                     child: Icon(
-                      isErrorStep ? Icons.error : step.icon,
-                      color: isActive || isCurrent ? displayColor : Colors.grey,
+                      isFailed
+                          ? Icons.error
+                          : isCompleted
+                          ? Icons.check
+                          : step.icon,
+                      color: displayColor,
                       size: 24,
                     ),
                   ),
@@ -284,8 +517,9 @@ class _ProvisioningProgressDialogState
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight:
-                          isCurrent ? FontWeight.bold : FontWeight.normal,
-                      color: isActive || isCurrent ? Colors.black : Colors.grey,
+                          isActive ? FontWeight.bold : FontWeight.normal,
+                      color:
+                          isActive || isCompleted ? Colors.black : Colors.grey,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -296,9 +530,9 @@ class _ProvisioningProgressDialogState
     );
   }
 
-  /// ステータスメッセージ（エラー / 完了 / 進行中）
+  /// ステータスメッセージ表示エリア
   Widget _buildStatusMessage() {
-    if (_hasError) {
+    if (_currentStepStatus == StepStatus.failed) {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -321,7 +555,7 @@ class _ProvisioningProgressDialogState
       );
     }
 
-    if (_isCompleted) {
+    if (_currentStepStatus == StepStatus.success) {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -344,37 +578,97 @@ class _ProvisioningProgressDialogState
       );
     }
 
-    return Row(
-      children: [
-        const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(_statusMessage, style: const TextStyle(fontSize: 14)),
-        ),
-      ],
+    if (_currentStepStatus == StepStatus.running) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(_statusMessage, style: const TextStyle(fontSize: 14)),
+          ),
+        ],
+      );
+    }
+
+    // waitingUserConfirmation
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info, color: Colors.blue),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _statusMessage,
+              style: const TextStyle(color: Colors.blue, fontSize: 14),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  /// アクションボタン（完了/閉じる）
+  /// アクションボタン表示
   Widget _buildActionButton() {
-    if (!_isCompleted && !_hasError) {
-      return const SizedBox.shrink();
+    final isFinished =
+        _currentWizardStep == WizardStep.publication &&
+        _currentStepStatus == StepStatus.success;
+    final isFailed = _currentStepStatus == StepStatus.failed;
+
+    if (isFinished) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('完了'),
+        ),
+      );
     }
 
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => Navigator.of(context).pop(),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _hasError ? Colors.red : Colors.blue,
-          foregroundColor: Colors.white,
-        ),
-        child: Text(_hasError ? '閉じる' : '完了'),
-      ),
-    );
+    if (isFailed) {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('閉じる'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _currentWizardStep = WizardStep.provisioning;
+                  _currentStep = ProvisioningStep.connecting;
+                  _statusMessage = 'プロビジョニングを開始しています...';
+                });
+                _triggerStepAction();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Retry'),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }

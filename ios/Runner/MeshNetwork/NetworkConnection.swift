@@ -121,6 +121,7 @@ class NetworkConnection: NSObject, Bearer {
     }
 
     func open() {
+        isExplicitlyClosing = false
         if !isStarted && isConnectionModeAutomatic
             && centralManager.state == .poweredOn
         {
@@ -133,11 +134,18 @@ class NetworkConnection: NSObject, Bearer {
         isStarted = true
     }
 
+    var isExplicitlyClosing = false
+
     func close() {
+        print("[NetworkConnection] Explicitly closing all proxies and stopping scan.")
+        isExplicitlyClosing = true
         centralManager.stopScan()
         proxies.forEach { $0.close() }
         proxies.removeAll()
         isStarted = false
+        isOpen = false
+        // 即座にデリゲートに通知し、SDKの内部状態 (proxyFilterなど) をリセットする
+        delegate?.bearer(self, didClose: nil)
     }
 
     func disconnect() {
@@ -145,17 +153,54 @@ class NetworkConnection: NSObject, Bearer {
     }
 
     func send(_ data: Data, ofType type: PduType) throws {
-        // Send the message to all open GATT Proxy nodes.
+        let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
+        let stateStr = "UNKNOWN"
+        let openProxies = proxies.filter { $0.isOpen }
+        let openProxiesCount = openProxies.count
+        let totalProxiesCount = proxies.count
+        let dataHex = data.map { String(format: "%02x", $0) }.joined()
+        
+        let detailPre = "NetworkConnection.send: data hex: \(dataHex), PduType: \(type). Total proxies: \(totalProxiesCount), Open proxies: \(openProxiesCount)"
+        MeshTrace.log(
+            traceId: traceIdStr,
+            step: "TRANSPORT",
+            event: "SEND_DATA_PRE",
+            node: "N/A",
+            state: stateStr,
+            detail: detailPre
+        )
+
         var success = false
         var e: Error = BearerError.bearerClosed
-        proxies.filter { $0.isOpen }.forEach {
+        
+        for proxy in openProxies {
             do {
-                try $0.send(data, ofType: type)
+                try proxy.send(data, ofType: type)
                 success = true
+                
+                let detailSuccess = "NetworkConnection.send: Successfully sent to proxy \(proxy.identifier.uuidString) (\(proxy.name ?? "N/A"))"
+                MeshTrace.log(
+                    traceId: traceIdStr,
+                    step: "TRANSPORT",
+                    event: "SEND_DATA_SUCCESS",
+                    node: "N/A",
+                    state: stateStr,
+                    detail: detailSuccess
+                )
             } catch {
                 e = error
+                let detailFail = "NetworkConnection.send: Failed to send to proxy \(proxy.identifier.uuidString) (\(proxy.name ?? "N/A")): \(error.localizedDescription)"
+                MeshTrace.log(
+                    traceId: traceIdStr,
+                    step: "TRANSPORT",
+                    event: "SEND_DATA_FAILURE",
+                    node: "N/A",
+                    state: stateStr,
+                    detail: detailFail
+                )
             }
         }
+        
         if !success {
             throw e
         }
@@ -235,20 +280,30 @@ extension NetworkConnection: CBCentralManagerDelegate {
             print("Device: \(deviceName), RSSI: \(RSSI)")
         }
 
+        let targetAddress = ConfigurationService.shared.currentTargetAddress
+
         // Is it a Network ID or Private Network Identity beacon?
         if let networkIdentity = advertisementData.networkIdentity {
             guard meshNetwork.matches(networkIdentity: networkIdentity) else {
                 // A Node from another mesh network.
                 return
             }
-        } else {
+        } else if let nodeIdentity = advertisementData.nodeIdentity {
             // Is it a Node Identity or Private Node Identity beacon?
-            guard let nodeIdentity = advertisementData.nodeIdentity,
-                meshNetwork.matches(nodeIdentity: nodeIdentity)
-            else {
+            guard let node = meshNetwork.node(matchingNodeIdentity: nodeIdentity) else {
                 // A Node from another mesh network.
                 return
             }
+            if let target = targetAddress {
+                guard node.primaryUnicastAddress == target else {
+                    print("Skipping Node Identity proxy because address \(node.primaryUnicastAddress) != target \(target)")
+                    return
+                }
+            } else {
+                guard meshNetwork.matches(nodeIdentity: nodeIdentity) else { return }
+            }
+        } else {
+            return
         }
         // Add a new bearer.
         use(proxy: GattBearer(target: peripheral))
@@ -258,8 +313,9 @@ extension NetworkConnection: CBCentralManagerDelegate {
 extension NetworkConnection: GattBearerDelegate, BearerDataDelegate {
 
     func bearerDidOpen(_ bearer: Bearer) {
-        guard !isOpen else { return }
         isOpen = true
+        // 毎回デリゲートに通知する。ProxyFilter初期化（proxyConfiguration送信）は
+        // bearerDidOpen経由でトリガーされるため、ガードでスキップしてはいけない。
         delegate?.bearerDidOpen(self)
     }
 
@@ -275,9 +331,13 @@ extension NetworkConnection: GattBearerDelegate, BearerDataDelegate {
                 options: nil
             )
         }
+        
+        isOpen = !proxies.isEmpty
         if proxies.isEmpty {
-            isOpen = false
-            delegate?.bearer(self, didClose: nil)
+            if !isExplicitlyClosing {
+                delegate?.bearer(self, didClose: nil)
+            }
+            isExplicitlyClosing = false
         }
     }
 
