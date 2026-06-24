@@ -133,7 +133,21 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
     required int unicastAddress,
     required int color,
   }) async {
-    List<int> colorArray = List.filled(12, color);
+    // 1. 全要素を0で初期化 (最大12ノード)
+    List<int> colorArray = List.filled(12, 0);
+
+    // 2. ユニキャストアドレスから対象インデックスを計算 (ベースアドレス: 2)
+    int targetIndex = unicastAddress - 2;
+
+    // 3. 範囲内の場合のみ、対象デバイスの色を設定
+    if (targetIndex >= 0 && targetIndex <= 11) {
+      colorArray[targetIndex] = color;
+    } else {
+      debugPrint(
+        "Warning: targetIndex $targetIndex is out of bounds (unicastAddress: $unicastAddress)",
+      );
+    }
+
     var response = await MeshNetwork.vendorColorSet(
       unicastAddress: unicastAddress,
       colorArray: colorArray,
