@@ -300,6 +300,29 @@ class FlutterChannelManager {
                 message: response.message ?? "No message provided"
             )
 
+        case "vendorColorSet":
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddress = args["unicastAddress"] as? Address,
+                let colorArray = args["colorArray"] as? [Int]
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress or colorArray not found"
+                )
+                return
+            }
+
+            let response = MeshNetworkService.shared.setVendorColorState(
+                unicastAddress: unicastAddress,
+                colorArray: colorArray.map { UInt8($0) }
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message ?? "No message provided"
+            )
+
         case "publishColor":
             guard let args = call.arguments as? [String: Any],
                 let color = args["color"] as? Int

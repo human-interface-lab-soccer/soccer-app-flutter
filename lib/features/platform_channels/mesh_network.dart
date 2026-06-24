@@ -61,6 +61,20 @@ class MeshNetwork {
     return {'isSuccess': isSuccess, 'message': message};
   }
 
+  /// VendorColorSetの状態を変更するメソッド (nRF54用)
+  static Future<Map<String, dynamic>> vendorColorSet({
+    required int unicastAddress,
+    required List<int> colorArray,
+  }) async {
+    final response = await _methodChannel.invokeMethod('vendorColorSet', {
+      'unicastAddress': unicastAddress,
+      'colorArray': colorArray,
+    });
+    bool isSuccess = response['isSuccess'] ?? false;
+    String message = response['message'] ?? 'No message provided';
+    return {'isSuccess': isSuccess, 'message': message};
+  }
+
   /// colorをpublishするメソッド
   static Future<Map<String, dynamic>> publishColor({required int color}) async {
     final response = await _methodChannel.invokeMethod('publishColor', {

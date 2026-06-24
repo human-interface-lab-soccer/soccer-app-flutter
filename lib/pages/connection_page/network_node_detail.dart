@@ -18,6 +18,9 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
   /// GenericColorSetの状態を保持するための変数
   int colorIndex = 0;
 
+  /// VendorColorSetの状態を保持するための変数
+  int vendorColorIndex = 0;
+
   Future<void> _resetNode({required int unicastAddress}) async {
     // Close the dialog after resetting
     Navigator.of(context).pop();
@@ -120,6 +123,30 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('GenericColorSet failed: ${response['message']}'),
+        ),
+      );
+    }
+  }
+
+  /// VendorColorNodeの色を変更するメソッド (nRF54用)
+  Future<void> _vendorColorSet({
+    required int unicastAddress,
+    required int color,
+  }) async {
+    List<int> colorArray = List.filled(12, color);
+    var response = await MeshNetwork.vendorColorSet(
+      unicastAddress: unicastAddress,
+      colorArray: colorArray,
+    );
+    setState(() {
+      vendorColorIndex = color;
+    });
+    if (!mounted) return;
+    if (!response['isSuccess']) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('VendorColorSet failed: ${response['message']}'),
         ),
       );
     }
@@ -229,6 +256,37 @@ class _NetworkNodeDetailState extends State<NetworkNodeDetail> {
                         colorIndex == 1,
                         colorIndex == 2,
                         colorIndex == 3,
+                      ],
+                      children: const [
+                        Icon(Icons.circle, color: Colors.grey),
+                        Icon(Icons.circle, color: Colors.red),
+                        Icon(Icons.circle, color: Colors.green),
+                        Icon(Icons.circle, color: Colors.blue),
+                      ],
+                    ),
+                    const SizedBox(height: 8.0),
+                    const Divider(thickness: 1.0),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      "VendorColor (nRF54L15)",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8.0),
+
+                    ToggleButtons(
+                      onPressed: (int index) {
+                        // 0: none, 1: Red, 2: Green, 3: Blue
+                        int color = index;
+                        _vendorColorSet(
+                          unicastAddress: widget.meshNode.primaryUnicastAddress,
+                          color: color,
+                        );
+                      },
+                      isSelected: [
+                        vendorColorIndex == 0,
+                        vendorColorIndex == 1,
+                        vendorColorIndex == 2,
+                        vendorColorIndex == 3,
                       ],
                       children: const [
                         Icon(Icons.circle, color: Colors.grey),

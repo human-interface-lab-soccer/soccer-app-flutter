@@ -482,25 +482,29 @@ extension AppDelegate: MeshNetworkDelegate {
         
         meshState = .configuring
 
-        let clientUnicastAddress = Address(0x0001)
-        var serverModel: Model?
-        var clientModelID: UInt16?
-
         let models = node.elements.flatMap({ $0.models })
+        ConfigurationService.shared.pendingModelsToBind.removeAll()
 
+        // 全ての必要なサーバモデルを収集する
         if let genericOnOffServerModel = models.first(where: {
-            UInt16($0.modelId) == .genericOnOffServerModelId
+            $0.modelIdentifier == .genericOnOffServerModelId && $0.companyIdentifier == nil
         }) {
-            serverModel = genericOnOffServerModel
-            clientModelID = .genericOnOffClientModelId
+            ConfigurationService.shared.pendingModelsToBind.append(genericOnOffServerModel)
         }
-        else if let genericColorServerModel = models.first(where: {
-            UInt16($0.modelId) == .genericColorServerModelID
+        
+        if let genericColorServerModel = models.first(where: {
+            $0.modelIdentifier == .genericColorServerModelID && $0.companyIdentifier == nil
         }) {
-            serverModel = genericColorServerModel
-            clientModelID = .genericColorClientModelID
+            ConfigurationService.shared.pendingModelsToBind.append(genericColorServerModel)
         }
-        else {
+
+        if let vendorModel = models.first(where: {
+            $0.modelIdentifier == UInt16(0x0001) && $0.companyIdentifier == UInt16(0x0059)
+        }) {
+            ConfigurationService.shared.pendingModelsToBind.append(vendorModel)
+        }
+
+        if ConfigurationService.shared.pendingModelsToBind.isEmpty {
             let detail = "Valid server model not found"
             MeshTrace.log(
                 traceId: traceIdStr,
@@ -519,19 +523,54 @@ extension AppDelegate: MeshNetworkDelegate {
             return
         }
 
-        bindModel(
-            model: serverModel!,
-            appKey: appKey,
-            manager: manager,
-            node: node
-        )
+        bindNextModel(appKey: appKey, manager: manager, node: node)
+    }
 
-        guard
-            let clientModel = manager.localElements
-                .flatMap({ $0.models })
-                .first(where: {
-                    $0.modelIdentifier == clientModelID
-                })
+    private func bindNextModel(appKey: ApplicationKey, manager: MeshNetworkManager, node: Node) {
+        let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
+        guard let serverModel = ConfigurationService.shared.pendingModelsToBind.first else {
+            // 全てのモデルのバインドが完了
+            sendFlutterEvent(
+                status: .success,
+                message: "Successfully bound AppKeys to all Models",
+                eventType: "configuration"
+            )
+            
+            if !ConfigurationService.shared.isSubscribed {
+                meshState = .subscription
+                let result = ConfigurationService.shared.setSubscription(withAddress: node.primaryUnicastAddress)
+                
+                let triggerDetail = "Subscription triggered: \(result.isSuccess) - \(result.message)"
+                MeshTrace.log(
+                    traceId: traceIdStr,
+                    step: "SUBSCRIPTION",
+                    event: "TRIGGER",
+                    node: "\(node.primaryUnicastAddress)",
+                    state: meshState.rawValue,
+                    detail: triggerDetail
+                )
+            }
+            return
+        }
+
+        // 対応するクライアントモデルを探す
+        var clientModelID: UInt16?
+        var clientCompanyID: UInt16?
+
+        if serverModel.modelIdentifier == .genericOnOffServerModelId && serverModel.companyIdentifier == nil {
+            clientModelID = .genericOnOffClientModelId
+        } else if serverModel.modelIdentifier == .genericColorServerModelID && serverModel.companyIdentifier == nil {
+            clientModelID = .genericColorClientModelID
+        } else if serverModel.modelIdentifier == UInt16(0x0001) && serverModel.companyIdentifier == UInt16(0x0059) {
+            clientModelID = UInt16(0x0001)
+            clientCompanyID = UInt16(0x0059)
+        }
+
+        let clientUnicastAddress = Address(0x0001)
+        guard let cId = clientModelID,
+              let clientModel = manager.localElements.flatMap({ $0.models }).first(where: {
+                  $0.modelIdentifier == cId && $0.companyIdentifier == clientCompanyID
+              })
         else {
             let detail = "Failed to find client model"
             MeshTrace.log(
@@ -545,61 +584,38 @@ extension AppDelegate: MeshNetworkDelegate {
             ConfigurationService.shared.stopWatchdog()
             return
         }
-        do {
-            guard
-                let clientBindMessage = ConfigModelAppBind(
-                    applicationKey: appKey,
-                    to: clientModel
-                )
-            else {
-                let detail = "Failed to create client-model-bind message"
+
+        // クライアントモデル（ローカル）にAppKeyをバインドする（ハンドラは上書きしない）
+        if let clientBindMessage = ConfigModelAppBind(applicationKey: appKey, to: clientModel) {
+            do {
+                _ = try manager.send(clientBindMessage, to: clientUnicastAddress)
                 MeshTrace.log(
                     traceId: traceIdStr,
                     step: "MODEL_APP_BIND",
-                    event: "CLIENT_MESSAGE_ERROR",
+                    event: "SEND_POST_CLIENT_SUCCESS",
                     node: "\(clientUnicastAddress)",
                     state: meshState.rawValue,
-                    detail: detail
+                    detail: "Sent local Client Model Bind successfully."
                 )
-                ConfigurationService.shared.stopWatchdog()
-                return
+            } catch {
+                MeshTrace.log(
+                    traceId: traceIdStr,
+                    step: "MODEL_APP_BIND",
+                    event: "SEND_POST_CLIENT_FAILURE",
+                    node: "\(clientUnicastAddress)",
+                    state: meshState.rawValue,
+                    detail: "Failed to send local Client Model Bind: \(error.localizedDescription)"
+                )
             }
-            
-            let detailSendPre = "Sending local Client Model Bind (ID: \(clientModel.modelIdentifier)) to ClientUnicastAddress: \(clientUnicastAddress)"
-            MeshTrace.log(
-                traceId: traceIdStr,
-                step: "MODEL_APP_BIND",
-                event: "SEND_PRE_CLIENT",
-                node: "\(clientUnicastAddress)",
-                state: meshState.rawValue,
-                detail: detailSendPre
-            )
-            
-            ConfigurationService.shared.trackAckSent(messageType: "ConfigModelAppBind")
-            ConfigurationService.shared.currentMessageHandle = try manager.send(clientBindMessage, to: clientUnicastAddress)
-
-            let detailSendPost = "Sent local Client Model Bind successfully."
-            MeshTrace.log(
-                traceId: traceIdStr,
-                step: "MODEL_APP_BIND",
-                event: "SEND_POST_CLIENT_SUCCESS",
-                node: "\(clientUnicastAddress)",
-                state: meshState.rawValue,
-                detail: detailSendPost
-            )
-        } catch {
-            let detailSendFail = "Failed to send local Client Model Bind: \(error.localizedDescription)"
-            MeshTrace.log(
-                traceId: traceIdStr,
-                step: "MODEL_APP_BIND",
-                event: "SEND_POST_CLIENT_FAILURE",
-                node: "\(clientUnicastAddress)",
-                state: meshState.rawValue,
-                detail: detailSendFail
-            )
-            ConfigurationService.shared.stopWatchdog()
-            return
         }
+
+        // サーバーモデル（リモート）にAppKeyをバインドする
+        bindModel(
+            model: serverModel,
+            appKey: appKey,
+            manager: manager,
+            node: node
+        )
     }
 
     private func bindModel(
@@ -663,7 +679,7 @@ extension AppDelegate: MeshNetworkDelegate {
         let traceIdStr = ConfigurationService.shared.configTraceId?.uuidString ?? "N/A"
         if modelAppStatus.status == .success {
             _ = manager.save()
-            let detail = "Successfully bind AppKey to Model. Transitioning to subscription."
+            let detail = "Successfully bound AppKey to Model. Checking for pending models..."
             MeshTrace.log(
                 traceId: traceIdStr,
                 step: "MODEL_APP_BIND",
@@ -673,25 +689,23 @@ extension AppDelegate: MeshNetworkDelegate {
                 detail: detail
             )
             
-            sendFlutterEvent(
-                status: .success,
-                message: "Successfully bind AppKey to Model",
-                eventType: "configuration"
-            )
+            if !ConfigurationService.shared.pendingModelsToBind.isEmpty {
+                ConfigurationService.shared.pendingModelsToBind.removeFirst()
+            }
             
-            if !ConfigurationService.shared.isSubscribed {
-                meshState = .subscription
-                let result = ConfigurationService.shared.setSubscription(withAddress: node.primaryUnicastAddress)
+            if !ConfigurationService.shared.pendingModelsToBind.isEmpty {
+                // 次のモデルのバインドへ進む
+                guard let appKey = manager.meshNetwork?.applicationKeys.first(where: {
+                    node.knows(networkKey: $0.boundNetworkKey)
+                }) else { return }
                 
-                let triggerDetail = "Subscription triggered: \(result.isSuccess) - \(result.message)"
-                MeshTrace.log(
-                    traceId: traceIdStr,
-                    step: "SUBSCRIPTION",
-                    event: "TRIGGER",
-                    node: "\(node.primaryUnicastAddress)",
-                    state: meshState.rawValue,
-                    detail: triggerDetail
-                )
+                // 次のACK待ちのためのタイマー延長などは bindNextModel の bindModel で上書きされる
+                ConfigurationService.shared.expectedNextEvent = "ConfigModelAppStatus"
+                ConfigurationService.shared.expectedDelegate = "ConfigModelAppStatus"
+                bindNextModel(appKey: appKey, manager: manager, node: node)
+            } else {
+                // 全てのバインドが終了
+                bindNextModel(appKey: manager.meshNetwork!.applicationKeys.first!, manager: manager, node: node)
             }
         } else {
             let detail = "Model bind failed with status: \(modelAppStatus.status)"

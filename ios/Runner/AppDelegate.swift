@@ -174,6 +174,11 @@ enum MeshState: String {
                     sigModelId: .genericColorClientModelID,
                     delegate: GenericColorClientDelegate()
                 ),
+                Model(
+                    vendorModelId: 0x0001,
+                    companyId: 0x0059,
+                    delegate: VendorColorClientDelegate()
+                )
             ]
         )
         meshNetworkManager.localElements = [primaryElement]

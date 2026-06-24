@@ -179,6 +179,73 @@ class MeshNetworkService {
         )
     }
 
+    func setVendorColorState(unicastAddress: Address, colorArray: [UInt8])
+        -> MeshNetworkServiceResponse
+    {
+        var node: Node?
+
+        // ノードを探す
+        do {
+            node = try findNode(withUnicastAddress: unicastAddress)
+        } catch {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to find node."
+            )
+        }
+
+        // clientモデルを探す
+        guard
+            let clientModel = manager.localElements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == UInt16(0x0001) && $0.companyIdentifier == UInt16(0x0059)
+                })
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to find client model"
+            )
+        }
+
+        // serverモデルを探す
+        guard let node,
+            let serverModel = node.elements
+                .flatMap({ $0.models })
+                .first(where: {
+                    $0.modelIdentifier == UInt16(0x0001) && $0.companyIdentifier == UInt16(0x0059)
+                })
+        else {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to find server model"
+            )
+        }
+
+        // メッセージを作成
+        let message = VendorColorSet(colors: colorArray)
+
+        // 送信
+        do {
+            try manager.send(
+                message,
+                from: clientModel,
+                to: serverModel,
+                withTtl: UInt8(3)
+            )
+        } catch {
+            return MeshNetworkServiceResponse(
+                isSuccess: false,
+                message: "Failed to send vendor message: \(error.localizedDescription)"
+            )
+        }
+
+        return MeshNetworkServiceResponse(
+            isSuccess: true,
+            message: "Successfully send vendor message!"
+        )
+    }
+
     func changeAllNodeColor(colorNum: Int) -> MeshNetworkServiceResponse {
         let colorCode = convertColorCode(fromColorNum: colorNum)
         let message = GenericColorSetUnacknowleged(
