@@ -140,17 +140,17 @@ class FlutterChannelManager {
         case "resetNode":
             // パラメータに `unicastAddress` が含まれているかを確認
             guard let args = call.arguments as? [String: Any],
-                let unicastAddress = args["unicastAddress"]
+                let unicastAddressInt = args["unicastAddress"] as? Int
             else {
                 handleMethodResponse(
                     result: result,
                     isSuccess: false,
-                    message: "unicastAddress not found in arguments."
+                    message: "unicastAddress not found or invalid type."
                 )
                 return
             }
             let response = ConfigurationService.shared.resetNode(
-                unicastAddress: unicastAddress as! Address
+                unicastAddress: Address(unicastAddressInt)
             )
             handleMethodResponse(
                 result: result,
@@ -161,18 +161,18 @@ class FlutterChannelManager {
         case "configureNode":
             // パラメータに `unicastAddress` が含まれているかを確認
             guard let args = call.arguments as? [String: Any],
-                let unicastAddress = args["unicastAddress"]
+                let unicastAddressInt = args["unicastAddress"] as? Int
             else {
                 handleMethodResponse(
                     result: result,
                     isSuccess: false,
-                    message: "unicastAddress not found in arguments."
+                    message: "unicastAddress not found or invalid type."
                 )
                 return
             }
 
             let response = ConfigurationService.shared.configureNode(
-                unicastAddress: unicastAddress as! Address
+                unicastAddress: Address(unicastAddressInt)
             )
             handleMethodResponse(
                 result: result,
@@ -183,18 +183,18 @@ class FlutterChannelManager {
         case "setSubscription":
             // パラメータに `unicastAddress` が含まれているか確認
             guard let args = call.arguments as? [String: Any],
-                let unicastAddress = args["unicastAddress"] as? Address
+                let unicastAddressInt = args["unicastAddress"] as? Int
             else {
                 handleMethodResponse(
                     result: result,
                     isSuccess: false,
-                    message: "unicastAddress not found in arguments."
+                    message: "unicastAddress not found or invalid type."
                 )
                 return
             }
 
             let response = ConfigurationService.shared.setSubscription(
-                withAddress: unicastAddress
+                withAddress: Address(unicastAddressInt)
             )
             handleMethodResponse(
                 result: result,
@@ -204,12 +204,12 @@ class FlutterChannelManager {
 
         case "setPublication":
             guard let args = call.arguments as? [String: Any],
-                let unicastAddress = args["unicastAddress"] as? Address
+                let unicastAddressInt = args["unicastAddress"] as? Int
             else {
                 handleMethodResponse(
                     result: result,
                     isSuccess: false,
-                    message: "unicastAddress not found in arguments."
+                    message: "unicastAddress not found or invalid type."
                 )
                 return
             }
@@ -217,7 +217,7 @@ class FlutterChannelManager {
             print("Received Publication message")
 
             let response = ConfigurationService.shared.setPublication(
-                withAddress: unicastAddress
+                withAddress: Address(unicastAddressInt)
             )
 
             handleMethodResponse(
@@ -255,19 +255,19 @@ class FlutterChannelManager {
         case "genericOnOffSet":
             // パラメータに `unicastAddress`, `state` が含まれているかを確認
             guard let args = call.arguments as? [String: Any],
-                let unicastAddress = args["unicastAddress"] as? Address,
+                let unicastAddressInt = args["unicastAddress"] as? Int,
                 let state = args["state"] as? Bool
             else {
                 handleMethodResponse(
                     result: result,
                     isSuccess: false,
-                    message: "unicastAddress or state not found"
+                    message: "unicastAddress or state not found or invalid type"
                 )
                 return
             }
 
             let response = MeshNetworkService.shared.setGenericOnOffState(
-                unicastAddress: unicastAddress,
+                unicastAddress: Address(unicastAddressInt),
                 state: state
             )
             handleMethodResponse(
@@ -279,20 +279,43 @@ class FlutterChannelManager {
         case "genericColorSet":
             // パラメータに `unicastAddress`, `color` が含まれているかを確認
             guard let args = call.arguments as? [String: Any],
-                let unicastAddress = args["unicastAddress"] as? Address,
+                let unicastAddressInt = args["unicastAddress"] as? Int,
                 let color = args["color"] as? Int
             else {
                 handleMethodResponse(
                     result: result,
                     isSuccess: false,
-                    message: "unicastAddress or color not found"
+                    message: "unicastAddress or color not found or invalid type"
                 )
                 return
             }
 
             let response = MeshNetworkService.shared.setGenericColorState(
-                unicastAddress: unicastAddress,
+                unicastAddress: Address(unicastAddressInt),
                 state: color
+            )
+            handleMethodResponse(
+                result: result,
+                isSuccess: response.isSuccess,
+                message: response.message ?? "No message provided"
+            )
+
+        case "vendorColorSet":
+            guard let args = call.arguments as? [String: Any],
+                let unicastAddressInt = args["unicastAddress"] as? Int,
+                let colorArray = args["colorArray"] as? [Int]
+            else {
+                handleMethodResponse(
+                    result: result,
+                    isSuccess: false,
+                    message: "unicastAddress or colorArray not found or invalid type"
+                )
+                return
+            }
+
+            let response = MeshNetworkService.shared.setVendorColorState(
+                unicastAddress: Address(unicastAddressInt),
+                colorArray: colorArray.map { UInt8($0) }
             )
             handleMethodResponse(
                 result: result,

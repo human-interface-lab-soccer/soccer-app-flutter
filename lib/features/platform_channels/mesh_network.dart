@@ -38,13 +38,19 @@ class MeshNetwork {
     required int unicastAddress,
     required bool state,
   }) async {
-    final response = await _methodChannel.invokeMethod('genericOnOffSet', {
-      'unicastAddress': unicastAddress,
-      'state': state,
-    });
-    bool isSuccess = response['isSuccess'] ?? false;
-    String message = response['message'] ?? 'No message provided';
-    return {'isSuccess': isSuccess, 'message': message};
+    try {
+      final response = await _methodChannel.invokeMethod('genericOnOffSet', {
+        'unicastAddress': unicastAddress,
+        'state': state,
+      });
+      bool isSuccess = response['isSuccess'] ?? false;
+      String message = response['message'] ?? 'No message provided';
+      return {'isSuccess': isSuccess, 'message': message};
+    } on PlatformException catch (e) {
+      return {'isSuccess': false, 'message': 'PlatformException: ${e.message}'};
+    } catch (e) {
+      return {'isSuccess': false, 'message': 'Unexpected Error: $e'};
+    }
   }
 
   /// GenericColorSetの状態を変更するメソッド
@@ -52,23 +58,55 @@ class MeshNetwork {
     required int unicastAddress,
     required int color,
   }) async {
-    final response = await _methodChannel.invokeMethod('genericColorSet', {
-      'unicastAddress': unicastAddress,
-      'color': color,
-    });
-    bool isSuccess = response['isSuccess'] ?? false;
-    String message = response['message'] ?? 'No message provided';
-    return {'isSuccess': isSuccess, 'message': message};
+    try {
+      final response = await _methodChannel.invokeMethod('genericColorSet', {
+        'unicastAddress': unicastAddress,
+        'color': color,
+      });
+      bool isSuccess = response['isSuccess'] ?? false;
+      String message = response['message'] ?? 'No message provided';
+      return {'isSuccess': isSuccess, 'message': message};
+    } on PlatformException catch (e) {
+      return {'isSuccess': false, 'message': 'PlatformException: ${e.message}'};
+    } catch (e) {
+      return {'isSuccess': false, 'message': 'Unexpected Error: $e'};
+    }
+  }
+
+  /// VendorColorSetの状態を変更するメソッド (nRF54用)
+  static Future<Map<String, dynamic>> vendorColorSet({
+    required int unicastAddress,
+    required List<int> colorArray,
+  }) async {
+    try {
+      final response = await _methodChannel.invokeMethod('vendorColorSet', {
+        'unicastAddress': unicastAddress,
+        'colorArray': colorArray,
+      });
+      bool isSuccess = response['isSuccess'] ?? false;
+      String message = response['message'] ?? 'No message provided';
+      return {'isSuccess': isSuccess, 'message': message};
+    } on PlatformException catch (e) {
+      return {'isSuccess': false, 'message': 'PlatformException: ${e.message}'};
+    } catch (e) {
+      return {'isSuccess': false, 'message': 'Unexpected Error: $e'};
+    }
   }
 
   /// colorをpublishするメソッド
   static Future<Map<String, dynamic>> publishColor({required int color}) async {
-    final response = await _methodChannel.invokeMethod('publishColor', {
-      'color': color,
-    });
-    bool isSuccess = response['isSuccess'] ?? false;
-    String message = response['message'] ?? 'No message provided';
-    return {'isSuccess': isSuccess, 'message': message};
+    try {
+      final response = await _methodChannel.invokeMethod('publishColor', {
+        'color': color,
+      });
+      bool isSuccess = response['isSuccess'] ?? false;
+      String message = response['message'] ?? 'No message provided';
+      return {'isSuccess': isSuccess, 'message': message};
+    } on PlatformException catch (e) {
+      return {'isSuccess': false, 'message': 'PlatformException: ${e.message}'};
+    } catch (e) {
+      return {'isSuccess': false, 'message': 'Unexpected Error: $e'};
+    }
   }
 
   /// 各ノードの色を個別に変更するメソッド（for nRF52）
@@ -104,13 +142,19 @@ class MeshNetwork {
       colorNumStrings.substring(8, 12).split('').reversed.join(),
     );
 
-    final response = await _methodChannel.invokeMethod('setNodeColors', {
-      'colorNum': colorNum,
-      'colorNum2': colorNum2,
-      'colorNum3': colorNum3,
-    });
-    bool isSuccess = response['isSuccess'] ?? false;
-    String message = response['message'] ?? 'No message provided';
-    return {'isSuccess': isSuccess, 'message': message};
+    try {
+      final response = await _methodChannel.invokeMethod('setNodeColors', {
+        'colorNum': colorNum,
+        'colorNum2': colorNum2,
+        'colorNum3': colorNum3,
+      });
+      bool isSuccess = response['isSuccess'] ?? false;
+      String message = response['message'] ?? 'No message provided';
+      return {'isSuccess': isSuccess, 'message': message};
+    } on PlatformException catch (e) {
+      return {'isSuccess': false, 'message': 'PlatformException: ${e.message}'};
+    } catch (e) {
+      return {'isSuccess': false, 'message': 'Unexpected Error: $e'};
+    }
   }
 }

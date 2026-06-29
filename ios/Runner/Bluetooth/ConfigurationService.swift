@@ -44,6 +44,8 @@ class ConfigurationService {
     var pendingAckMessage: String?
     var pendingAckSentTime: Date?
     var proxyFilterUpdatedCount = 0
+    var pendingModelsToBind: [Model] = []
+    
     private var watchdogTimer: Timer?
     private var watchdogTicks = 0
     private let maxWatchdogTicks = 3
@@ -242,6 +244,7 @@ class ConfigurationService {
         var node: Node!
         var serverModel: Model!
         var clientModelID: UInt16?
+        var clientCompanyID: UInt16?
         var targetGroup: Group?
 
         // ノードを探す
@@ -266,15 +269,21 @@ class ConfigurationService {
         // サーバーモデルを探す
         let models = node.elements.flatMap({ $0.models })
         if let genericOnOffServerModel = models.first(where: {
-            $0.modelIdentifier == .genericOnOffServerModelId
+            $0.modelIdentifier == .genericOnOffServerModelId && $0.companyIdentifier == nil
         }) {
             serverModel = genericOnOffServerModel
             clientModelID = .genericOnOffClientModelId
         } else if let genericColorServerModel = models.first(where: {
-            $0.modelIdentifier == .genericColorServerModelID
+            $0.modelIdentifier == .genericColorServerModelID && $0.companyIdentifier == nil
         }) {
             serverModel = genericColorServerModel
             clientModelID = .genericColorClientModelID
+        } else if let vendorColorServerModel = models.first(where: {
+            $0.modelIdentifier == UInt16(0x0001) && $0.companyIdentifier == UInt16(0x0059)
+        }) {
+            serverModel = vendorColorServerModel
+            clientModelID = UInt16(0x0001)
+            clientCompanyID = UInt16(0x0059)
         } else {
             let detailErr = "setSubscription failed: Couldn't find server model for address \(address)"
             MeshTrace.log(
@@ -291,10 +300,10 @@ class ConfigurationService {
             )
         }
 
-        guard let clientModelID,
+        guard let clientID = clientModelID,
             manager.localElements
                 .flatMap({ $0.models })
-                .first(where: { $0.modelIdentifier == clientModelID }) != nil
+                .first(where: { $0.modelIdentifier == clientID && $0.companyIdentifier == clientCompanyID }) != nil
         else {
             let detailErr = "setSubscription failed: Failed to find client model \(clientModelID)"
             MeshTrace.log(
@@ -446,6 +455,7 @@ class ConfigurationService {
         var node: Node!
         var serverModel: Model!
         var clientModelID: UInt16?
+        var clientCompanyID: UInt16?
 
         // ノードを探す
         do {
@@ -470,15 +480,21 @@ class ConfigurationService {
         // サーバーモデルを探す
         let models = node.elements.flatMap({ $0.models })
         if let genericOnOffServerModel = models.first(where: {
-            $0.modelIdentifier == .genericOnOffServerModelId
+            $0.modelIdentifier == .genericOnOffServerModelId && $0.companyIdentifier == nil
         }) {
             serverModel = genericOnOffServerModel
             clientModelID = .genericOnOffClientModelId
         } else if let genericColorServerModel = models.first(where: {
-            $0.modelIdentifier == .genericColorServerModelID
+            $0.modelIdentifier == .genericColorServerModelID && $0.companyIdentifier == nil
         }) {
             serverModel = genericColorServerModel
             clientModelID = .genericColorClientModelID
+        } else if let vendorColorServerModel = models.first(where: {
+            $0.modelIdentifier == UInt16(0x0001) && $0.companyIdentifier == UInt16(0x0059)
+        }) {
+            serverModel = vendorColorServerModel
+            clientModelID = UInt16(0x0001)
+            clientCompanyID = UInt16(0x0059)
         } else {
             let detailErr = "setPublication failed: Couldn't find server model for address \(address)"
             MeshTrace.log(
@@ -496,9 +512,9 @@ class ConfigurationService {
             )
         }
 
-        guard let clientModelID,
+        guard let clientID = clientModelID,
             let clientModel = manager.localElements.flatMap({ $0.models })
-                .first(where: { $0.modelIdentifier == clientModelID })
+                .first(where: { $0.modelIdentifier == clientID && $0.companyIdentifier == clientCompanyID })
         else {
             let detailErr = "setPublication failed: Failed to find client model \(clientModelID)"
             MeshTrace.log(
