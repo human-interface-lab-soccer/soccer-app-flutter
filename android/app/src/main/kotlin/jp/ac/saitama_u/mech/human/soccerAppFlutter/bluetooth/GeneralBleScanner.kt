@@ -48,6 +48,8 @@ class GeneralBleScanner(
 
         // ### 新しいデバイスが見つかるたびに呼ばれるメソッド
         override fun onScanResult(callbackType: Int, result: ScanResult) {
+            Log.d(TAG, "新たなデバイスが発見されました")
+
             // 発見したデバイスを取得
             val device = result.device
             
@@ -63,7 +65,7 @@ class GeneralBleScanner(
             // flutterへ送るデータのmapデータ
             val deviceData = mapOf(
                 "name" to deviceName,
-                "uuid" to device.address,
+                "uuid" to device.address, //BluetoothデバイスのMACアドレスなので，正確にはUUIDではない
                 "rssi" to result.rssi
             )
             
@@ -72,6 +74,8 @@ class GeneralBleScanner(
         }
 
         override fun onScanFailed(errorCode: Int) {
+            Log.d(TAG, "スキャンが失敗しました")
+
             eventSink?.error(
                 "SCAN_FAILED",
                 "BLE scan failed. errorCode=$errorCode",
@@ -82,8 +86,7 @@ class GeneralBleScanner(
 
     // ### スキャンを開始する
     fun startScan() {
-        // Log.d(TAG, "startScan")
-        // Log.d(TAG, "eventsink = $eventSink")
+        Log.d(TAG, "スキャンを開始します")
 
         // 既にスキャン中なら何もしない
         if (isScanning) return
@@ -97,6 +100,9 @@ class GeneralBleScanner(
             )
             return
         }
+
+        // ランタイム権限が許可されていることを確認 => 許可されていた
+        Log.d(TAG, "permission = ${hasScanPermission()}")
 
         // Bluetooth権限がONか確認する（OFFならエラーを返す）
         if (bluetoothAdapter == null || bluetoothAdapter?.isEnabled != true) {
@@ -117,12 +123,18 @@ class GeneralBleScanner(
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
+        // 通常スキャンモード（デバッグ用）
+        // val settings = ScanSettings.Builder().build()
+
+        Log.d(TAG, "before startScan")
 
         bluetoothLeScanner?.startScan(
-            listOf(filter),
+            // null, // フィルタをかけない（デバッグ用）
+            listOf(filter), // フィルタをかける
             settings,
             scanCallback
         )
+        Log.d(TAG, "after startScan")
 
         isScanning = true
     }
@@ -136,28 +148,31 @@ class GeneralBleScanner(
 
         bluetoothLeScanner?.stopScan(scanCallback)
         isScanning = false
+
+        Log.d(TAG, "スキャンを終了します")
     }
     
     
     // ### Flutterとの通信路を確保する
-    // FlutterがreceiveBroadcastStream()を読んだ瞬間に実行される
+    // FlutterがreceiveBroadcastStream()を呼んだ瞬間に実行される
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-        // Log.d(TAG,"start onListen")
+        Log.d(TAG,"start onListen")
+
         eventSink = events
 
 
         // ダミーデータ送信テスト（検証が終わったらコメントアウト）---------------------
         // UIに表示されるかのテスト用
-        val deviceData = mapOf(
-            "name" to "Dummy BLE Device",
-            "uuid" to "AA:BB:CC:DD:EE:FF",
-            "rssi" to -45
-        )
+        // val deviceData = mapOf(
+        //     "name" to "Dummy BLE Device",
+        //     "uuid" to "AA:BB:CC:DD:EE:FF",
+        //     "rssi" to -45
+        // )
 
-        // flutterへデータを送信
-        eventSink?.success(deviceData)
+        // // flutterへデータを送信
+        // eventSink?.success(deviceData)
         
-        Log.d(TAG,"ダミーデータを送信します")
+        // Log.d(TAG,"ダミーデータを送信します")
         
         // ダミーデータ送信テストここまで---------------------------------------------
     }
