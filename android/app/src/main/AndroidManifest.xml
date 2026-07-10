@@ -9,9 +9,17 @@
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
 
-    <!-- Bluetooth permissions (Android 12以上) -->
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!--Bluetoothの権限なのかよく分からないけど，上手く使えるようにするために書き換えた．恐らくBLEデバイスの権限に関する部分-->
+
+    <!-- Android 12以上 -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!--書き換えここまで-->
 
     <!-- Android 11以下でBLEスキャンに必要 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
