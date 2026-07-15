@@ -8,73 +8,160 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.ParcelUuid
+import android.util.Log
 import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.EventChannel
 import java.util.UUID
-import android.util.Log
+import java.util.concurrent.ConcurrentHashMap
 
-private const val TAG = "GeneralBleScanner"
-
+/**
+ * 未ProvisioningのBluetooth Meshデバイスを検出するスキャナ。
+ *
+ * Mesh Provisioning Service UUID（0x1827）を広告している
+ * BLEデバイスだけを対象にスキャンする。
+ *
+ * 検出結果はEventChannelを通してFlutterへ送信し、
+ * Provisioningに必要なNative情報はdiscoveredDevicesへ保存する。
+ */
 class GeneralBleScanner(
     private val context: Context
 ) : EventChannel.StreamHandler {
 
     companion object {
+        private const val TAG = "GeneralBleScanner"
+
+        /**
+         * Bluetooth Mesh Provisioning Service UUID。
+         *
+         * 0x1827は、まだMesh Networkへ登録されていない
+         *未Provisioningデバイスが広告するService UUID。
+         */
         private val MESH_PROVISIONING_SERVICE_UUID: UUID =
             UUID.fromString("00001827-0000-1000-8000-00805f9b34fb")
     }
 
-    // ### Android側のBluetoothの機能を取得する
+    /**
+     * Android端末のBluetooth機能を管理するクラス。
+     */
     private val bluetoothManager: BluetoothManager =
         context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-    // ### BlutoothAdaptarの取得
-    // - Bluetoothの電源
-    // - Blurtooth機能
-    // - BluetoorhBleScannerの取得
+    /**
+     * Bluetoothアダプタ。
+     *
+     * Bluetoothの有効状態確認や、
+     * BluetoothLeScannerの取得に使用する。
+     */
     private val bluetoothAdapter
         get() = bluetoothManager.adapter
 
-    // ### BLEスキャンを行うクラス
+    /**
+     * BLEスキャンを実行するAndroid API。
+     */
     private val bluetoothLeScanner
         get() = bluetoothAdapter?.bluetoothLeScanner
 
-    //　### kotlin → flutter へデータを送る
+    /**
+     * KotlinからFlutterへイベントを送るための送信口。
+     */
     private var eventSink: EventChannel.EventSink? = null
+
+    /**
+     * 現在スキャン中かどうか。
+     */
     private var isScanning = false
 
+    /**
+     * 発見済みの未Provisioningデバイス一覧。
+     *
+     * キーにはBluetoothアドレスを使用する。
+     * Flutter側の既存仕様では、この値をuuidとして扱っている。
+     */
+    val discoveredDevices:
+        MutableMap<String, DiscoveredMeshDevice> = ConcurrentHashMap()
+
+    /**
+     * BLEスキャン結果を受け取るコールバック。
+     */
     private val scanCallback = object : ScanCallback() {
 
-        // ### 新しいデバイスが見つかるたびに呼ばれるメソッド
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            Log.d(TAG, "新たなデバイスが発見されました")
+        /**
+         * BLEデバイスが検出されるたびに呼ばれる。
+         */
+        override fun onScanResult(
+            callbackType: Int,
+            result: ScanResult
+        ) {
+            val scanRecord = result.scanRecord ?: return
 
-            // 発見したデバイスを取得
-            val device = result.device
-            
-            // デバイス名を取得
-            // ※Android12以降では"BLUETOOTH_CONNECT"権限がないとdevice.nameを取得できないらしい
-            // 権限がないと"Unknown device"が返る
-            val deviceName = if (hasConnectPermission()) {
-                device.name ?: "Unknown device"
-            } else {
-                "Unknown device"
+            /**
+             * 0x1827のService Dataを取得する。
+             *
+             * Provisioning時にMesh Device UUIDを取得するために使用する。
+             */
+            val serviceData = scanRecord.getServiceData(
+                ParcelUuid(MESH_PROVISIONING_SERVICE_UUID)
+            ) ?: return
+
+            if (!hasConnectPermission()) {
+                eventSink?.error(
+                    "PERMISSION_DENIED",
+                    "BLUETOOTH_CONNECT permission is not granted",
+                    null
+                )
+                return
             }
-            
-            // flutterへ送るデータのmapデータ
+
+            val device = result.device
+            val deviceName = device.name ?: "Unknown device"
+
+            /**
+             * AndroidではBluetoothアドレスをデバイス識別用キーとして使う。
+             *
+             * Flutter側ではuuidという名前で扱っているが、
+             * Androidでは実際にはMACアドレスに相当する値。
+             */
+            val deviceId = device.address
+
+            /**
+             * Provisioningで必要になる情報をAndroid側へ保存する。
+             *
+             * 同じデバイスが再度検出された場合は、
+             * 最新のRSSIやService Dataで上書きされる。
+             */
+            discoveredDevices[deviceId] = DiscoveredMeshDevice(
+                bluetoothDevice = device,
+                serviceData = serviceData.copyOf(),
+                name = deviceName,
+                rssi = result.rssi
+            )
+
+            /**
+             * Flutterへ送信するデータ。
+             *
+             * Dart側のBleDevice.fromMap()が期待しているキー名に合わせる。
+             */
             val deviceData = mapOf(
                 "name" to deviceName,
-                "uuid" to device.address, //BluetoothデバイスのMACアドレスなので，正確にはUUIDではない
+                "uuid" to deviceId,
                 "rssi" to result.rssi
             )
-            
-            // flutterへデータを送信
+
             eventSink?.success(deviceData)
         }
 
+        /**
+         * BLEスキャンに失敗したときに呼ばれる。
+         */
         override fun onScanFailed(errorCode: Int) {
-            Log.d(TAG, "スキャンが失敗しました")
+            isScanning = false
+
+            Log.e(
+                TAG,
+                "BLE scan failed. errorCode=$errorCode"
+            )
 
             eventSink?.error(
                 "SCAN_FAILED",
@@ -84,28 +171,44 @@ class GeneralBleScanner(
         }
     }
 
-    // ### スキャンを開始する
+    /**
+     * 未ProvisioningのMeshデバイスのスキャンを開始する。
+     */
     fun startScan() {
-        Log.d(TAG, "スキャンを開始します")
+        if (isScanning) {
+            return
+        }
 
-        // 既にスキャン中なら何もしない
-        if (isScanning) return
-
-        // Bluetoothの権限チェック
         if (!hasScanPermission()) {
             eventSink?.error(
                 "PERMISSION_DENIED",
-                "BLUETOOTH_SCAN permission is not granted",
+                "Bluetooth scan permission is not granted",
                 null
             )
             return
         }
 
-        // ランタイム権限が許可されていることを確認 => 許可されていた
-        Log.d(TAG, "permission = ${hasScanPermission()}")
+        if (!hasConnectPermission()) {
+            eventSink?.error(
+                "PERMISSION_DENIED",
+                "Bluetooth connect permission is not granted",
+                null
+            )
+            return
+        }
 
-        // Bluetooth権限がONか確認する（OFFならエラーを返す）
-        if (bluetoothAdapter == null || bluetoothAdapter?.isEnabled != true) {
+        val adapter = bluetoothAdapter
+
+        if (adapter == null) {
+            eventSink?.error(
+                "BLUETOOTH_UNSUPPORTED",
+                "Bluetooth is not supported on this device",
+                null
+            )
+            return
+        }
+
+        if (!adapter.isEnabled) {
             eventSink?.error(
                 "BLUETOOTH_OFF",
                 "Bluetooth is not enabled",
@@ -113,89 +216,136 @@ class GeneralBleScanner(
             )
             return
         }
-        
-        // サービスUUIDによるフィルタ（1827というService UUIDを持つデバイスだけを見つける）
-        val filter = ScanFilter.Builder()
-            .setServiceUuid(ParcelUuid(MESH_PROVISIONING_SERVICE_UUID))
+
+        val scanner = bluetoothLeScanner
+
+        if (scanner == null) {
+            eventSink?.error(
+                "SCANNER_UNAVAILABLE",
+                "Bluetooth LE scanner is unavailable",
+                null
+            )
+            return
+        }
+
+        /**
+         * 新しいスキャンを始めるため、
+         * 前回保存した検出結果を削除する。
+         */
+        discoveredDevices.clear()
+
+        /**
+         * Mesh Provisioning Service（0x1827）を持つ
+         * デバイスだけに絞り込む。
+         */
+        val scanFilter = ScanFilter.Builder()
+            .setServiceUuid(
+                ParcelUuid(MESH_PROVISIONING_SERVICE_UUID)
+            )
             .build()
 
-        // 高速スキャンモード
-        val settings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+        /**
+         * 検出速度を優先したスキャン設定。
+         *
+         * バッテリー消費は増えるため、
+         * 必要がなくなったらstopScan()を呼ぶ。
+         */
+        val scanSettings = ScanSettings.Builder()
+            .setScanMode(
+                ScanSettings.SCAN_MODE_LOW_LATENCY
+            )
             .build()
-        // 通常スキャンモード（デバッグ用）
-        // val settings = ScanSettings.Builder().build()
 
-        Log.d(TAG, "before startScan")
-
-        bluetoothLeScanner?.startScan(
-            // null, // フィルタをかけない（デバッグ用）
-            listOf(filter), // フィルタをかける
-            settings,
+        scanner.startScan(
+            listOf(scanFilter),
+            scanSettings,
             scanCallback
         )
-        Log.d(TAG, "after startScan")
 
         isScanning = true
+        Log.d(TAG, "Mesh Provisioning scan started")
     }
 
-
-    // ### スキャンを終了する
+    /**
+     * BLEスキャンを停止する。
+     */
     fun stopScan() {
-        if (!isScanning) return
+        if (!isScanning) {
+            return
+        }
 
-        if (!hasScanPermission()) return
+        if (!hasScanPermission()) {
+            isScanning = false
+            return
+        }
 
         bluetoothLeScanner?.stopScan(scanCallback)
         isScanning = false
 
-        Log.d(TAG, "スキャンを終了します")
+        Log.d(TAG, "Mesh Provisioning scan stopped")
     }
-    
-    
-    // ### Flutterとの通信路を確保する
-    // FlutterがreceiveBroadcastStream()を呼んだ瞬間に実行される
-    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-        Log.d(TAG,"start onListen")
 
+    /**
+     * 保存済みデバイスから、指定されたIDのデバイスを取得する。
+     *
+     * ProvisioningServiceから使用する。
+     */
+    fun getDiscoveredDevice(
+        deviceId: String
+    ): DiscoveredMeshDevice? {
+        return discoveredDevices[deviceId]
+    }
+
+    /**
+     * FlutterがEventChannelの購読を開始したときに呼ばれる。
+     */
+    override fun onListen(
+        arguments: Any?,
+        events: EventChannel.EventSink?
+    ) {
         eventSink = events
-
-
-        // ダミーデータ送信テスト（検証が終わったらコメントアウト）---------------------
-        // UIに表示されるかのテスト用
-        // val deviceData = mapOf(
-        //     "name" to "Dummy BLE Device",
-        //     "uuid" to "AA:BB:CC:DD:EE:FF",
-        //     "rssi" to -45
-        // )
-
-        // // flutterへデータを送信
-        // eventSink?.success(deviceData)
-        
-        // Log.d(TAG,"ダミーデータを送信します")
-        
-        // ダミーデータ送信テストここまで---------------------------------------------
     }
 
-
-    // ### eventSink破壊
-    // flutterが購読を解除すると，スキャン停止→eventSink破壊
+    /**
+     * FlutterがEventChannelの購読を解除したときに呼ばれる。
+     */
     override fun onCancel(arguments: Any?) {
         stopScan()
         eventSink = null
     }
 
+    /**
+     * BLEスキャンに必要な権限が許可されているか確認する。
+     */
     private fun hasScanPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.BLUETOOTH_SCAN
-        ) == PackageManager.PERMISSION_GRANTED
+        return if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        ) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        }
     }
 
+    /**
+     * Bluetoothデバイス情報の取得・接続に必要な権限を確認する。
+     */
     private fun hasConnectPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.BLUETOOTH_CONNECT
-        ) == PackageManager.PERMISSION_GRANTED
+        return if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        ) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
     }
 }
